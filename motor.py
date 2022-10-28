@@ -27,7 +27,7 @@ class Motor:
             self.set_duty(velocity)
             self.set_direction(False)
         else:
-            self.set_duty(1 + velocity)
+            self.set_duty(-velocity)
             self.set_direction(True)
 
     async def start_running(self):
