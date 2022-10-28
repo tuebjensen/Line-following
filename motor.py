@@ -24,9 +24,9 @@ class Motor:
             while True:
                 GPIO.output(self._direction_pin, True if self._velocity > 0 else False)
 
-                GPIO.output(self._speed_pin, True)
+                GPIO.output(self._speed_pin, self._velocity < 0)
                 await asyncio.sleep(0.02 * self._velocity)
-                GPIO.output(self._speed_pin, False)
+                GPIO.output(self._speed_pin, self._velocity < 0)
                 await asyncio.sleep(0.02 * (1 - self._velocity))
         except (RuntimeError):
             pass
