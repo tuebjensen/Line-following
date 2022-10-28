@@ -13,6 +13,7 @@ class Car:
     def set_velocity(self, direction_vector: tuple[float, float]):
         x, y = direction_vector
         epsilon = 0.1
+        print(x)
         if x < -epsilon:
             self._motor_left.set_velocity(-1)
             self._motor_right.set_velocity(1)
