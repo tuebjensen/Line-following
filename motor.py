@@ -11,18 +11,20 @@ class Motor:
         self._speed_pin = speed_pin
         self._direction_pin = direction_pin
         self._duty = default_duty
+        self._direction = False
 
         GPIO.setup(speed_pin, GPIO.OUT)
         GPIO.setup(direction_pin, GPIO.OUT)
 
-        # set direction to forward
-        GPIO.output(direction_pin, True)
+        GPIO.output(direction_pin, self._direction)
     
     def set_duty(self, duty: float):
         self._duty = duty
 
-    def set_direction(self, is_forward: bool):
-        GPIO.output(self._direction_pin, is_forward)
+    def set_direction(self, direction: bool):
+        if self._direction != direction:
+            self._direction = direction
+            GPIO.output(self._direction_pin, direction)
 
     def set_velocity(self, velocity: float):
         if velocity > 0:
