@@ -17,9 +17,8 @@ class Motor:
         GPIO.setup(direction_pin, GPIO.OUT)
 
     def set_velocity(self, velocity: float):
-        print(velocity)
         if velocity > 0:
-            self._duty = velocity
+            self._duty = 1 - velocity
             self._direction = False
         else:
             self._duty = 1 + velocity
