@@ -16,13 +16,13 @@ class Car:
         epsilon = 0.1
         if x < -epsilon:
             self._motor_left.set_velocity(-1)
-            self._motor_right.set_velocity(1)
+            self._motor_right.set_velocity(-1)
         elif x > epsilon or y < 0:
             self._motor_left.set_velocity(1)
-            self._motor_right.set_velocity(-1)
+            self._motor_right.set_velocity(1)
         else:
             self._motor_left.set_velocity(1)
-            self._motor_right.set_velocity(1)
+            self._motor_right.set_velocity(-1)
 
     
     async def start_running(self):
