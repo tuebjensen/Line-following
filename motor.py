@@ -18,11 +18,15 @@ class Motor:
         # set direction to forward
         GPIO.output(direction_pin, True)
     
-    def set_duty(self, duty: str):
+    def set_duty(self, duty: float):
         self._duty = duty
 
     def set_direction(self, is_forward: bool):
         GPIO.output(self.direction_pin, is_forward)
+
+    def set_velocity(self, velocity: float):
+        self.set_duty(abs(velocity))
+        self.set_direction(velocity >= 0)
 
     async def start_running(self):
         # run motors until GPIO is cleaned up

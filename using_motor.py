@@ -1,11 +1,19 @@
+from math import cos, sin, pi
 import RPi.GPIO as GPIO
-import motor
+from car import Car
+import asyncio
 
-motor.
+car = Car(32, 36, 33, 31)
 
 async def main():
     GPIO.setmode(GPIO.BOARD)
-
+    for i in range(50):
+        direction = (cos(2 * pi / 50 * i), sin(2 * pi / 50 * i))
+        car.set_velocity(direction)
+        await asyncio.sleep(0.1)        
     GPIO.cleanup()
 
-asyncio.run(main())
+async def run():
+    await asyncio.gather(car.start_running(), main())
+
+asyncio.run(run())
