@@ -7,8 +7,8 @@ GPIO.setmode(GPIO.BOARD)
 car = Car(32, 36, 33, 31)
 
 async def main():
-    for i in range(11):
-        direction = (i / 10 - 0.5, -0.9)
+    for i in range(101):
+        direction = (i / 100 - 0.5, -0.9)
         car.set_velocity(direction)
         await asyncio.sleep(0.1)
     GPIO.cleanup()
