@@ -22,7 +22,7 @@ class Motor:
         self._duty = duty
 
     def set_direction(self, is_forward: bool):
-        GPIO.output(self.direction_pin, is_forward)
+        GPIO.output(self._direction_pin, is_forward)
 
     def set_velocity(self, velocity: float):
         self.set_duty(abs(velocity))
