@@ -26,7 +26,7 @@ class Motor:
 
                 GPIO.output(self._speed_pin, self._velocity < 0)
                 await asyncio.sleep(0.02 * self._velocity)
-                GPIO.output(self._speed_pin, self._velocity < 0)
+                GPIO.output(self._speed_pin, self._velocity > 0)
                 await asyncio.sleep(0.02 * (1 - self._velocity))
         except (RuntimeError):
             pass
