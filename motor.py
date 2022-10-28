@@ -15,20 +15,15 @@ class Motor:
 
         GPIO.setup(speed_pin, GPIO.OUT)
         GPIO.setup(direction_pin, GPIO.OUT)
-    
-    def set_duty(self, duty: float):
-        self._duty = duty
-
-    def set_direction(self, direction: bool):
-        self._direction = direction
 
     def set_velocity(self, velocity: float):
+        print(velocity)
         if velocity > 0:
-            self.set_duty(velocity)
-            self.set_direction(False)
+            self._duty = velocity
+            self._direction = False
         else:
-            self.set_duty(velocity)
-            self.set_direction(True)
+            self._duty = 1 + velocity
+            self._direction = True
 
     async def start_running(self):
         # run motors until GPIO is cleaned up
