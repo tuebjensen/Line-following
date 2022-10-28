@@ -15,16 +15,12 @@ class Motor:
 
         GPIO.setup(speed_pin, GPIO.OUT)
         GPIO.setup(direction_pin, GPIO.OUT)
-
-        GPIO.output(direction_pin, self._direction)
     
     def set_duty(self, duty: float):
         self._duty = duty
 
     def set_direction(self, direction: bool):
-        if self._direction != direction:
-            self._direction = direction
-            GPIO.output(self._direction_pin, direction)
+        self._direction = direction
 
     def set_velocity(self, velocity: float):
         if velocity > 0:
@@ -38,6 +34,7 @@ class Motor:
         # run motors until GPIO is cleaned up
         try:
             while True:
+                GPIO.output(self._direction_pin, self._direction)
                 GPIO.output(self._speed_pin, True)
                 await asyncio.sleep(0.02 * self._duty)
                 GPIO.output(self._speed_pin, False)
