@@ -1,15 +1,18 @@
 import RPi.GPIO as GPIO
-import time
-
+from motor import Motor
+import asyncio
 
 GPIO.setmode(GPIO.BOARD)
+motor = Motor(32, 36)
 
-GPIO.setup(32, GPIO.OUT)
-GPIO.setup(36, GPIO.OUT)
+async def main():
+    GPIO.setmode(GPIO.BOARD)
+    for f in range(-1, 1, 0.1):
+        motor.set_velocity(f)
+        await asyncio.sleep(0.5)
+    GPIO.cleanup()
 
-for i in range(5):
-    GPIO.output(32, False)
-    GPIO.output(36, i%2)
-    time.sleep(1)
+async def run():
+    await asyncio.gather(car.start_running(), main())
 
-GPIO.cleanup()
+asyncio.run(run())

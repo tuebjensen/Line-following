@@ -10,7 +10,7 @@ async def main():
     for i in range(50):
         direction = (cos(2 * pi / 50 * i), sin(2 * pi / 50 * i))
         car.set_velocity(direction)
-        await asyncio.sleep(0.1)        
+        await asyncio.sleep(0.1)
     GPIO.cleanup()
 
 async def run():
