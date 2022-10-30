@@ -1,4 +1,5 @@
 import RPi.GPIO as GPIO
+from simple_pid import PID
 import asyncio
 
 class Motor:
