@@ -10,6 +10,7 @@ pid = PID(0.6, 5, 0, setpoint=50)
 pid.sample_time = 0.1
 pid.output_limits = (0, 100)
 pid.auto_mode = True
+pid.proportional_on_measurement = True
 interrupt_count = 0
 def setup():
     GPIO.setmode(GPIO.BOARD)
