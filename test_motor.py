@@ -4,12 +4,12 @@ import time
 
 GPIO.setmode(GPIO.BOARD)
 
-GPIO.setup(32, GPIO.OUT)
-GPIO.setup(36, GPIO.OUT)
+GPIO.setup(33, GPIO.OUT)
+GPIO.setup(31, GPIO.OUT)
 
 for i in range(5):
     GPIO.output(32, False)
-    GPIO.output(36, i%2)
+    GPIO.output(36, 1 if i%2 == 0 else -1)
     time.sleep(1)
 
 GPIO.cleanup()
