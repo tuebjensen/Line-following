@@ -35,9 +35,9 @@ motor_pwm.start(50)
 signal.signal(signal.SIGINT, signal_handler)
 while True:
     output = pid(interrupt_count)
+    print(f"{interrupt_count}, {output}")
     interrupt_count = 0
     motor_pwm.ChangeDutyCycle(output)
-    print(output)
     time.sleep(0.1)
 signal.pause()
 
