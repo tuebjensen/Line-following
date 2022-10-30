@@ -1,16 +1,35 @@
 import RPi.GPIO as GPIO
 from motor import Motor
 import asyncio
+import signal
+import time
+import sys
 
-GPIO.setmode(GPIO.BOARD)
-motor = Motor(32, 36)
+curr_time = time.time()
 
-GPIO.setup(33, GPIO.OUT)
-GPIO.setup(31, GPIO.OUT)
+def setup():
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(32, GPIO.OUT)
+    GPIO.setup(36, GPIO.OUT)
+    GPIO.setup(33, GPIO.OUT)
+    GPIO.setup(31, GPIO.OUT)
+    GPIO.setup(11, GPIO.IN)
+    GPIO.add_event_detect(11, GPIO.FALLING, callback=interrupt)
 
-for i in range(5):
-    GPIO.output(32, False)
-    GPIO.output(36, 1 if i%2 == 0 else -1)
-    time.sleep(1)
+def signal_handler(sig, frame):
+    GPIO.cleanup()
+    sys.exit(0)
 
-GPIO.cleanup()
+def interrupt(channel):
+    global curr_time
+    print(time.time() - curr_time)
+    curr_time = time.time()
+
+setup()
+motor_pwm = GPIO.PWM(32, 50)
+motor_pwm.start(30)
+
+signal.signal(signal.SIGINT, signal_handler)
+signal.pause()
+
+
