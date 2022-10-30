@@ -8,7 +8,7 @@ class Motor:
         speed_pin: int,
         direction_pin: int,
         encoder_interrupt_pin: int,
-        speed: int = 50,
+        speed: int = 20,
         forwards: bool = True
     ):
         self._speed_pin = speed_pin
@@ -23,10 +23,13 @@ class Motor:
     def _encoder_callback(self, arg):
         self._encoder_interrupt_count += 1
 
-    def set_speed(speed):
+    def set_speed(self, speed):
         if self._pid is not None:
             self._pid.setpoint = speed
         self._speed = speed
+
+    def set_forwards(self, forwards):
+        self._forwards = forwards
 
     async def start_running(self):
         # make sure we don't run it twice
@@ -59,6 +62,7 @@ class Motor:
         try:
             # control the speed of the motor
             while True:
+                GPIO.output(self._direction_pin, self._forwards)
                 output = self._pid(self._encoder_interrupt_count)
                 self._encoder_interrupt_count = 0
                 self._speed_pwm.ChangeDutyCycle(output if not self._forwards else 100 - output)
