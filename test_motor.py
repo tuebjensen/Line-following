@@ -30,7 +30,7 @@ def interrupt(channel):
 
 setup()
 motor_pwm = GPIO.PWM(32, 50)
-motor_pwm.start(5)
+motor_pwm.start(50)
 
 signal.signal(signal.SIGINT, signal_handler)
 while True:
