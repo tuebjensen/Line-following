@@ -49,6 +49,7 @@ class Motor:
         pid.sample_time = 0.1
         pid.output_limits = (0, 100)
         pid.auto_mode = True
+        pid.proportional_on_measurement = True
         self._pid = pid
 
         self._speed_pwm = GPIO.PWM(self._speed_pin, 50) # 50 Hz
