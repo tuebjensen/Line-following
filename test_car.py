@@ -24,7 +24,7 @@ async def main():
 async def start():
     await asyncio.gather(
         main(), 
-        car.start_running()
+        car.start_running(),
     )
 
 asyncio.run(start())
