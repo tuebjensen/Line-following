@@ -37,6 +37,8 @@ class Motor:
         GPIO.setup(self._direction_pin, GPIO.OUT)
         GPIO.setup(self._encoder_interrupt_pin, GPIO.IN)
 
+        GPIO.output(self._direction_pin, True)
+
         # setup PID for the encoder(=input) + dutycycle(=output)        
         pid = PID(0.25, 1, 0, setpoint=self._speed)
         pid.sample_time = 0.1
