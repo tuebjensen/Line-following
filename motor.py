@@ -32,9 +32,9 @@ class Motor:
         self._running = True
 
         # setup pins
-        GPIO.setup(speed_pin, GPIO.OUT)
-        GPIO.setup(direction_pin, GPIO.OUT)
-        GPIO.setup(encoder_interrupt_pin, GPIO.IN)
+        GPIO.setup(self._speed_pin, GPIO.OUT)
+        GPIO.setup(self._direction_pin, GPIO.OUT)
+        GPIO.setup(self._encoder_interrupt_pin, GPIO.IN)
 
         # setup PID for the encoder(=input) + dutycycle(=output)        
         pid = PID(0.25, 1, 0, setpoint=self._speed)
