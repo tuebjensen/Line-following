@@ -17,7 +17,7 @@ def interrupt(channel):
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(11, GPIO.IN)
 
-GPIO.add_event_detect(11, GPIO.FALLING, callback=interrupt, bouncetime = 20)
+GPIO.add_event_detect(11, GPIO.FALLING, callback=interrupt)
 
 signal.signal(signal.SIGINT, signal_handler)
 signal.pause()
