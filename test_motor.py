@@ -14,7 +14,7 @@ def setup():
     GPIO.setup(33, GPIO.OUT)
     GPIO.setup(31, GPIO.OUT)
     GPIO.setup(11, GPIO.IN)
-    GPIO.add_event_detect(11, GPIO.FALLING, callback=interrupt)
+    GPIO.add_event_detect(11, GPIO.FALLING, callback=interrupt, bouncetime = 1)
 
 def signal_handler(sig, frame):
     GPIO.cleanup()
