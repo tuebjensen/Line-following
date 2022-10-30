@@ -12,7 +12,7 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 GPIO.setmode(GPIO.BOARD)
-car = Car(speed_pin=32, direction_pin=36, encoder_interrupt_pin=11, speed_pin=33, direction_pin=31, encoder_interrupt_pin=37)
+car = Car(32, 36, 11, 33, 31, 37)
 #motor1 = Motor(speed_pin=32, direction_pin=36, encoder_interrupt_pin=11, speed=20, forwards=False)
 #motor2 = Motor(speed_pin=33, direction_pin=31, encoder_interrupt_pin=37, speed=20, forwards=True)
 async def main():
