@@ -17,7 +17,7 @@ car = Car(32, 36, 11, 33, 31, 37)
 #motor2 = Motor(speed_pin=33, direction_pin=31, encoder_interrupt_pin=37, speed=20, forwards=True)
 async def main():
     for i in range(50):
-        direction = cos(2 * pi / 50 * i), sin(2 * pi / 50 * i)
+        direction = 0.05, 0.9#cos(2 * pi / 50 * i), sin(2 * pi / 50 * i)
         car.set_velocity(direction)
         await asyncio.sleep(0.1)
 
