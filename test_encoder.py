@@ -10,4 +10,4 @@ async def start():
         motor2.start_running()
     )
 
-asyncio.run()
+asyncio.run(start())
