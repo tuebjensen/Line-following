@@ -54,14 +54,14 @@ class Motor:
         # (lambda arg: Motor._encoder_callback(self, arg)
 
         # start with a small duty cycle
-        self._speed_pwm.start(5 if self._forwards else 95)
+        self._speed_pwm.start(5 if not self._forwards else 95)
 
         try:
             # control the speed of the motor
             while True:
                 output = self._pid(self._encoder_interrupt_count)
                 self._encoder_interrupt_count = 0
-                self._speed_pwm.ChangeDutyCycle(output if self._forwards else 100 - output)
+                self._speed_pwm.ChangeDutyCycle(output if not self._forwards else 100 - output)
                 await asyncio.sleep(0.1)
         except RuntimeError:
             pass
