@@ -6,35 +6,27 @@ class Motor:
         self,
         speed_pin: int,
         direction_pin: int,
-        default_duty: float = 0
+        default_velocity: float = 0
     ):
         self._speed_pin = speed_pin
         self._direction_pin = direction_pin
-        self._duty = default_duty
+        self._velocity = default_velocity
 
         GPIO.setup(speed_pin, GPIO.OUT)
         GPIO.setup(direction_pin, GPIO.OUT)
 
-        # set direction to forward
-        GPIO.output(direction_pin, True)
-    
-    def set_duty(self, duty: float):
-        self._duty = duty
-
-    def set_direction(self, is_forward: bool):
-        GPIO.output(self._direction_pin, is_forward)
-
     def set_velocity(self, velocity: float):
-        self.set_duty(abs(velocity))
-        self.set_direction(velocity >= 0)
+        self._velocity = velocity
 
     async def start_running(self):
         # run motors until GPIO is cleaned up
         try:
             while True:
-                GPIO.output(self._speed_pin, False)
-                await asyncio.sleep(0.02 * self._duty)
-                GPIO.output(self._speed_pin, True)
-                await asyncio.sleep(0.02 * (1 - self._duty))
+                GPIO.output(self._direction_pin, self._velocity < 0)
+
+                GPIO.output(self._speed_pin, self._velocity > 0)
+                await asyncio.sleep(0.02 * abs(self._velocity))
+                GPIO.output(self._speed_pin, self._velocity < 0)
+                await asyncio.sleep(0.02 * (1 - abs(self._velocity)))
         except (RuntimeError):
             pass

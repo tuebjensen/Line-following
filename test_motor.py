@@ -1,8 +1,9 @@
 import RPi.GPIO as GPIO
-import time
-
+from motor import Motor
+import asyncio
 
 GPIO.setmode(GPIO.BOARD)
+motor = Motor(32, 36)
 
 GPIO.setup(33, GPIO.OUT)
 GPIO.setup(31, GPIO.OUT)
