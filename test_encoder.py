@@ -1,23 +1,13 @@
-import RPi.GPIO as GPIO
-import time
-import sys
-import signal
+from motor import Motor
+import asyncio
 
-curr_time = time.time()
+motor1 = Motor(speed_pin=32, direction_pin=36, encoder_interrupt_pin=11)
+motor2 = Motor(speed_pin=33, direction_pin=31, encoder_interrupt_pin=37)
 
-def signal_handler(sig, frame):
-    GPIO.cleanup()
-    sys.exit(0)
+async def start():
+    await asyncio.gather(
+        motor1.start_running(),
+        motor2.start_running()
+    )
 
-def interrupt(channel):
-    global curr_time
-    print(time.time() - curr_time)
-    curr_time = time.time()
-
-GPIO.setmode(GPIO.BOARD)
-GPIO.setup(11, GPIO.IN)
-
-GPIO.add_event_detect(11, GPIO.FALLING, callback=interrupt)
-
-signal.signal(signal.SIGINT, signal_handler)
-signal.pause()
+asyncio.run()

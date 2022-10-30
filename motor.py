@@ -6,27 +6,57 @@ class Motor:
         self,
         speed_pin: int,
         direction_pin: int,
-        default_velocity: float = 0
+        encoder_interrupt_pin: int,
+        speed: int = 50
     ):
         self._speed_pin = speed_pin
         self._direction_pin = direction_pin
-        self._velocity = default_velocity
+        self._encoder_interrupt_pin = encoder_interrupt_pin
+        self._encoder_interrupt_count = 0
+        self._speed = speed
+        self._running = False
+        self._pid = None
 
-        GPIO.setup(speed_pin, GPIO.OUT)
-        GPIO.setup(direction_pin, GPIO.OUT)
+    def _encoder_callback(self, arg):
+        self._encoder_interrupt_count += 1
 
-    def set_velocity(self, velocity: float):
-        self._velocity = velocity
+    def set_speed(speed):
+        if self._pid is not None:
+            self._pid.setpoint = speed
+        self._speed = speed
 
     async def start_running(self):
-        # run motors until GPIO is cleaned up
-        try:
-            while True:
-                GPIO.output(self._direction_pin, self._velocity < 0)
+        # make sure we don't run it twice
+        if self._running:
+            return
+        self._running = True
 
-                GPIO.output(self._speed_pin, self._velocity > 0)
-                await asyncio.sleep(0.02 * abs(self._velocity))
-                GPIO.output(self._speed_pin, self._velocity < 0)
-                await asyncio.sleep(0.02 * (1 - abs(self._velocity)))
-        except (RuntimeError):
+        # setup pins
+        GPIO.setup(speed_pin, GPIO.OUT)
+        GPIO.setup(direction_pin, GPIO.OUT)
+        GPIO.setup(encoder_interrupt_pin, GPIO.IN)
+
+        # setup PID for the encoder(=input) + dutycycle(=output)        
+        pid = PID(0.25, 1, 0, setpoint=self._speed)
+        pid.sample_time = 0.1
+        pid.output_limits = (0, 100)
+        pid.auto_mode = True
+        self._pid = pid
+
+        self._speed_pwm = GPIO.PWM(self._speed_pin, 50) # 50 Hz
+
+        GPIO.add_event_detect(self._encoder_interrupt_pin, GPIO.FALLING, callback=self._encoder_callback)
+        # (lambda arg: Motor._encoder_callback(self, arg)
+
+        # start with a small duty cycle
+        self._speed_pwm.start(5)
+
+        try:
+            # control the speed of the motor
+            while True:
+                output = self._pid(self._encoder_interrupt_count)
+                self._encoder_interrupt_count = 0
+                self._speed_pwm.ChangeDutyCycle(output)
+                await asyncio.sleep(0.1)
+        except RuntimeError:
             pass
