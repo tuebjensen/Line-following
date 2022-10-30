@@ -27,9 +27,13 @@ def interrupt(channel):
 
 setup()
 motor_pwm = GPIO.PWM(32, 50)
-motor_pwm.start(30)
+motor_pwm.start(0)
 
 signal.signal(signal.SIGINT, signal_handler)
+for i in range(101):
+    motor_pwm.ChangeDutyCycle(i)
+    time.sleep(0.1)
+
 signal.pause()
 
 
