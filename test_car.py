@@ -23,7 +23,7 @@ async def main():
         direction = (-0.15, 0.9)#cos(2 * pi / 50 * i), sin(2 * pi / 50 * i)
         car.set_velocity(direction)
         await asyncio.sleep(1)
-        direction = (-0.25, -0.9)#cos(2 * pi / 50 * i), sin(2 * pi / 50 * i)
+        direction = (-0.05, -0.9)#cos(2 * pi / 50 * i), sin(2 * pi / 50 * i)
         car.set_velocity(direction)
         await asyncio.sleep(1)
 
