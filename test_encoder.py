@@ -1,3 +1,4 @@
+import RPi.GPIO as GPIO
 from motor import Motor
 import asyncio
 import signal
