@@ -1,10 +1,19 @@
+import asyncio
 from math import asin, atan2, cos, pi, sin, sqrt
 from typing import Tuple
 import cv2 as cv
 import numpy as np
 from calculate_direction import _get_direction_vector_of_line, _get_displacement_vector_from_center, get_direction_to_go
+from car import Car
+from motor import Motor
 from process_lines import Line, get_centers_of_parallel_line_pairs, get_from_houghlines, merge_lines
 
+
+car = Car(
+    motor_left=Motor(speed_pin=32, direction_pin=36, encoder_interrupt_pin=11),
+    motor_right=Motor(speed_pin=33, direction_pin=31, encoder_interrupt_pin=37),
+    speed=20
+)
 
 def nothing(x):
     pass
@@ -87,7 +96,7 @@ def display_direction_to_go(parallel_line_centers, frame):
     direction_to_go = get_direction_to_go(line, frame) * 50
     cv.line(frame, (int(center_x), int(center_y)), (int(direction_to_go.x) + int(center_x), int(center_y) - int(direction_to_go.y)), (0,69,255), 2)
 
-def main():
+async def process_video():
     guard = True
     cap = cv.VideoCapture(0)
     img = np.zeros((25, 500, 3), np.uint8)
@@ -121,6 +130,11 @@ def main():
             display_center_of_parallel_lines(parallel_line_centers, original_frame)
             display_displacement_and_direction_vectors(parallel_line_centers, original_frame)
             display_direction_to_go(parallel_line_centers, original_frame)
+            
+            if parallel_line_centers is not None and len(parallel_line_centers > 0):
+                velocity_vector = get_direction_to_go(parallel_line_centers[0], original_frame)
+                car.set_velocity(velocity_vector)
+                await asyncio.sleep(0)
 
         cv.imshow('original video', original_frame)
         cv.imshow('processed video', processed_frame)
@@ -135,4 +149,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.gather(
+        process_video(),
+        car.start_running()
+    )
