@@ -114,6 +114,7 @@ async def process_video():
     #cv.createTrackbar('Block size', 'image', 5, 100, nothing)
     #cv.createTrackbar('C', 'image', 5, 100, nothing)
     while cap.isOpened() and guard:
+        print(1.5)
         ret, original_frame = cap.read()
         print(2)
         original_frame = cv.flip(original_frame, 1)
