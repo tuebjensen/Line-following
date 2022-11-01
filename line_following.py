@@ -148,9 +148,11 @@ async def process_video():
     cap.release()
     cv.destroyAllWindows()
 
-
-if __name__ == "__main__":
+async def start():
     asyncio.gather(
         process_video(),
         car.start_running()
     )
+
+if __name__ == "__main__":
+    asyncio.run(start())
