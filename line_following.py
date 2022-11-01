@@ -114,6 +114,7 @@ async def process_video():
     #cv.createTrackbar('Block size', 'image', 5, 100, nothing)
     #cv.createTrackbar('C', 'image', 5, 100, nothing)
     while cap.isOpened() and guard:
+        await asyncio.sleep(0.1)
         print('start', time.time())
         ret, original_frame = cap.read()
         #original_frame = cv.flip(original_frame, 1)
@@ -155,7 +156,7 @@ async def process_video():
                 direction = velocity_vector.x, velocity_vector.y
                 print(str(direction))
                 car.set_velocity(direction)
-            await asyncio.sleep(0.1)
+        
 
         #cv.imshow('original video', original_frame)
         #cv.imshow('processed video', processed_frame)
