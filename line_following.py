@@ -154,7 +154,7 @@ async def process_video():
                 velocity_vector = get_direction_to_go(parallel_line_centers[0], original_frame)
                 direction = velocity_vector.x, velocity_vector.y
                 car.set_velocity(direction)
-                await asyncio.sleep(0)
+                await asyncio.sleep(0.1)
 
         #cv.imshow('original video', original_frame)
         #cv.imshow('processed video', processed_frame)
