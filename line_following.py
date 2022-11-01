@@ -139,7 +139,7 @@ async def process_video():
             #display_displacement_and_direction_vectors(parallel_line_centers, original_frame)
             #display_direction_to_go(parallel_line_centers, original_frame)
             
-            if parallel_line_centers is not None and len(parallel_line_centers > 0):
+            if parallel_line_centers is not None and len(parallel_line_centers) > 0:
                 velocity_vector = get_direction_to_go(parallel_line_centers[0], original_frame)
                 print(velocity_vector)
                 car.set_velocity(velocity_vector)
@@ -158,8 +158,8 @@ async def process_video():
 
 async def start():
     asyncio.gather(
-        process_video(),
-        car.start_running()
+        car.start_running(),
+        process_video()
     )
 
 if __name__ == "__main__":
