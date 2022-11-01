@@ -149,8 +149,9 @@ async def process_video():
                 velocity_vector = get_direction_to_go(parallel_line_centers[0], original_frame)
                 print(velocity_vector)
                 direction = velocity_vector.x, velocity_vector.y
-                print(7)
+                print(7, direction)
                 car.set_velocity(direction)
+                print(7.2)
                 await asyncio.sleep(0.01)
 
         #cv.imshow('original video', original_frame)
@@ -161,6 +162,7 @@ async def process_video():
         #cv.moveWindow('edges', 1200, 208)
         #if cv.waitKey(10) == ord('q'):
             #guard = False
+    print(7.5)
     cap.release()
     print(8)
     #cv.destroyAllWindows()
