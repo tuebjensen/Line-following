@@ -100,10 +100,10 @@ async def process_video():
     guard = True
     cap = cv.VideoCapture(0)
     img = np.zeros((25, 500, 3), np.uint8)
-    cv.namedWindow('image')
-    cv.createTrackbar('Blur', 'image', 5, 100, nothing)
-    cv.createTrackbar('Block size', 'image', 5, 100, nothing)
-    cv.createTrackbar('C', 'image', 5, 100, nothing)
+    #cv.namedWindow('image')
+    #cv.createTrackbar('Blur', 'image', 5, 100, nothing)
+    #cv.createTrackbar('Block size', 'image', 5, 100, nothing)
+    #cv.createTrackbar('C', 'image', 5, 100, nothing)
     while cap.isOpened() and guard:
         ret, original_frame = cap.read()
         original_frame = cv.flip(original_frame, 1)
@@ -113,23 +113,23 @@ async def process_video():
             cap.set(cv.CAP_PROP_POS_FRAMES, 0)
             continue
         
-        blur = cv.getTrackbarPos('Blur', 'image')
-        block_size = cv.getTrackbarPos('Block size', 'image')
-        c = cv.getTrackbarPos('C', 'image')
+        blur = 3#cv.getTrackbarPos('Blur', 'image')
+        block_size = 5#cv.getTrackbarPos('Block size', 'image')
+        c = 3#cv.getTrackbarPos('C', 'image')
         processed_frame = process_frame(original_frame, blur, block_size, c)
         edges, houghlines = find_edges_and_lines(processed_frame)
 
         if isinstance(houghlines, np.ndarray):
-            cv.putText(original_frame, f'lines: {len(houghlines)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2, cv.LINE_AA)
+            #cv.putText(original_frame, f'lines: {len(houghlines)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2, cv.LINE_AA)
 
             lines = get_from_houghlines(houghlines)
             merged_lines = merge_lines(lines)
             parallel_line_centers = get_centers_of_parallel_line_pairs(merged_lines)
-            display_all_lines(lines, original_frame)
-            display_merged_parallel_lines(merged_lines, original_frame)
-            display_center_of_parallel_lines(parallel_line_centers, original_frame)
-            display_displacement_and_direction_vectors(parallel_line_centers, original_frame)
-            display_direction_to_go(parallel_line_centers, original_frame)
+            #display_all_lines(lines, original_frame)
+            #display_merged_parallel_lines(merged_lines, original_frame)
+            #display_center_of_parallel_lines(parallel_line_centers, original_frame)
+            #display_displacement_and_direction_vectors(parallel_line_centers, original_frame)
+            #display_direction_to_go(parallel_line_centers, original_frame)
             
             if parallel_line_centers is not None and len(parallel_line_centers > 0):
                 velocity_vector = get_direction_to_go(parallel_line_centers[0], original_frame)
@@ -137,16 +137,16 @@ async def process_video():
                 car.set_velocity(velocity_vector)
                 await asyncio.sleep(0)
 
-        cv.imshow('original video', original_frame)
-        cv.imshow('processed video', processed_frame)
-        cv.imshow('edges', edges)
-        cv.imshow('image', img)
-        cv.moveWindow('processed video', 700, 208)
-        cv.moveWindow('edges', 1200, 208)
-        if cv.waitKey(10) == ord('q'):
-            guard = False
+        #cv.imshow('original video', original_frame)
+        #cv.imshow('processed video', processed_frame)
+        #cv.imshow('edges', edges)
+        #cv.imshow('image', img)
+        #cv.moveWindow('processed video', 700, 208)
+        #cv.moveWindow('edges', 1200, 208)
+        #if cv.waitKey(10) == ord('q'):
+            #guard = False
     cap.release()
-    cv.destroyAllWindows()
+    #cv.destroyAllWindows()
 
 async def start():
     asyncio.gather(
