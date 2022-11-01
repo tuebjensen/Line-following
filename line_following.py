@@ -13,8 +13,8 @@ import sys
 import RPi.GPIO as GPIO
 
 car = Car(
-    motor_left=Motor(speed_pin=32, direction_pin=36, encoder_interrupt_pin=11),
-    motor_right=Motor(speed_pin=33, direction_pin=31, encoder_interrupt_pin=37),
+    motor_left=Motor(speed_pin=33, direction_pin=31, encoder_interrupt_pin=37),
+    motor_right=Motor(speed_pin=32, direction_pin=36, encoder_interrupt_pin=11),
     speed=20
 )
 def signal_handler(sig, frame):
