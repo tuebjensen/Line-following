@@ -169,7 +169,7 @@ async def process_video():
     #cv.destroyAllWindows()
 
 async def start():
-    asyncio.gather(
+    await asyncio.gather(
         process_video()
     )
 
