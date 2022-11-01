@@ -108,14 +108,17 @@ async def process_video():
     guard = True
     cap = cv.VideoCapture(0)
     img = np.zeros((25, 500, 3), np.uint8)
+    print(1)
     #cv.namedWindow('image')
     #cv.createTrackbar('Blur', 'image', 5, 100, nothing)
     #cv.createTrackbar('Block size', 'image', 5, 100, nothing)
     #cv.createTrackbar('C', 'image', 5, 100, nothing)
     while cap.isOpened() and guard:
         ret, original_frame = cap.read()
+        print(2)
         original_frame = cv.flip(original_frame, 1)
         original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
+        print(3)
         if not ret:
             print("Can't receive next frame")
             cap.set(cv.CAP_PROP_POS_FRAMES, 0)
@@ -125,7 +128,9 @@ async def process_video():
         block_size = 5#cv.getTrackbarPos('Block size', 'image')
         c = 3#cv.getTrackbarPos('C', 'image')
         processed_frame = process_frame(original_frame, blur, block_size, c)
+        print(4)
         edges, houghlines = find_edges_and_lines(processed_frame)
+        print(5)
 
         if isinstance(houghlines, np.ndarray):
             #cv.putText(original_frame, f'lines: {len(houghlines)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2, cv.LINE_AA)
@@ -139,10 +144,12 @@ async def process_video():
             #display_displacement_and_direction_vectors(parallel_line_centers, original_frame)
             #display_direction_to_go(parallel_line_centers, original_frame)
             
+            print(6)
             if parallel_line_centers is not None and len(parallel_line_centers) > 0:
                 velocity_vector = get_direction_to_go(parallel_line_centers[0], original_frame)
                 print(velocity_vector)
                 direction = velocity_vector.x, velocity_vector.y
+                print(7)
                 car.set_velocity(direction)
                 await asyncio.sleep(0)
 
@@ -155,6 +162,7 @@ async def process_video():
         #if cv.waitKey(10) == ord('q'):
             #guard = False
     cap.release()
+    print(8)
     #cv.destroyAllWindows()
 
 async def start():
