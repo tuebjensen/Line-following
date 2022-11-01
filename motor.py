@@ -64,7 +64,6 @@ class Motor:
             while True:
                 GPIO.output(self._direction_pin, self._forwards)
                 output = self._pid(self._encoder_interrupt_count)
-                print(self._encoder_interrupt_count, output)
                 self._encoder_interrupt_count = 0
                 self._speed_pwm.ChangeDutyCycle(output if not self._forwards else 100 - output)
                 await asyncio.sleep(0.1)
