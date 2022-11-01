@@ -5,4 +5,4 @@ ret,frame = cap.read() # return a single frame in variable `frame`
 cv2.imwrite('images/c1.png',frame)
 
 
-cap.release()
+cap.release()   
