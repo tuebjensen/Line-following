@@ -12,7 +12,7 @@ class Car:
 
     def set_velocity(self, direction_vector: tuple[float, float]):
         x, y = direction_vector
-        epsilon = 0.1
+        epsilon = 0.2
         #Turn left
         if x < -epsilon:
             self._motor_left.set_forwards(False)
