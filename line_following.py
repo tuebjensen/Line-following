@@ -7,13 +7,20 @@ from calculate_direction import _get_direction_vector_of_line, _get_displacement
 from car import Car
 from motor import Motor
 from process_lines import Line, get_centers_of_parallel_line_pairs, get_from_houghlines, merge_lines
-
+import signal
+import sys
 
 car = Car(
     motor_left=Motor(speed_pin=32, direction_pin=36, encoder_interrupt_pin=11),
     motor_right=Motor(speed_pin=33, direction_pin=31, encoder_interrupt_pin=37),
     speed=20
 )
+def signal_handler(sig, frame):
+    GPIO.cleanup()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+GPIO.setmode(GPIO.BOARD)
 
 def nothing(x):
     pass
