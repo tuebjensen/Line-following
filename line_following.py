@@ -1,5 +1,6 @@
 import asyncio
 from math import asin, atan2, cos, pi, sin, sqrt
+from time import time
 from typing import Tuple
 import cv2 as cv
 import numpy as np
@@ -113,32 +114,42 @@ async def process_video():
     #cv.createTrackbar('Block size', 'image', 5, 100, nothing)
     #cv.createTrackbar('C', 'image', 5, 100, nothing)
     while cap.isOpened() and guard:
+        print('start', time.time())
         ret, original_frame = cap.read()
         original_frame = cv.flip(original_frame, 1)
         original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
+        print(time.time())
         if not ret:
             print("Can't receive next frame")
             cap.set(cv.CAP_PROP_POS_FRAMES, 0)
             continue
         
+        print(time.time())
         blur = 3#cv.getTrackbarPos('Blur', 'image')
         block_size = 5#cv.getTrackbarPos('Block size', 'image')
         c = 3#cv.getTrackbarPos('C', 'image')
         processed_frame = process_frame(original_frame, blur, block_size, c)
+        print(time.time())
         edges, houghlines = find_edges_and_lines(processed_frame)
+        print(time.time())
 
         if isinstance(houghlines, np.ndarray):
             #cv.putText(original_frame, f'lines: {len(houghlines)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2, cv.LINE_AA)
 
+            print(time.time())
             lines = get_from_houghlines(houghlines)
+            print(time.time())
             merged_lines = merge_lines(lines)
+            print(time.time())
             parallel_line_centers = get_centers_of_parallel_line_pairs(merged_lines)
+            print(time.time())
             #display_all_lines(lines, original_frame)
             #display_merged_parallel_lines(merged_lines, original_frame)
             #display_center_of_parallel_lines(parallel_line_centers, original_frame)
             #display_displacement_and_direction_vectors(parallel_line_centers, original_frame)
             #display_direction_to_go(parallel_line_centers, original_frame)
             
+            print(time.time())
             if parallel_line_centers is not None and len(parallel_line_centers) > 0:
                 velocity_vector = get_direction_to_go(parallel_line_centers[0], original_frame)
                 print(velocity_vector)
