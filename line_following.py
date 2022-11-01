@@ -153,7 +153,7 @@ async def process_video():
                 print(7, direction)
                 car.set_velocity(direction)
                 print(7.2)
-                #await asyncio.sleep(0.01)
+                await asyncio.sleep(0.01)
 
         #cv.imshow('original video', original_frame)
         #cv.imshow('processed video', processed_frame)
