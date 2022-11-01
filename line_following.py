@@ -153,6 +153,7 @@ async def process_video():
             if parallel_line_centers is not None and len(parallel_line_centers) > 0:
                 velocity_vector = get_direction_to_go(parallel_line_centers[0], original_frame)
                 direction = velocity_vector.x, velocity_vector.y
+                print(str(direction))
                 car.set_velocity(direction)
                 await asyncio.sleep(0.1)
 
