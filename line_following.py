@@ -170,7 +170,6 @@ async def process_video():
 
 async def start():
     asyncio.gather(
-        car.start_running(),
         process_video()
     )
 
