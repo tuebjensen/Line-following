@@ -128,10 +128,11 @@ def get_frames_for_server():
             display_center_of_parallel_lines(parallel_line_centers, original_frame)
             display_displacement_and_direction_vectors(parallel_line_centers, original_frame)
             display_direction_to_go(parallel_line_centers, original_frame)
-            # if parallel_line_centers is not None and len(parallel_line_centers) > 0:
-            #     velocity_vector = get_direction_to_go(parallel_line_centers[0], original_frame)
-            #     direction = velocity_vector.x, velocity_vector.y
-        yield original_frame
+        
+        ret, buffer = cv.imencode('.jpg', frame)
+        frame = buffer.tobytes()
+        yield (b'--frame\r\n'
+                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
     cap.release()
 
 async def process_video():
