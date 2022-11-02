@@ -13,8 +13,8 @@ import sys
 import RPi.GPIO as GPIO
 
 car = Car(
-    motor_left=Motor(speed_pin=33, direction_pin=31, encoder_interrupt_pin=37),
-    motor_right=Motor(speed_pin=32, direction_pin=36, encoder_interrupt_pin=11),
+    motor_left=Motor(speed_pin=32, direction_pin=36, encoder_interrupt_pin=11),
+    motor_right=Motor(speed_pin=33, direction_pin=31, encoder_interrupt_pin=37),
     speed=20
 )
 def signal_handler(sig, frame):
@@ -60,7 +60,6 @@ def display_merged_parallel_lines(merged_lines: 'list[Line]', frame):
         line = merged_lines[i]
         color = (0, 255-255/len(merged_lines)*i ,0) # shade of green
         put_line_on_frame(frame, line, color)
-        # cv.putText(original_frame, f'line: rho{line[0]}, theta: {line[1] * 180 / 3.1415}°', (50, 50+i*50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,255-255/len(merged_lines)*i,0), 2, cv.LINE_AA)
 
 def display_center_of_parallel_lines(parallel_line_centers, frame):
     if parallel_line_centers is None:
@@ -69,7 +68,6 @@ def display_center_of_parallel_lines(parallel_line_centers, frame):
         line = parallel_line_centers[i]
         color = (0, 0, 255-255/len(parallel_line_centers)*i) # shade of red
         put_line_on_frame(frame, line, color)
-        # cv.putText(original_frame, f'line: rho{line[0]}, theta: {line[1] * 180 / 3.1415 }°', (50, 50+len(parallel_line_centers)+i*50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0, 255-255/len(parallel_line_centers)*i), 2, cv.LINE_AA)
 
 
 def display_displacement_and_direction_vectors(parallel_line_centers, frame):
@@ -105,6 +103,37 @@ def display_direction_to_go(parallel_line_centers, frame):
     direction_to_go = get_direction_to_go(line, frame) * 50
     cv.line(frame, (int(center_x), int(center_y)), (int(direction_to_go.x) + int(center_x), int(center_y) - int(direction_to_go.y)), (0,69,255), 2)
 
+def get_frames_for_server():
+    guard = True
+    cap = cv.VideoCapture(0)
+    while cap.isOpened() and guard:
+        ret, original_frame = cap.read()
+        if not ret:
+            print("Can't receive next frame")
+            cap.set(cv.CAP_PROP_POS_FRAMES, 0)
+            continue
+        
+        blur = 3
+        block_size = 5
+        c = 3
+        processed_frame = process_frame(original_frame, blur, block_size, c)
+        edges, houghlines = find_edges_and_lines(processed_frame)
+
+        if isinstance(houghlines, np.ndarray):
+            lines = get_from_houghlines(houghlines)
+            merged_lines = merge_lines(lines)
+            parallel_line_centers = get_centers_of_parallel_line_pairs(merged_lines)
+            display_all_lines(lines, original_frame)
+            display_merged_parallel_lines(merged_lines, original_frame)
+            display_center_of_parallel_lines(parallel_line_centers, original_frame)
+            display_displacement_and_direction_vectors(parallel_line_centers, original_frame)
+            display_direction_to_go(parallel_line_centers, original_frame)
+            # if parallel_line_centers is not None and len(parallel_line_centers) > 0:
+            #     velocity_vector = get_direction_to_go(parallel_line_centers[0], original_frame)
+            #     direction = velocity_vector.x, velocity_vector.y
+        yield original_frame
+    cap.release()
+
 async def process_video():
     guard = True
     cap = cv.VideoCapture(0)
@@ -114,7 +143,6 @@ async def process_video():
     #cv.createTrackbar('Block size', 'image', 5, 100, nothing)
     #cv.createTrackbar('C', 'image', 5, 100, nothing)
     while cap.isOpened() and guard:
-        await asyncio.sleep(0.1)
         print('start', time.time())
         ret, original_frame = cap.read()
         #original_frame = cv.flip(original_frame, 1)
@@ -153,10 +181,10 @@ async def process_video():
             print(9, time.time())
             if parallel_line_centers is not None and len(parallel_line_centers) > 0:
                 velocity_vector = get_direction_to_go(parallel_line_centers[0], original_frame)
-                direction = -velocity_vector.y, velocity_vector.x
+                direction = velocity_vector.x, velocity_vector.y
                 print(str(direction))
                 car.set_velocity(direction)
-        
+                await asyncio.sleep(0.1)
 
         #cv.imshow('original video', original_frame)
         #cv.imshow('processed video', processed_frame)

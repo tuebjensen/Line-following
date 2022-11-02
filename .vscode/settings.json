@@ -1,5 +1,9 @@
 {
     "python.linting.enabled": false,
     "python.linting.pylintEnabled": false,
-    "python.linting.mypyEnabled": true
+    "python.linting.mypyEnabled": true,
+    "python.analysis.extraPaths": [
+        "./car",
+        "./video_processing"
+    ]
 }
