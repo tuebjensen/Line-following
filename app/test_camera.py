@@ -5,20 +5,13 @@ app = Flask(__name__)
 
 cap = cv.VideoCapture(0)
 def show_image():
-
     while cap.isOpened():
-        ret, original_frame = cap.read()
-        original_frame = original_frame[:, 30:]
-        if not ret:
-            print("Can't receive next frame")
-            cap.set(cv.CAP_PROP_POS_FRAMES, 0)
-            continue
-            
+        ret, original_frame = cap.read()    
         ret, buffer = cv.imencode('.jpg', original_frame)
         frame = buffer.tobytes()
         yield (b'--frame\r\n'
         b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
-        cap.release()
+
 
 @app.route('/video_feed')
 def video_feed():
