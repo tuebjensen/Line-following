@@ -65,7 +65,7 @@ async def process_video():
 async def start():
     await asyncio.gather(
         car.start_running(),
-        video.start_running(),
+        video.start_running(asyncio, '0.0.0.0', 5000),
         process_video()
     )
 
