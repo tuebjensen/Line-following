@@ -13,10 +13,11 @@ import sys
 import RPi.GPIO as GPIO
 
 car = Car(
-    motor_left=Motor(speed_pin=32, direction_pin=36, encoder_interrupt_pin=11),
-    motor_right=Motor(speed_pin=33, direction_pin=31, encoder_interrupt_pin=37),
+    motor_left=Motor(speed_pin=33, direction_pin=31, encoder_interrupt_pin=37),
+    motor_right=Motor(speed_pin=32, direction_pin=36, encoder_interrupt_pin=11),
     speed=20
 )
+
 def signal_handler(sig, frame):
     GPIO.cleanup()
     sys.exit(0)
@@ -108,6 +109,7 @@ def get_frames_for_server():
     cap = cv.VideoCapture(0)
     while cap.isOpened() and guard:
         ret, original_frame = cap.read()
+        original_frame = original_frame[:, 30:]
         if not ret:
             print("Can't receive next frame")
             cap.set(cv.CAP_PROP_POS_FRAMES, 0)
@@ -144,8 +146,11 @@ async def process_video():
     #cv.createTrackbar('Block size', 'image', 5, 100, nothing)
     #cv.createTrackbar('C', 'image', 5, 100, nothing)
     while cap.isOpened() and guard:
+        await asyncio.sleep(0.1)
+
         print('start', time.time())
         ret, original_frame = cap.read()
+        original_frame = original_frame[:, 30:]
         #original_frame = cv.flip(original_frame, 1)
         #original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
         print(1, time.time())
@@ -185,7 +190,6 @@ async def process_video():
                 direction = velocity_vector.x, velocity_vector.y
                 print(str(direction))
                 car.set_velocity(direction)
-                await asyncio.sleep(0.1)
 
         #cv.imshow('original video', original_frame)
         #cv.imshow('processed video', processed_frame)
