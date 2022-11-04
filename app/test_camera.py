@@ -13,12 +13,12 @@ def show_image():
             print("Can't receive next frame")
             cap.set(cv.CAP_PROP_POS_FRAMES, 0)
             continue
-        
-    ret, buffer = cv.imencode('.jpg', frame)
-    frame = buffer.tobytes()
-    yield (b'--frame\r\n'
-    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
-    cap.release()
+            
+        ret, buffer = cv.imencode('.jpg', frame)
+        frame = buffer.tobytes()
+        yield (b'--frame\r\n'
+        b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
+        cap.release()
 
 @app.route('/video_feed')
 def video_feed():
