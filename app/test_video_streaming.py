@@ -5,9 +5,7 @@ camera = cv.VideoCapture(0)
 video = VideoStreaming()
 
 
-video.start_running()
-
-async def start():
+async def main():
     while camera.isOpened():
         ret, original_frame = camera.read()    
         ret, buffer = cv.imencode('.jpg', original_frame)
@@ -16,4 +14,7 @@ async def start():
         await asyncio.sleep(0.1)
     camera.release()
 
+
+async def start():
+    await asyncio.gather(video.start_running(), main())
 asyncio.run(start())

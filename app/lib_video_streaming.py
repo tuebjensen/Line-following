@@ -1,42 +1,44 @@
-from flask import Flask, render_template, Response
-
+from aiohttp import web
 class VideoStreaming:
 
     def __init__(self):
         self._is_running = False
         self._frame_encoded = None
+        self._is_frame_encoded_changed = False
 
     def set_frame_encoded(self, frame_encoded):
         self._frame_encoded = frame_encoded
+        self._is_frame_encoded_changed = True
 
-    def start_running(self):
+    async def start_running(self, asyncio, address, port):
         if self._is_running:
             return
+
         self._is_running = True
 
-        app = Flask(__name__)
+        async def show_image(request):
+            resp = web.StreamResponse(status=200, 
+                              reason='OK', 
+                              headers={'Content-Type': 'multipart/x-mixed-replace; boundary=frame'})
+    
+            # The StreamResponse is a FSM. Enter it with a call to prepare.
+            await resp.prepare(request)
 
-        def show_image():
-            while True:  
-                yield (
-                    b'--frame\r\n'
-                    + b'Content-Type: image/jpeg\r\n\r\n' 
-                    + (self._frame_encoded if self._frame_encoded is not None else b'') 
-                    + b'\r\n'
-                )            
+            while True:
+                if self._is_frame_encoded_changed:
+                    self._is_frame_encoded_changed = False       
+                    resp.write(
+                        b'--frame\r\n'
+                        + b'Content-Type: image/jpeg\r\n\r\n' 
+                        + (self._frame_encoded if self._frame_encoded is not None else b'') 
+                        + b'\r\n'
+                    ) 
+                    await resp.drain()
+                await asyncio.sleep(0.1)   
+        loop = asyncio.get_event_loop()
+        app = web.Application(loop=loop)
+        app.router.add_route('GET', "/", show_image)
 
-        # Setup test server
-        @app.route('/video_feed')
-        def video_feed():
-            #Video streaming route. Put this in the src attribute of an img tag
-            return Response(show_image(), mimetype='multipart/x-mixed-replace; boundary=frame')
+        return await loop.create_server(app.make_handler(), address, port)
 
-        @app.route('/')
-        def index():
-            """Video streaming home page."""
-            return render_template('index.html')
         
-        # Run test server
-        app.run(host='0.0.0.0', debug=True, threaded=True )
-            
-
