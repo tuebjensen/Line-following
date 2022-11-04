@@ -5,7 +5,7 @@ class Vector2D:
         self.x = x
         self.y = y
     
-    def __len__(self) -> float:
+    def get_length(self) -> float:
         return sqrt(self.x ** 2 + self.y ** 2)
 
     def __add__(self, other):
@@ -34,4 +34,4 @@ class Vector2D:
         return self.x * other.x + self.y + other.y
 
     def normalize(self) -> 'Vector2D':
-        return self / len(self)
+        return self / self.get_length()

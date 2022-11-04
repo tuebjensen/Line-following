@@ -5,7 +5,7 @@ from lib_vector2d import Vector2D
 def get_direction_to_go(line: Line, image_frame) -> Vector2D:
     direction_vector = get_direction_vector_of_line(line).normalize()
     displacement_vector = get_displacement_vector_from_center(line, image_frame)
-    distance_from_center = len(displacement_vector)
+    distance_from_center = displacement_vector.get_length()
     displacement_vector = displacement_vector.normalize()
 
     frame_width = image_frame.shape[1]
@@ -31,7 +31,7 @@ def get_displacement_vector_from_center(line: Line, frame) -> Vector2D:
     frame_width = frame.shape[1]
     frame_height = frame.shape[0]
     center = Vector2D(frame_width / 2, -1 * frame_height / 2)
-    max_distance = len(center)
+    max_distance = center.get_length()
 
     displacement_angle = pi - theta
     gamma = asin((frame_height / 2) / max_distance)
