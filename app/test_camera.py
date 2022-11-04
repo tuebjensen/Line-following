@@ -14,7 +14,7 @@ def show_image():
             cap.set(cv.CAP_PROP_POS_FRAMES, 0)
             continue
             
-        ret, buffer = cv.imencode('.jpg', frame)
+        ret, buffer = cv.imencode('.jpg', original_frame)
         frame = buffer.tobytes()
         yield (b'--frame\r\n'
         b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
