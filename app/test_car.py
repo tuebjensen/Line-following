@@ -1,10 +1,10 @@
 from math import cos, sin, pi
 import RPi.GPIO as GPIO
-from car import Car
-from motor import Motor
 import asyncio
 import signal
 import sys
+from lib_car import Car
+from lib_motor import Motor
 
 def signal_handler(sig, frame):
     GPIO.cleanup()

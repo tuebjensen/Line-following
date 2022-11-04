@@ -1,5 +1,5 @@
-from motor import Motor
 import asyncio
+from lib_motor import Motor
 
 class Car:
     def __init__(self, motor_left: Motor, motor_right: Motor, speed = None):
