@@ -1,5 +1,5 @@
 from math import asin, cos, pi, sin, sqrt
-from process_lines import Line
+from lib_process_lines import Line
 from lib_vector2d import Vector2D
 
 def get_direction_to_go(line: Line, image_frame) -> Vector2D:
