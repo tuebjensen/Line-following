@@ -12,13 +12,8 @@ from lib_car import Car
 from lib_motor import Motor
 from lib_process_lines import Line, get_centers_of_parallel_line_pairs, get_from_houghlines, merge_lines
 
-cap = cv.VideoCapture(0)
-
-car = Car(
-    motor_left=Motor(speed_pin=33, direction_pin=31, encoder_interrupt_pin=37),
-    motor_right=Motor(speed_pin=32, direction_pin=36, encoder_interrupt_pin=11),
-    speed=20
-)
+cap = None
+car = None
 
 def signal_handler(sig, frame):
     GPIO.cleanup()
@@ -210,4 +205,10 @@ async def start():
     )
 
 if __name__ == "__main__":
+    cap = cv.VideoCapture(0)
+    car = Car(
+        motor_left=Motor(speed_pin=33, direction_pin=31, encoder_interrupt_pin=37),
+        motor_right=Motor(speed_pin=32, direction_pin=36, encoder_interrupt_pin=11),
+        speed=20
+    )
     asyncio.run(start())
