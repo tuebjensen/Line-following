@@ -37,6 +37,6 @@ class VideoStreaming:
             return render_template('index.html')
         
         # Run test server
-        app.run(host='0.0.0.0', debug=True )
+        app.run(host='0.0.0.0', debug=True, threaded=True )
             
 
