@@ -12,6 +12,8 @@ from lib_car import Car
 from lib_motor import Motor
 from lib_process_lines import Line, get_centers_of_parallel_line_pairs, get_from_houghlines, merge_lines
 
+cap = cv.VideoCapture(0)
+
 car = Car(
     motor_left=Motor(speed_pin=33, direction_pin=31, encoder_interrupt_pin=37),
     motor_right=Motor(speed_pin=32, direction_pin=36, encoder_interrupt_pin=11),
@@ -77,13 +79,13 @@ def display_displacement_and_direction_vectors(parallel_line_centers, frame):
     if(len(parallel_line_centers) < 1):
         return
     line = parallel_line_centers[0]
-    displacement_vector = _get_displacement_vector_from_center(line, frame)
+    displacement_vector = get_displacement_vector_from_center(line, frame)
     frame_width = frame.shape[1]
     frame_height = frame.shape[0]
     center_x = frame_width / 2
     center_y = frame_height / 2
     cv.line(frame, (int(center_x), int(center_y)), (int(displacement_vector.x) + int(center_x), int(center_y) - int(displacement_vector.y)), (255,255,0), 2)
-    direction_vector = _get_direction_vector_of_line(line) * 200
+    direction_vector = get_direction_vector_of_line(line) * 200
     cv.line(frame,
         (int(displacement_vector.x) + int(center_x), int(center_y) - int(displacement_vector.y)),
         (int(displacement_vector.x) + int(direction_vector.x) + int(center_x), int(center_y) - int(direction_vector.y) - int(displacement_vector.y)),
@@ -106,7 +108,7 @@ def display_direction_to_go(parallel_line_centers, frame):
 
 def get_frames_for_server():
     guard = True
-    cap = cv.VideoCapture(0)
+
     while cap.isOpened() and guard:
         ret, original_frame = cap.read()
         original_frame = original_frame[:, 30:]
@@ -139,7 +141,6 @@ def get_frames_for_server():
 
 async def process_video():
     guard = True
-    cap = cv.VideoCapture(0)
     img = np.zeros((25, 500, 3), np.uint8)
     #cv.namedWindow('image')
     #cv.createTrackbar('Blur', 'image', 5, 100, nothing)
