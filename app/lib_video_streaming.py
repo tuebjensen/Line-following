@@ -35,7 +35,7 @@ class VideoStreaming:
                         + b'--frame\r\n'
                     ) 
                     await resp.drain()
-                await asyncio.sleep(0.5)   
+                await asyncio.sleep(0.1)   
         loop = asyncio.get_event_loop()
         app = web.Application(loop=loop)
         app.router.add_route('GET', "/", show_image)
