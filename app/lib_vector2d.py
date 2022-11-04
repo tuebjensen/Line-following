@@ -1,3 +1,5 @@
+from math import sqrt
+
 class Vector2D:
     def __init__(self, x: float, y: float) -> 'Vector2D':
         self.x = x
