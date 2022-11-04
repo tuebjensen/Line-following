@@ -27,7 +27,7 @@ class VideoStreaming:
             while True:
                 if self._is_frame_encoded_changed:
                     self._is_frame_encoded_changed = False       
-                    resp.write(
+                    await resp.write(
                         b'--frame\r\n'
                         + b'Content-Type: image/jpeg\r\n\r\n' 
                         + (self._frame_encoded if self._frame_encoded is not None else b'') 
