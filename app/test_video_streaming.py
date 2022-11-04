@@ -16,5 +16,5 @@ async def main():
 
 
 async def start():
-    await asyncio.gather(video.start_running(), main())
+    await asyncio.gather(video.start_running(asyncio, '0.0.0.0', 5000), main())
 asyncio.run(start())
