@@ -24,14 +24,15 @@ class VideoStreaming:
             # The StreamResponse is a FSM. Enter it with a call to prepare.
             await resp.prepare(request)
 
+            await resp.write(b'--frame\r\n')
             while True:
                 if self._is_frame_encoded_changed:
                     self._is_frame_encoded_changed = False       
                     await resp.write(
-                        b'--frame\r\n'
-                        + b'Content-Type: image/jpeg\r\n\r\n' 
+                        b'Content-Type: image/jpeg\r\n\r\n' 
                         + (self._frame_encoded if self._frame_encoded is not None else b'') 
                         + b'\r\n'
+                        + b'--frame\r\n'
                     ) 
                     await resp.drain()
                 await asyncio.sleep(0.5)   
