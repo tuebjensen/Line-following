@@ -72,7 +72,7 @@ def get_centers_of_parallel_line_pairs(lines: 'list[Line]') -> 'list[Line]':
     center_lines: list[Line] = []
     for same_angle_lines in list(parallel_lines.values()):
         if(len(same_angle_lines) != 2):
-            return
+            continue
         center_lines.append(_get_center_line(same_angle_lines[0], same_angle_lines[1]))
     return center_lines
 
