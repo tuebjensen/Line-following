@@ -27,9 +27,6 @@ def process_frame(original_frame):
     original_frame = original_frame[:, 30:]
     #original_frame = cv.flip(original_frame, 1)
     #original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
-    if not ret_read:
-        cap.set(cv.CAP_PROP_POS_FRAMES, 0)
-        return
     
     blur = 3#cv.getTrackbarPos('Blur', 'image')
     block_size = 5#cv.getTrackbarPos('Block size', 'image')
@@ -62,7 +59,10 @@ async def process_video():
         executor = ProcessPoolExecutor()
         while cap.isOpened():
             ret_read, original_frame = cap.read()
-            await loop.run_in_executor(executor, partial(process_frame, original_frame))
+            if ret_read:
+                await loop.run_in_executor(executor, partial(process_frame, original_frame))
+            else:
+                cap.set(cv.CAP_PROP_POS_FRAMES, 0)
         cap.release()
 
 async def start():
