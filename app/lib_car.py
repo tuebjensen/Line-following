@@ -11,6 +11,8 @@ class Car:
         self._motor_right.set_speed(speed)
 
     def set_velocity(self, direction_vector: tuple[float, float]):
+        if direction_vector is None:
+            return
         x, y = direction_vector
         epsilon = 0.1
         #Turn left
