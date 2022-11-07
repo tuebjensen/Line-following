@@ -27,7 +27,7 @@ def process_original_frame(original_frame):
     original_frame = original_frame[:, 30:]
     #original_frame = cv.flip(original_frame, 1)
     #original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
-    
+    direction = None
     blur = 3#cv.getTrackbarPos('Blur', 'image')
     block_size = 5#cv.getTrackbarPos('Block size', 'image')
     c = 3#cv.getTrackbarPos('C', 'image')
@@ -47,11 +47,10 @@ def process_original_frame(original_frame):
             velocity_vector = get_direction_to_go(parallel_line_centers[0], original_frame)
             direction = velocity_vector.y, velocity_vector.x
             #print(str(direction))
-            car.set_velocity(direction)
     
     ret_encode, buffer = cv.imencode('.jpg', original_frame)
     frame_encoded = buffer.tobytes()
-    video.set_frame_encoded(frame_encoded)
+    return frame_encoded, direction
 
 async def process_video():
     with ProcessPoolExecutor() as executor:
@@ -60,7 +59,9 @@ async def process_video():
         while cap.isOpened():
             ret_read, original_frame = cap.read()
             if ret_read:
-                await loop.run_in_executor(executor, partial(process_original_frame, original_frame))
+                frame_encoded, direction = await loop.run_in_executor(executor, partial(process_original_frame, original_frame))
+                video.set_frame_encoded(frame_encoded)
+                car.set_velocity(direction)
             else:
                 cap.set(cv.CAP_PROP_POS_FRAMES, 0)
         cap.release()

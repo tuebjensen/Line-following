@@ -25,7 +25,6 @@ class VideoStreaming:
 
             await resp.write(b'--frame\r\n')
             while True:
-                print('1')
                 if self._is_frame_encoded_changed:
                     self._is_frame_encoded_changed = False       
                     await resp.write(
