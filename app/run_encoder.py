@@ -8,6 +8,9 @@ count = 0
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(encoder_interrupt_pin, GPIO.IN)
 start = time()
+
+print("0")
+
 while True:
     now = time()
     timeout = int(100 - (now - start))
