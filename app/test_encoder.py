@@ -20,7 +20,7 @@ GPIO.setup(36, GPIO.OUT)
 GPIO.setup(11, GPIO.IN)
 pwm = GPIO.PWM(32, 50)
 GPIO.add_event_detect(11, GPIO.FALLING, callback=encoder_callback)
-GPIO.output(36, True)
+GPIO.output(36, False)
 pwm.start(5)
 while count < 960:
     pass
