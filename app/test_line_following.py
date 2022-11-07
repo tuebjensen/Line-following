@@ -58,14 +58,14 @@ async def process_video():
         loop = asyncio.get_running_loop()
         #executor = ProcessPoolExecutor()
         while cap.isOpened():
-            start = perf_counter()
-            ret_read, original_frame = cap.read()
-            stop = perf_counter()
-            print(stop-start, stop, start)
+            ret_read, original_frame = cap.read() # <3ms
             if ret_read:
                 frame_encoded, direction = await loop.run_in_executor(executor, partial(process_original_frame, original_frame))
+                start = perf_counter()
                 video.set_frame_encoded(frame_encoded)
                 car.set_velocity(direction)
+                stop = perf_counter()
+                print(stop - start)
             else:
                 cap.set(cv.CAP_PROP_POS_FRAMES, 0)
         cap.release()
