@@ -3,6 +3,7 @@ from functools import partial
 from concurrent.futures import ProcessPoolExecutor
 from math import asin, atan2, cos, pi, sin, sqrt
 from typing import Tuple
+from time import perf_counter
 import cv2 as cv
 import numpy as np
 import signal
@@ -57,7 +58,10 @@ async def process_video():
         loop = asyncio.get_running_loop()
         #executor = ProcessPoolExecutor()
         while cap.isOpened():
+            start = perf_counter()
             ret_read, original_frame = cap.read()
+            stop = perf_counter()
+            print(stop-start, stop, start)
             if ret_read:
                 frame_encoded, direction = await loop.run_in_executor(executor, partial(process_original_frame, original_frame))
                 video.set_frame_encoded(frame_encoded)
