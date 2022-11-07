@@ -23,7 +23,7 @@ def signal_handler(sig, frame):
     GPIO.cleanup()
     sys.exit(0)
 
-def process_frame(original_frame):
+def process_original_frame(original_frame):
     original_frame = original_frame[:, 30:]
     #original_frame = cv.flip(original_frame, 1)
     #original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
@@ -60,7 +60,7 @@ async def process_video():
         while cap.isOpened():
             ret_read, original_frame = cap.read()
             if ret_read:
-                await loop.run_in_executor(executor, partial(process_frame, original_frame))
+                await loop.run_in_executor(executor, partial(process_original_frame, original_frame))
             else:
                 cap.set(cv.CAP_PROP_POS_FRAMES, 0)
         cap.release()
