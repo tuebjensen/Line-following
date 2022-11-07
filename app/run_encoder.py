@@ -3,7 +3,7 @@ import asyncio
 import sys
 import RPi.GPIO as GPIO
 from time import time
-encoder_interrupt_pin = sys.argv[1]#[int(e) for e in sys.argv[1:2]]
+encoder_interrupt_pin = int(sys.argv[1])#[int(e) for e in sys.argv[1:2]]
 count = 0
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(encoder_interrupt_pin, GPIO.IN)
