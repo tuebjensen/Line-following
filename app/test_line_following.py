@@ -60,7 +60,6 @@ async def process_video():
         while cap.isOpened():
             ret_read, original_frame = cap.read()
             if ret_read:
-                print('1')
                 await loop.run_in_executor(executor, partial(process_original_frame, original_frame))
             else:
                 cap.set(cv.CAP_PROP_POS_FRAMES, 0)
