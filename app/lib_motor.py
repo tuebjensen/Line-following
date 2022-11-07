@@ -2,6 +2,7 @@ from time import time
 import RPi.GPIO as GPIO
 from simple_pid import PID
 import asyncio
+import sys
 
 class Motor:
     def __init__(
@@ -38,9 +39,28 @@ class Motor:
             return
         self._running = True
 
+        async def do_pid():
+            try:
+                # control the speed of the motor
+                while True:
+                    #print("PID", time())
+                    GPIO.output(self._direction_pin, self._forwards)
+                    output = self._pid(self._encoder_interrupt_count)
+                    self._encoder_interrupt_count = 0
+                    self._speed_pwm.ChangeDutyCycle(output if not self._forwards else 100 - output)
+                    await asyncio.sleep(0.1)
+            except RuntimeError:
+                pass
+        
+        async def do_encoder_process():
+            while True:
+                self._encoder_interrupt_count = int((await encoder_process.stdout.readline()).decode('ascii').rstrip())
+
         # setup pins
         GPIO.setup(self._speed_pin, GPIO.OUT)
         GPIO.setup(self._direction_pin, GPIO.OUT)
+
+        encoder_process = await asyncio.create_subprocess_exec(sys.executable, 'run_encoder.py', self._encoder_interrupt_pin)
 
         GPIO.output(self._direction_pin, self._forwards)
 
@@ -58,15 +78,4 @@ class Motor:
 
         # start with a small duty cycle
         self._speed_pwm.start(5 if not self._forwards else 95)
-
-        try:
-            # control the speed of the motor
-            while True:
-                #print("PID", time())
-                GPIO.output(self._direction_pin, self._forwards)
-                output = self._pid(self._encoder_interrupt_count)
-                self._encoder_interrupt_count = 0
-                self._speed_pwm.ChangeDutyCycle(output if not self._forwards else 100 - output)
-                await asyncio.sleep(0.1)
-        except RuntimeError:
-            pass
+        await asyncio.gather(do_pid(), do_encoder_process())
