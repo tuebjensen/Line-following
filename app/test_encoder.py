@@ -14,9 +14,14 @@ def encoder_callback(arg):
     global count
     count += 1
     print(count)
-
 GPIO.setmode(GPIO.BOARD)
+GPIO.setup(32, GPIO.OUT)
 GPIO.setup(11, GPIO.IN)
+pwm = GPIO.PWM(32, 50)
 GPIO.add_event_detect(11, GPIO.FALLING, callback=encoder_callback)
 
+pwm.start(5)
+while count < 960:
+    pass
+pwm.ChangeDutyCycle(0)
 signal.pause()
