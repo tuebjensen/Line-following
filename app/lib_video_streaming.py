@@ -14,7 +14,7 @@ class VideoStreaming:
         if self._is_running:
             return
         self._is_running = True
-
+        print('1')
         async def show_image(request):
             resp = web.StreamResponse(status=200, 
                               reason='OK', 
@@ -38,7 +38,7 @@ class VideoStreaming:
         loop = asyncio.get_event_loop()
         app = web.Application(loop=loop)
         app.router.add_route('GET', "/", show_image)
-
+        print('2')
         return await loop.create_server(app.make_handler(), address, port)
 
         
