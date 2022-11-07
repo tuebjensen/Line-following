@@ -13,15 +13,16 @@ signal.signal(signal.SIGINT, signal_handler)
 def encoder_callback(arg):
     global count
     count += 1
+   
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(32, GPIO.OUT)
 GPIO.setup(36, GPIO.OUT)
 GPIO.setup(11, GPIO.IN)
 pwm = GPIO.PWM(32, 50)
+GPIO.add_event_detect(11, GPIO.FALLING, callback=encoder_callback)
 GPIO.output(36, False)
 pwm.start(10)
 while count < 960:
-    GPIO.wait_for_edge(11, GPIO.FALLING)
-    count += 1
+    pass
 pwm.ChangeDutyCycle(0)
 signal.pause()

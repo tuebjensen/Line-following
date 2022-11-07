@@ -41,7 +41,6 @@ class Motor:
         # setup pins
         GPIO.setup(self._speed_pin, GPIO.OUT)
         GPIO.setup(self._direction_pin, GPIO.OUT)
-        GPIO.setup(self._encoder_interrupt_pin, GPIO.IN)
 
         GPIO.output(self._direction_pin, self._forwards)
 
@@ -54,7 +53,7 @@ class Motor:
 
         self._speed_pwm = GPIO.PWM(self._speed_pin, 50) # 50 Hz
 
-        GPIO.add_event_detect(self._encoder_interrupt_pin, GPIO.FALLING, callback=self._encoder_callback)
+        #GPIO.add_event_detect(self._encoder_interrupt_pin, GPIO.FALLING, callback=self._encoder_callback)
         # (lambda arg: Motor._encoder_callback(self, arg)
 
         # start with a small duty cycle
