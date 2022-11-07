@@ -46,7 +46,7 @@ def process_original_frame(original_frame):
         if parallel_line_centers is not None and len(parallel_line_centers) > 0:
             velocity_vector = get_direction_to_go(parallel_line_centers[0], original_frame)
             direction = velocity_vector.y, velocity_vector.x
-            print(str(direction))
+            #print(str(direction))
             car.set_velocity(direction)
     
     ret_encode, buffer = cv.imencode('.jpg', original_frame)
@@ -56,10 +56,11 @@ def process_original_frame(original_frame):
 async def process_video():
     with ProcessPoolExecutor() as executor:
         loop = asyncio.get_running_loop()
-        executor = ProcessPoolExecutor()
+        #executor = ProcessPoolExecutor()
         while cap.isOpened():
             ret_read, original_frame = cap.read()
             if ret_read:
+                print('1')
                 await loop.run_in_executor(executor, partial(process_original_frame, original_frame))
             else:
                 cap.set(cv.CAP_PROP_POS_FRAMES, 0)
