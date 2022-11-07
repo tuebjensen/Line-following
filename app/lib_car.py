@@ -16,13 +16,13 @@ class Car:
         if direction_vector is None:
             return
         x, y = direction_vector
-        speed_factor = 1 - atan2(y, abs(x)) / (pi / 2)
+        speed_factor = 1 - atan2(y, abs(x)) / (pi / 2) # TODO: Revise: y<0 means speed_factor > 1
         epsilon = 0.1
         if (x, y) == (0, 0):
             self._motor_left.set_speed(0)
             self._motor_right.set_speed(0)
         #Turn left
-        elif x < -epsilon:
+        elif x < -epsilon: 
             self._motor_left.set_speed(self._speed * speed_factor)
             self._motor_right.set_speed(self._speed * speed_factor)
             self._motor_left.set_forwards(False)
