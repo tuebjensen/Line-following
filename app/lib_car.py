@@ -16,7 +16,7 @@ class Car:
         if direction_vector is None:
             return
         x, y = direction_vector
-        speed_factor = atan2(y, abs(x)) / (pi / 2)
+        speed_factor = 1 - atan2(y, abs(x)) / (pi / 2)
         epsilon = 0.1
         if (x, y) == (0, 0):
             self._motor_left.set_speed(0)
