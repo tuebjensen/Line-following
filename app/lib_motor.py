@@ -54,6 +54,7 @@ class Motor:
         
         async def do_encoder_process():
             while True:
+                print('Hi')
                 self._encoder_interrupt_count = int((await encoder_process.stdout.readline()).decode('ascii').rstrip())
                 print(self._encoder_interrupt_count)
 
