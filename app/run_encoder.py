@@ -9,7 +9,7 @@ GPIO.setmode(GPIO.BOARD)
 GPIO.setup(encoder_interrupt_pin, GPIO.IN)
 start = time()
 
-print("0")
+print("0\n")
 
 while True:
     now = time()
