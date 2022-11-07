@@ -15,6 +15,7 @@ while True:
     if timeout <= 0:
         print(str(count))
         start = now
+        count = 0
         continue
 
     ret_wait = GPIO.wait_for_edge(encoder_interrupt_pin, GPIO.FALLING, timeout = timeout)
@@ -24,3 +25,4 @@ while True:
     else:
         print(str(count))
         start = now
+        count = 0
