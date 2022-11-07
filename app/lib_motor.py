@@ -3,7 +3,7 @@ import RPi.GPIO as GPIO
 from simple_pid import PID
 import asyncio
 import sys
-
+import signal
 class Motor:
     def __init__(
         self,
@@ -61,7 +61,7 @@ class Motor:
         GPIO.setup(self._direction_pin, GPIO.OUT)
 
         encoder_process = await asyncio.create_subprocess_exec(sys.executable, 'run_encoder.py', str(self._encoder_interrupt_pin))
-
+        signal.signal(signal.SIGINT, lambda: encoder_process.terminate())
         GPIO.output(self._direction_pin, self._forwards)
 
         # setup PID for the encoder(=input) + dutycycle(=output)        
