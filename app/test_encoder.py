@@ -16,10 +16,11 @@ def encoder_callback(arg):
     print(count)
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(32, GPIO.OUT)
+GPIO.setup(36, GPIO.OUT)
 GPIO.setup(11, GPIO.IN)
 pwm = GPIO.PWM(32, 50)
 GPIO.add_event_detect(11, GPIO.FALLING, callback=encoder_callback)
-
+GPIO.output(36, True)
 pwm.start(5)
 while count < 960:
     pass
