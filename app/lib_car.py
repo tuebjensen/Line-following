@@ -1,5 +1,6 @@
 import asyncio
 from lib_motor import Motor
+from math import atan2, pi
 
 class Car:
     def __init__(self, motor_left: Motor, motor_right: Motor, speed = None):
@@ -15,22 +16,21 @@ class Car:
         if direction_vector is None:
             return
         x, y = direction_vector
+        speed_factor = atan2(y, abs(x)) / (pi / 2)
         epsilon = 0.1
-        speed_factor_left = abs(y + x)
-        speed_factor_right = abs(y - x)
         if (x, y) == (0, 0):
             self._motor_left.set_speed(0)
             self._motor_right.set_speed(0)
         #Turn left
         elif x < -epsilon:
-            self._motor_left.set_speed(self._speed*speed_factor_left)
-            self._motor_right.set_speed(self._speed*speed_factor_right)
+            self._motor_left.set_speed(self._speed * speed_factor)
+            self._motor_right.set_speed(self._speed * speed_factor)
             self._motor_left.set_forwards(False)
             self._motor_right.set_forwards(True)
         #Turn right
         elif x > epsilon or y < 0:
-            self._motor_left.set_speed(self._speed*speed_factor_left)
-            self._motor_right.set_speed(self._speed*speed_factor_right)
+            self._motor_left.set_speed(self._speed * speed_factor)
+            self._motor_right.set_speed(self._speed * speed_factor)
             self._motor_left.set_forwards(True)
             self._motor_right.set_forwards(False)
         #Go straight
