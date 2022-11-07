@@ -13,7 +13,6 @@ class VideoStreaming:
     async def start_running(self, asyncio, address, port):
         if self._is_running:
             return
-        print('1')
         self._is_running = True
 
         async def show_image(request):

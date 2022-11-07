@@ -63,7 +63,7 @@ async def process_video():
                 await loop.run_in_executor(executor, partial(process_original_frame, original_frame))
             else:
                 cap.set(cv.CAP_PROP_POS_FRAMES, 0)
-        cap.release()
+    cap.release()
 
 async def start():
     await asyncio.gather(
