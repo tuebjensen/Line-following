@@ -10,13 +10,13 @@ def signal_handler(sig, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
-def encoder_callback(self, arg):
+def encoder_callback(arg):
     global count
     count += 1
     print(count)
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(11, GPIO.IN)
-GPIO.add_event_detect(11, GPIO.FALLING, callback=encoder_callback())
+GPIO.add_event_detect(11, GPIO.FALLING, callback=encoder_callback)
 
 signal.pause()
