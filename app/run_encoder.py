@@ -3,17 +3,18 @@ import asyncio
 import sys
 import RPi.GPIO as GPIO
 from time import time
+
 encoder_interrupt_pin = int(sys.argv[1])#[int(e) for e in sys.argv[1:2]]
 count = 0
+start = time()
+last_val = False
+
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(encoder_interrupt_pin, GPIO.IN)
-start = time()
-
-print("0\n")
 
 while True:
     now = time()
-    timeout = int(100 - (now - start))
+    timeout = int(100 - (now - start) * 1000)
     
     if timeout <= 0:
         print(str(count))
@@ -21,11 +22,6 @@ while True:
         count = 0
         continue
 
-    ret_wait = GPIO.wait_for_edge(encoder_interrupt_pin, GPIO.FALLING, timeout = 100)
-    
-    if ret_wait is not None:
+    if GPIO.input(encoder_interrupt_pin) != last_val:
+        last_val = not last_val
         count += 1
-    else:
-        print(str(count))
-        start = now
-        count = 0
