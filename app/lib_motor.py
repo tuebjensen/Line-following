@@ -54,10 +54,9 @@ class Motor:
         
         async def do_encoder_process():
             while True:
-                print(0)
-                #output = await encoder_process.stdout.readline()
-                #self._encoder_interrupt_count = int((output).decode('ascii').rstrip())
-                #print(self._encoder_interrupt_count)
+                output = await encoder_process.stdout.readline()
+                self._encoder_interrupt_count = int((output).decode('ascii').rstrip())
+                print(self._encoder_interrupt_count)
                 await asyncio.sleep(0.1)
 
         def signal_handler(sig, frame):
