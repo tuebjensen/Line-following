@@ -2,7 +2,7 @@ from lib_motor import Motor
 import asyncio
 import sys
 import RPi.GPIO as GPIO
-from time import time
+from time import sleep
 
 encoder_interrupt_pin = int(sys.argv[1])#[int(e) for e in sys.argv[1:2]]
 count = 0
@@ -12,16 +12,11 @@ last_val = False
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(encoder_interrupt_pin, GPIO.IN)
 
+def callback ():
+    count += 1
+
+GPIO.add_event_detect(encoder_interrupt_pin, GPIO.FALLING, callback)
+
 while True:
     now = time()
-    timeout = int(100 - (now - start) * 1000)
-    
-    if timeout <= 0:
-        print(str(count), flush=True)
-        start = now
-        count = 0
-        continue
-
-    if GPIO.input(encoder_interrupt_pin) != last_val:
-        last_val = not last_val
-        count += 1
+    sleep(0.1)
