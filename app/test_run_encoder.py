@@ -12,7 +12,7 @@ async def run_encoder ():
         print('hello')
         try:
             line = await asyncio.wait_for(encoder_process.stdout.readline(), 1)
-        except TimeoutError:
+        except asyncio.exceptions.TimeoutError:
             pass
         sys.stdout.write('hoy\n')
         print('hoy')
