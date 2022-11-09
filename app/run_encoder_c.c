@@ -22,7 +22,7 @@ Run as follows:
 
 // Use GPIO Pin 17, which is Pin 0 for wiringPi library
 
-#define BUTTON_PIN 11
+#define BUTTON_PIN 0
 
 
 // the event counter 
