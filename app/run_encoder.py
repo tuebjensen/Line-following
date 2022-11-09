@@ -18,11 +18,11 @@ while True:
         count = 0
         continue
 
-    ret_wait = GPIO.wait_for_edge(encoder_interrupt_pin, GPIO.FALLING, timeout = 100)
+    ret_wait = GPIO.wait_for_edge(encoder_interrupt_pin, GPIO.FALLING, timeout = timeout)
     
     if ret_wait is not None:
         count += 1
     else:
         print(str(count))
-        start = now
+        start = time()
         count = 0
