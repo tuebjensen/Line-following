@@ -66,7 +66,7 @@ class Motor:
         GPIO.setup(self._direction_pin, GPIO.OUT)
 
         encoder_process = await asyncio.create_subprocess_exec(
-            sys.executable, 'run_encoder', str(self._encoder_interrupt_wiring_pi_pin),
+            os.path.join(os.path.dirname(__file__), 'run_encoder'), str(self._encoder_interrupt_wiring_pi_pin),
             stdout = asyncio.subprocess.PIPE,
             stderr = asyncio.subprocess.STDOUT,
             stdin = asyncio.subprocess.DEVNULL
