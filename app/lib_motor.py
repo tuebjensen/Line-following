@@ -54,15 +54,15 @@ class Motor:
         
         async def do_encoder_process():
             while True:
-                output = await encoder_process.stdout.readline()
-                outputStr = output.decode('ascii').rstrip()
-                if (outputStr.isdigit() and len(outputStr) > 0):
-                    self._encoder_interrupt_count = int(outputStr)
-                    print(self._encoder_interrupt_count)
-                await asyncio.sleep(0)
+                try:
+                    output = await encoder_process.stdout.readline()
+                    outputStr = output.decode('ascii').rstrip()
+                    if (outputStr.isdigit() and len(outputStr) > 0):
+                        self._encoder_interrupt_count = int(outputStr)
+                    await asyncio.sleep(0)
+                except ProcessLookupError:
+                    pass
 
-        def signal_handler(sig, frame):
-            encoder_process.kill()
         # setup pins
         GPIO.setup(self._speed_pin, GPIO.OUT)
         GPIO.setup(self._direction_pin, GPIO.OUT)
@@ -73,7 +73,6 @@ class Motor:
             stderr = asyncio.subprocess.STDOUT,
             stdin = asyncio.subprocess.DEVNULL
         )
-        signal.signal(signal.SIGINT, signal_handler)
         GPIO.output(self._direction_pin, self._forwards)
 
         # setup PID for the encoder(=input) + dutycycle(=output)        
