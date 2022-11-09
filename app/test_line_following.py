@@ -83,8 +83,8 @@ if __name__ == "__main__":
 
     cap = cv.VideoCapture(0)
     car = Car(
-        motor_left=Motor(speed_pin=33, direction_pin=31, encoder_interrupt_pin=37),
-        motor_right=Motor(speed_pin=32, direction_pin=36, encoder_interrupt_pin=11),
+        motor_left=Motor(speed_pin=33, direction_pin=31, encoder_interrupt_wiring_pi_pin=25),
+        motor_right=Motor(speed_pin=32, direction_pin=36, encoder_interrupt_wiring_pi_pin=0),
         speed=20
     )
     asyncio.run(start())

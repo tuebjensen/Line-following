@@ -9,13 +9,13 @@ class Motor:
         self,
         speed_pin: int,
         direction_pin: int,
-        encoder_interrupt_pin: int,
+        encoder_interrupt_wiring_pi_pin: int,
         speed: int = 20,
         forwards: bool = True
     ):
         self._speed_pin = speed_pin
         self._direction_pin = direction_pin
-        self._encoder_interrupt_pin = encoder_interrupt_pin
+        self._encoder_interrupt_wiring_pi_pin = encoder_interrupt_wiring_pi_pin
         self._encoder_interrupt_count = 0
         self._speed = speed
         self._forwards = forwards
@@ -56,7 +56,6 @@ class Motor:
                     outputStr = output.decode('ascii').rstrip()
                     if (outputStr.isdigit() and len(outputStr) > 0):
                         self._encoder_interrupt_count = int(outputStr)
-                        print(outputStr)
                     await asyncio.sleep(0)
                 except ProcessLookupError:
                     pass
@@ -66,7 +65,7 @@ class Motor:
         GPIO.setup(self._direction_pin, GPIO.OUT)
 
         encoder_process = await asyncio.create_subprocess_exec(
-            sys.executable, 'run_encoder', str(self._encoder_interrupt_pin),
+            sys.executable, 'run_encoder', str(self._encoder_interrupt_wiring_pi_pin),
             stdout = asyncio.subprocess.PIPE,
             stderr = asyncio.subprocess.STDOUT,
             stdin = asyncio.subprocess.DEVNULL
