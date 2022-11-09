@@ -42,7 +42,11 @@ class Motor:
         async def do_pid():
             try:
                 # control the speed of the motor
+                tim = time()
                 while True:
+                    new_tim = time()
+                    print(new_tim - tim)
+                    tim = new_tim
                     #print("PID", time())
                     GPIO.output(self._direction_pin, self._forwards)
                     output = self._pid(self._encoder_interrupt_count)
