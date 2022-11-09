@@ -22,9 +22,6 @@ class Motor:
         self._running = False
         self._pid = None
 
-    def _encoder_callback(self, arg):
-        self._encoder_interrupt_count += 1
-
     def set_speed(self, speed):
         if self._pid is not None:
             self._pid.setpoint = speed
@@ -44,7 +41,6 @@ class Motor:
                 # control the speed of the motor
                 while True:
                     #print("PID", time())
-                    print(self._encoder_interrupt_count)
                     GPIO.output(self._direction_pin, self._forwards)
                     output = self._pid(self._encoder_interrupt_count)
                     self._encoder_interrupt_count = 0
@@ -60,6 +56,7 @@ class Motor:
                     outputStr = output.decode('ascii').rstrip()
                     if (outputStr.isdigit() and len(outputStr) > 0):
                         self._encoder_interrupt_count = int(outputStr)
+                        print(outputStr)
                     await asyncio.sleep(0)
                 except ProcessLookupError:
                     pass
@@ -84,9 +81,6 @@ class Motor:
         self._pid = pid
 
         self._speed_pwm = GPIO.PWM(self._speed_pin, 50) # 50 Hz
-
-        #GPIO.add_event_detect(self._encoder_interrupt_pin, GPIO.FALLING, callback=self._encoder_callback)
-        # (lambda arg: Motor._encoder_callback(self, arg)
 
         # start with a small duty cycle
         self._speed_pwm.start(5 if not self._forwards else 95)
