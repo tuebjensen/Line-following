@@ -12,7 +12,7 @@ async def run_encoder ():
         print('hello')
         try:
             line = await asyncio.wait_for(encoder_process.stdout.readline(), 1)
-            print('success')
+            print(line.decode('ascii').rstip())
         except asyncio.TimeoutError:
             pass
         print('hoy')
