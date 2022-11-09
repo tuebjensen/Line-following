@@ -11,7 +11,7 @@ async def run_encoder ():
     while True:
         try:
             line = await asyncio.wait_for(encoder_process.stdout.readline(), 1)
-            print(line.decode('ascii').rstrip())
+            print(line)
         except asyncio.TimeoutError:
             pass
 
