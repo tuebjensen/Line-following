@@ -10,7 +10,7 @@ async def run_encoder ():
     )
     while True:
         print('hello')
-        line = await asyncio.wait_for(encoder_process.stdout.readline(), 100)
+        line = await asyncio.wait_for(encoder_process.stdout.readline(), 1)
         sys.stdout.write('hoy\n')
         print('hoy')
 
