@@ -16,7 +16,7 @@ GPIO.setmode(GPIO.BOARD)
 car = Car(
     motor_left=Motor(speed_pin=33, direction_pin=31, encoder_interrupt_pin=37),
     motor_right=Motor(speed_pin=32, direction_pin=36, encoder_interrupt_pin=11),
-    speed=20
+    speed=40
 )
 async def main():
     for i in range(10):
