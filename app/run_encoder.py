@@ -21,7 +21,6 @@ while True:
         count = 0
         continue
 
-    print("0")
     ret_wait = GPIO.wait_for_edge(encoder_interrupt_pin, GPIO.FALLING, timeout = 100)
     
     if ret_wait is not None:
