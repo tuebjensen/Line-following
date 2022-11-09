@@ -1,4 +1,5 @@
 import asyncio
+import sys
 
 async def run_encoder ():
     encoder_process = await asyncio.create_subprocess_exec(
