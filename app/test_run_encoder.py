@@ -11,8 +11,9 @@ async def run_encoder ():
     while True:
         print('hello')
         try:
-            line = await asyncio.wait_for(encoder_process.stdout.readline(), 1)
-        except asyncio.exceptions.TimeoutError:
+            async with asyncio.timeout(1):
+                await encoder_process.stdout.readline()
+        except TimeoutError:
             pass
         sys.stdout.write('hoy\n')
         print('hoy')
