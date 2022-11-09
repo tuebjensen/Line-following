@@ -72,6 +72,7 @@ class Motor:
             stderr = asyncio.subprocess.STDOUT,
             stdin=asyncio.subprocess.DEVNULL
         )
+        await encoder_process.stdin.drain()
         signal.signal(signal.SIGINT, signal_handler)
         GPIO.output(self._direction_pin, self._forwards)
 
