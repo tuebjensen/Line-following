@@ -15,7 +15,7 @@ Compile as follows:
 #include <wiringPi.h>
 
 // the event counter 
-volatile uint8_t eventCounter = 0;
+volatile int eventCounter = 0;
 
 void ISR() {
    eventCounter++;
