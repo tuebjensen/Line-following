@@ -56,7 +56,7 @@ class Motor:
             while True:
                 output = await encoder_process.stdout.readline()
                 outputStr = output.decode('ascii').rstrip()
-                if (outputStr.isdigit()):
+                if (outputStr.isdigit() and len(outputStr) > 0):
                     self._encoder_interrupt_count = int(outputStr)
                     print(self._encoder_interrupt_count)
 
