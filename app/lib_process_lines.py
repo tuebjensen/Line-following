@@ -1,9 +1,9 @@
 from math import cos, pi, sin, tan
 from statistics import median
-from typing import Union
+import numpy as np
 
 BOX_SIZE= 20
-PIXELS_THRESHOLD = 2*BOX_SIZE*0.75
+PIXELS_THRESHOLD = 2*BOX_SIZE*0.5
 MIN_LINE_SEGMENT_SIZE = 4
 MIN_LINE_SEGMENT_HOLE_SIZE = 4
 
@@ -17,7 +17,8 @@ class Line:
 
     def is_similar(self, to_compare: 'Line') -> bool:
         return (abs(self.rho - to_compare.rho) < self._rho_diff_threshold 
-                and abs(self.theta - to_compare.theta) < self._theta_diff_threshold)
+                and (abs(self.theta - to_compare.theta) < self._theta_diff_threshold
+                or abs(self.theta - to_compare.theta) > pi - self._theta_diff_threshold))
 
 class LineSegment:
     def __init__(self, start_point: 'tuple[int, int]', end_point: 'tuple[int, int]') -> 'LineSegment':
@@ -35,6 +36,7 @@ def get_from_houghlines(hough_lines) -> 'list[Line]':
     return lines
 
 
+# probably could be better at not making duplicate lines
 def merge_lines(lines: 'list[Line]') -> 'list[Line]':
     similar_lines: dict[Line, list[Line]] = {}
     for line in lines:
@@ -63,6 +65,7 @@ def get_tape_corner_line_segments_please(merged_lines: 'list[Line]', edges) -> '
         lines_segments[line] = _get_line_segments_please(filtered_markers, box_centers)
     return lines_segments
 
+
 def _get_box_centers_please(line:'Line', edges) -> 'list[tuple[int,int]]':
     box_centers = []
     max_x = edges.shape[1]
@@ -83,8 +86,10 @@ def _get_box_centers_please(line:'Line', edges) -> 'list[tuple[int,int]]':
             box_centers.append((x, y))
     return box_centers
 
+
 def _is_line_more_horizontal_please(line:'Line') -> bool:
     return line.theta >= pi/4 and line.theta <= 3*pi/4
+
 
 def _get_white_pixels_per_box_please(box_centers: 'list[tuple[int,int]]', edges) -> 'list[int]':
     max_x = edges.shape[1]
@@ -102,6 +107,7 @@ def _get_white_pixels_per_box_please(box_centers: 'list[tuple[int,int]]', edges)
         pixels_per_box.append(pixels_count)
     return pixels_per_box
 
+
 def _get_tape_markers_please(white_pixels_per_box: 'list[int]'):
     return [pixel_count > PIXELS_THRESHOLD for pixel_count in white_pixels_per_box]
 
@@ -111,6 +117,8 @@ def _get_filtered_markers_please(tape_markers):
     filtered_markers = _filter_small_segments(filtered_markers)
     return filtered_markers
 
+
+# TODO: probably don't need to fill up so aggressively, should rewrite
 def _fill_gaps(tape_markers):
     look_forward_amount = MIN_LINE_SEGMENT_HOLE_SIZE - 1
     gap_filled_markers = tape_markers.copy()
@@ -140,6 +148,7 @@ def _fill_gaps(tape_markers):
                 i = end_index - 1 # -1 because incrementing is the first step of the loop
     return gap_filled_markers
 
+
 def _filter_small_segments(gap_filled_markers):
     filtered_markers = gap_filled_markers.copy()
     i = 0
@@ -148,6 +157,7 @@ def _filter_small_segments(gap_filled_markers):
         _filter_segment_if_too_small(filtered_markers, start, end)
         i = i+1 if end is None else end
     return filtered_markers
+
 
 def _get_next_segments_indices(markers: 'list[bool]', start_from: int) -> 'tuple[int, int]':
     segment_started = False
@@ -163,9 +173,11 @@ def _get_next_segments_indices(markers: 'list[bool]', start_from: int) -> 'tuple
             break
     return start_index, end_index or (None if start_index is None else len(markers) - 1)
 
+
 def _filter_segment_if_too_small(markers, segment_start, segment_end):
     if segment_start != None and segment_end - segment_start < MIN_LINE_SEGMENT_SIZE:
         markers[segment_start : segment_end + 1] = [False] * (segment_end - segment_start + 1)
+
 
 def _get_line_segments_please(markers, centers):
     line_segments = []
@@ -178,6 +190,96 @@ def _get_line_segments_please(markers, centers):
             line_segments.append(LineSegment((start_x, start_y), (end_x, end_y)))
         search_from = None if end is None else end + 1
     return line_segments
+
+
+def get_tape_paths(center_lines: 'list[Line]', tape_segments: 'list[LineSegment]', frame) -> 'list[LineSegment]':
+    if(len(center_lines) != 2 ):
+        return
+    intersection_point = _get_intersection_point(center_lines[0], center_lines[1])
+    center_line_segments = _segment_center_lines(center_lines, intersection_point, frame)
+    tape_paths = _get_valid_center_line_segments(center_line_segments, tape_segments)
+    return tape_paths
+
+
+def _get_intersection_point(line_one: 'Line', line_two: 'Line'):
+    """Finds the intersection of two lines given in Hesse normal form.
+
+    Returns closest integer pixel locations.
+    See https://stackoverflow.com/a/383527/5087436
+    """
+    rho1, theta1 = line_one.rho, line_one.theta
+    rho2, theta2 = line_two.rho, line_two.theta
+    A = np.array([
+        [np.cos(theta1), np.sin(theta1)],
+        [np.cos(theta2), np.sin(theta2)]
+    ])
+    b = np.array([[rho1], [rho2]])
+    x0, y0 = np.linalg.solve(A, b)
+    x0, y0 = int(np.round(x0)), int(np.round(y0))
+    return (x0, y0)
+
+
+def _segment_center_lines(center_lines, intersection_point, frame):
+    center_line_segments = []
+    for center_line in center_lines:
+        frame_intersection_points = _get_line_frame_intersection_points(center_line, frame)
+        for frame_intersection_point in frame_intersection_points:
+            center_line_segments.append(LineSegment(intersection_point, frame_intersection_point))
+    return center_line_segments
+
+
+def _get_line_frame_intersection_points(line, frame):
+    max_x = int(frame.shape[1] - 1)
+    max_y = int(frame.shape[0] - 1)
+    rho, theta = line.rho, line.theta
+    x_intercept = int(rho*cos(theta) - rho*sin(theta)/tan(theta - pi/2))
+    y_intercept = int(rho*sin(theta) - rho*cos(theta)*tan(theta - pi/2))
+    possible_frame_intersection_points = [
+        (0, y_intercept),
+        (max_x, int(tan(theta - pi/2)*max_x + y_intercept)),
+        (x_intercept, 0),
+        (int(1/tan(theta - pi/2)*max_y + x_intercept), max_y)
+    ]
+    return _filter_out_of_frame(possible_frame_intersection_points, max_x, max_y)
+
+
+def _filter_out_of_frame(possible_frame_intersection_points, max_x, max_y):
+    filtered_points = []
+    for possible_point in possible_frame_intersection_points:
+        x, y = possible_point
+        if x >= 0 and x <= max_x and y >= 0 and y <= max_y:
+            filtered_points.append(possible_point)
+    return filtered_points
+
+
+def _get_valid_center_line_segments(center_line_segments, tape_segments):
+    valid_center_line_segments = []
+    for center_line_segment in center_line_segments:
+        valid = True
+        for tape_segment in tape_segments:
+            if _are_segments_intersecting(center_line_segment, tape_segment):
+                valid = False
+        if valid:
+            valid_center_line_segments.append(center_line_segment)
+    return valid_center_line_segments
+
+
+def _are_segments_intersecting(segment_one, segment_two):
+    A, B = segment_one.start_point, segment_one.end_point
+    C, D = segment_two.start_point, segment_two.end_point
+    return _intersect(A, B, C, D)
+
+# https://stackoverflow.com/a/9997374
+def _ccw(A,B,C):
+    Ax, Ay = A
+    Bx, By = B
+    Cx, Cy = C
+    return (Cy-Ay) * (Bx-Ax) > (By-Ay) * (Cx-Ax)
+
+# Return true if line segments AB and CD intersect
+def _intersect(A,B,C,D):
+    return _ccw(A,C,D) != _ccw(B,C,D) and _ccw(A,B,C) != _ccw(A,B,D)
+# https://stackoverflow.com/a/9997374
 
 
 def _get_median_line(lines: 'list[Line]') -> 'Line':

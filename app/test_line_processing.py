@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
 from typing import Tuple
-from lib_process_lines import Line, BOX_SIZE, _get_box_centers_please, get_centers_of_parallel_line_pairs, get_from_houghlines, get_tape_corner_line_segments_please, merge_lines
+from lib_process_lines import Line, BOX_SIZE, get_tape_paths, _get_box_centers_please, get_centers_of_parallel_line_pairs, get_from_houghlines, get_tape_corner_line_segments_please, merge_lines
 from lib_calculate_direction import get_direction_to_go, get_direction_vector_of_line, get_displacement_vector_from_center
 
 
@@ -57,8 +57,17 @@ def display_merged_lines_segments(merged_lines_segments, frame):
     for i in range(len(merged_lines)):
         line_segments = merged_lines_segments[merged_lines[i]]
         for j in range(len(line_segments)):
-            color = ((255-255/len(merged_lines)*i, 255-255/len(merged_lines)*i,0))
+            color = (0, (255 - 255/len(merged_lines)*i) / 2, 255-255/len(merged_lines)*i)
             cv.line(frame, (line_segments[j].start_point[0],line_segments[j].start_point[1]), (line_segments[j].end_point[0],line_segments[j].end_point[1]), color, 2)
+
+
+def display_tape_paths(tape_paths, frame):
+    if tape_paths is None:
+        return
+    for i in range(len(tape_paths)):
+        tape_path = tape_paths[i]
+        color = (255-255/len(tape_paths)*i, 0, 255-255/len(tape_paths)*i)
+        cv.line(frame, (tape_path.start_point[0], tape_path.start_point[1]), (tape_path.end_point[0], tape_path.end_point[1]), color, 2)
 
 
 def display_all_lines(lines: 'list[Line]', frame):
@@ -144,11 +153,14 @@ def process_video():
             merged_lines = merge_lines(lines)
             merged_lines_segments = get_tape_corner_line_segments_please(merged_lines, edges)
             parallel_line_centers = get_centers_of_parallel_line_pairs(merged_lines)
+            tape_segments = [x for l in list(merged_lines_segments.values()) for x in l]
+            tape_paths = get_tape_paths(parallel_line_centers, tape_segments, original_frame)
             display_all_lines(lines, original_frame)
             display_merged_parallel_lines(merged_lines, original_frame)
             display_boxes_around_merged_lines(merged_lines, original_frame, edges)
             display_merged_lines_segments(merged_lines_segments, original_frame)
             display_center_of_parallel_lines(parallel_line_centers, original_frame)
+            display_tape_paths(tape_paths, original_frame)
             display_displacement_and_direction_vectors(parallel_line_centers, original_frame)
             display_direction_to_go(parallel_line_centers, original_frame)
 
