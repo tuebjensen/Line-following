@@ -9,11 +9,10 @@ async def run_encoder ():
         stdin = asyncio.subprocess.DEVNULL
     )
     while True:
-        print('hello')
         try:
             line = await asyncio.wait_for(encoder_process.stdout.readline(), 1)
+            print(line.decode('ascii').rstip())
         except asyncio.TimeoutError:
             pass
-        print('hoy')
 
 asyncio.run(run_encoder())
