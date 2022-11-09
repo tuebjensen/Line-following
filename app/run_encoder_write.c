@@ -65,7 +65,7 @@ int main(int argvc, char *argv[]) {
 
   // display counter value every now and then
   while (1) {
-    int currEventCount = eventCounter
+    int currEventCount = eventCounter;
     write(1, &currEventCount, sizeof(int));
     eventCounter = 0;
     delay(100);
