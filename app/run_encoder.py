@@ -17,7 +17,7 @@ while True:
     timeout = int(100 - (now - start) * 1000)
     
     if timeout <= 0:
-        sys.stdout.write(str(count) + '\n')
+        print(str(count), flush=True)
         start = now
         count = 0
         continue
