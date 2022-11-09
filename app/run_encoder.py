@@ -13,9 +13,10 @@ GPIO.setmode(GPIO.BOARD)
 GPIO.setup(encoder_interrupt_pin, GPIO.IN)
 
 def callback ():
+    global count
     count += 1
 
-GPIO.add_event_detect(encoder_interrupt_pin, GPIO.FALLING, callback)
+GPIO.add_event_detect(encoder_interrupt_pin, GPIO.FALLING, callback=callback)
 
 while True:
     now = time()
