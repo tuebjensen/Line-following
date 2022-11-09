@@ -69,9 +69,8 @@ class Motor:
             sys.executable, 'run_encoder.py', str(self._encoder_interrupt_pin),
             stdout = asyncio.subprocess.PIPE,
             stderr = asyncio.subprocess.STDOUT,
-            stdin=asyncio.subprocess.PIPE
+            stdin=asyncio.subprocess.DEVNULL
         )
-        await encoder_process.stdin.drain()
         signal.signal(signal.SIGINT, signal_handler)
         GPIO.output(self._direction_pin, self._forwards)
 
