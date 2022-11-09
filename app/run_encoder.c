@@ -57,7 +57,7 @@ int main(int argvc, char *argv[]) {
   }
 
   // setup interrupt on the given pin
-  if (wiringPiISR (pin, INT_EDGE_FALLING, &myInterrupt) < 0) {
+  if (wiringPiISR (pin, INT_EDGE_FALLING, &ISR) < 0) {
       fprintf(stderr, "Unable to setup ISR: %s\n", strerror (errno));
       return 1;
   }
