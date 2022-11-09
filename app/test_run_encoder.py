@@ -3,7 +3,7 @@ import sys
 
 async def run_encoder ():
     encoder_process = await asyncio.create_subprocess_exec(
-        sys.executable, 'run_encoder', '0',
+        os.path.join(os.path.dirname(__file__), 'run_encoder'), '0',
         stdout = asyncio.subprocess.PIPE,
         stderr = asyncio.subprocess.DEVNULL,
         stdin = asyncio.subprocess.DEVNULL
