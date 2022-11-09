@@ -19,5 +19,6 @@ def callback ():
 GPIO.add_event_detect(encoder_interrupt_pin, GPIO.FALLING, callback=callback)
 
 while True:
-    now = time()
     sleep(0.1)
+    print(count, flush=True)
+    count = 0
