@@ -19,14 +19,8 @@ car = Car(
     speed=20
 )
 async def main():
-    for i in range(3):
+    for i in range(10):
         direction = (0.05, 0.9)#cos(2 * pi / 50 * i), sin(2 * pi / 50 * i)
-        car.set_velocity(direction)
-        await asyncio.sleep(3)
-        direction = (-0.15, 0.9)#cos(2 * pi / 50 * i), sin(2 * pi / 50 * i)
-        car.set_velocity(direction)
-        await asyncio.sleep(3)
-        direction = (-0.05, -0.9)#cos(2 * pi / 50 * i), sin(2 * pi / 50 * i)
         car.set_velocity(direction)
         await asyncio.sleep(3)
 
