@@ -65,6 +65,7 @@ int main(int argvc, char *argv[]) {
   // display counter value every now and then
   while (1) {
     fprintf(stdout, "%d\n", eventCounter);
+    fflush(stdout);
     eventCounter = 0;
     delay(100);
   }
