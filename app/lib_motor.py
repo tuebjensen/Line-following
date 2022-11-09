@@ -59,6 +59,7 @@ class Motor:
                 if (outputStr.isdigit() and len(outputStr) > 0):
                     self._encoder_interrupt_count = int(outputStr)
                     print(self._encoder_interrupt_count)
+                await asyncio.sleep(0)
 
         def signal_handler(sig, frame):
             encoder_process.kill()
