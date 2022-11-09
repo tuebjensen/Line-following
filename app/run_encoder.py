@@ -14,6 +14,7 @@ while True:
     timeout = int(100 - (now - start) * 1000)
     
     if timeout <= 0:
+        print(str(count), flush=True)
         start = now
         count = 0
         continue
@@ -23,6 +24,6 @@ while True:
     if ret_wait is not None:
         count += 1
     else:
-        print(str(count))
+        print(str(count), flush=True)
         start = time()
         count = 0
