@@ -32,11 +32,12 @@
         border: 1px solid grey;
         border-radius: 4px;
     }
+    .node:hover {
+        opacity: 0.8;
+        cursor: pointer;
+    }
     text {
         fill: white;
-        font-size: 8px;
-    }
-    text.central {
         font-size: 14px;
     }
     line {
@@ -72,8 +73,8 @@
 
 <section class="container">
     <h2>Update the map</h2>
-    <form>
-        <textarea></textarea>
+    <form id="map-update-form">
+        <textarea id="map-input"></textarea>
         <p>
             <button>Update</button>
         </p>
@@ -86,212 +87,257 @@
 <script type="module">
     import * as d3 from 'https://cdn.skypack.dev/pin/d3@v7.6.1-1Q0NZ0WZnbYeSjDusJT3/mode=imports,min/optimized/d3.js'
     import forceBoundary from 'https://cdn.skypack.dev/-/d3-force-boundary@v0.0.3-IAIjk85RWFsumozhSBoe/dist=es2019,mode=imports/optimized/d3-force-boundary.js'
+    import { BehaviorSubject, fromEvent, Observable, concatWith, mergeMap, switchMap, of, tap, throwError, retry, map, filter, merge, share, combineLatest } from 'https://cdn.skypack.dev/pin/rxjs@v7.5.7-j3yWv9lQY9gNeD9CyX5Y/mode=imports,min/optimized/rxjs.js'
+    //import {  } from 'https://cdn.skypack.dev/pin/rxjs@v7.5.7-j3yWv9lQY9gNeD9CyX5Y/mode=imports,min/optimized/rxjs/operators.js'
 
-    // A simplified implementation of RxJs's BehaviorSubject.
-    class BehaviorSubject {
-        listeners = new Set()
-        constructor (value) {
-            super()
-            this._value = value
+    // Handle WebSocket streams
+    const { clientState$, serverState$, updateClientState } = (function(){
+
+        /**
+         * The stream of websockets.
+         * A new socket is created every time a socket closes or errors.
+         */
+        const socket$ = new Observable((subscriber) => {
+            subscriber.next(
+                new WebSocket('ws://' + location.host + '/ws')
+            )
+        }).pipe(
+            switchMap(socket => merge(
+                // emit the socket when it becomes open
+                fromEvent(socket, 'open').pipe(
+                    () => socket),
+                // on the first error, emit null, close the socket, and then throw an error
+                fromEvent(socket, 'error').pipe(
+                    first(),
+                    mergeMap(() =>
+                        of(null).pipe(
+                            tap(() => {
+                                socket.close()
+                            })),
+                            concatWith(
+                                throwError(() => new Error('WebSocket stream either closed or had an error!'))))),
+                // emit null if the socket is closed
+                fromEvent(socket, 'close').pipe(
+                    () => null))),
+            retry({
+                delay: 3000
+            }),
+            share())
+    
+        /**
+         * Stream of parsed messages coming from the sockets.
+         */
+        const message$ = socket$.pipe(
+            mergeMap(socket => fromEvent(socket, 'message')),
+            map(JSON.parse),
+            share())
+
+        /**
+         * Stream which includes updates coming from the sockets targeting both client and server states.
+         * The stream normally outputs
+         *   1. Right after the connection has been made
+         *   2. When the connection closes
+         */
+        const fullStateUpdate$ = merge(
+            message$.pipe(
+                filter(({ type, data }) => type === 'full-state-update'),
+                map(message => message.data)),
+            socket$.pipe(
+                filter(socket => socket === null),
+                map(() => ({
+                    clientState: null,
+                    serverState: null
+                })))
+        ).pipe(
+            share())
+
+        /**
+         * Stream which includes updates coming from the sockets targeting the server state.
+         * The stream outputs often, e.g. when the Raspberry Pi leaves a node.
+         * Outputs null when the socket is closed.
+         */
+        const serverStateUpdate$ = merge(
+            fullStateUpdate$.pipe(
+                map(data => data.serverState)),
+            message$.pipe(
+                filter(message => message.type === 'server-state-update'),
+                map(message => message.data))
+        ).pipe(
+            share())
+
+        /**
+         * Stream which includes updates coming from the sockets targeting the client state. 
+         */
+        const clientStateUpdate$ = merge(
+            fullStateUpdate$.pipe(
+                map(data => data.clientState)
+            )
+        ).pipe(
+            share())
+
+        // make it possible for the client to emit new client state
+        const clientStateSubject$ = new BehaviorSubject()
+        function updateClientState (clientState) {
+            clientStateSubject$.next(clientState)
         }
-        get value () {
-            return this._value
+
+        // if the client emits new states, send them to the server
+        combineLatest([
+            clientStateSubject$,
+            socket$
+        ]).subscribe(([clientState, socket]) => {
+            socket?.send(clientState)
+        })
+
+        const clientState$ = merge(
+            clientStateSubject$,
+            clientStateUpdate$
+        )
+
+        return {
+            updateClientState,
+            clientState$,
+            serverState$: serverStateUpdate$
         }
-        next (value) {
-            this._value = value
-            for (const listener of this.listeners) {
-                listener(value)
+    })()
+
+    // Setup D3 & the graph visualization.
+    ;(function() {
+
+        // one time setup
+        const nodeRadius = 20
+        const nodeDistance = 50
+    
+        const svg = d3.select('svg')
+        
+        const simulation = d3
+            .forceSimulation()
+            .force('charge', d3.forceManyBody().strength(-100))
+            .force('top', d3.forceY(0)
+                .strength(node => !node.n ? 0.1 : 0))
+            .force('left', d3.forceX(0)
+                .strength(node => !node.w ? 0.1 : 0))        
+    
+
+        // setup when user updates the map
+        function updateLinks (links) {
+            const graph = {
+                nodes: [],
+                links
             }
-        }
-        subscribe (listener) {
-            this.listeners.add(listener)
-            listener(this._value)
-            return {
-                unsubscribe: () => {
-                    this.listeners.delete(listener)
+    
+            // build graph nodes based on the links
+            for (const { source, sourcePoint, target } of graph.links.flatMap(link => [
+                link,
+                {
+                    source: link.target,
+                    sourcePoint: link.targetPoint,
+                    target: link.source,
+                    targetPoint: link.sourcePoint
                 }
-            }
-        }
-    }
-
-    // Connect to Websocket and manage the state subject
-    const state = new BehaviorSubject(null)
-
-    function connectToWebsocket () {
-        const socket = new WebSocket('ws://' + location.host + '/ws')
-
-        socket.onmessage = (e) => {
-            try {
-                const { type, data } = JSON.parse(e.data)
-                if (type === 'update') {
-                    state.next(data)
-                } else if (type === 'request-update') {
-                    socket.send(JSON.stringify({
-                        type: 'update',
-                        data: state.value
-                    }))
+            ])) {
+                let node = graph.nodes.find(node => node.id === source)
+                if (!node) {
+                    // node doesn't exist yet, so create it
+                    node = {
+                        id: source
+                    }
+                    graph.nodes.push(node)
                 }
-            } catch (err) {
-                console.error(err)
+                if (node[sourcePoint]) {
+                    throw new Error('Duplicate linking to the same position of the node!')
+                }
+                node[sourcePoint] = target
             }
+
+            console.log(graph)
+    
+            const width = 50 * Math.ceil(Math.sqrt(graph.nodes.length)) + nodeRadius * 2
+            const height = width
+
+            svg.attr('viewBox', [0, 0, width, height])
+
+            const link = svg
+                .selectAll('.link')
+                .data(graph.links, link => link)
+                .join(enter =>
+                    enter
+                        .append('line')
+                        .classed('link' , true))
+        
+            const node = svg
+                .selectAll(".node")
+                .data(graph.nodes, node => node.id)
+                .join(enter =>
+                    enter
+                        .append('g')
+                        .classed('node', true)
+                        .call(g => {
+                            g
+                                .append('circle')
+                                .attr('r', nodeRadius)
+                            g
+                                .append('text')
+                                // center it
+                                .attr('dominant-baseline', "middle")
+                                .attr('text-anchor', 'middle')
+                                // add text
+                                .text(data => data.id)
+                        }))
+
+            simulation
+                .nodes(graph.nodes)
+
+                .force('right', d3.forceX(width)
+                    .strength(node => !node.e ? 0.1 : 0))
+                .force('bottom', d3.forceY(height)
+                    .strength(node => !node.s ? 0.1 : 0))
+
+                .force('boundary', forceBoundary(0 + nodeRadius, 0 + nodeRadius, width - nodeRadius, height - nodeRadius)
+                    .border(nodeRadius))
+
+                .force('link', d3.forceLink(graph.links)
+                    .id(node => node.id)
+                    .distance(() => nodeDistance))
+
+                .on('tick', tick)                    
+                .alpha(1)
+                .restart()
+            
+                function tick() {
+                    link
+                        .attr('x1', d => d.source.x)
+                        .attr('y1', d => d.source.y)
+                        .attr('x2', d => d.target.x)
+                        .attr('y2', d => d.target.y);
+                    node
+                        .attr('transform', d => `translate(${d.x}, ${d.y})`)
+                }
         }
-
-        let subscription = null
-        socket.onopen = () => {
-            subscription = state.subscribe((value) => {
-                socket.send(JSON.stringify({
-                    type: 'update',
-                    data: state.value
-                }))
-            })
-        }
-
-        socket.onclose = () => {
-            subscription.unsubscribe()
-            setTimeout(() => {
-                connectToWebsocket()
-            }, 3000)
-        }
-
-        socket.onerror = (err) => {
-            console.error('Error in websocket', err)
-            socket.close()
-        }
-    }
-    connectToWebsocket()
-
-    // Setup D3
-    const nodeRadius = 20
-    const nodeDistance = 50
-
-    const graph = {
-        nodes: [
-            { id: 'A' },
-            { id: 'B' },
-            { id: 'C' },
-            { id: 'D' },
-            { id: 'E' },
-            { id: 'F' },
-            { id: 'G' },
-            { id: 'H' }
-        ],
-        links: [
-            { source: 'A', sourcePos: 'e', target: 'B', targetPos: 'w' },
-            { source: 'A', sourcePos: 's', target: 'C', targetPos: 'n' },
-            { source: 'B', sourcePos: 's', target: 'D', targetPos: 'n' },
-            { source: 'C', sourcePos: 'e', target: 'D', targetPos: 'w' },
-            { source: 'C', sourcePos: 's', target: 'F', targetPos: 'n' },
-            { source: 'D', sourcePos: 'e', target: 'E', targetPos: 'w' },
-            { source: 'D', sourcePos: 's', target: 'G', targetPos: 'n' },
-            { source: 'E', sourcePos: 's', target: 'H', targetPos: 'n' },
-            { source: 'F', sourcePos: 'e', target: 'G', targetPos: 'w' },
-            { source: 'G', sourcePos: 'e', target: 'H', targetPos: 'w' },
+    
+        const defaultLinks = [
+            { source: 'A', sourcePoint: 'e', target: 'B', targetPoint: 'w' },
+            { source: 'A', sourcePoint: 's', target: 'C', targetPoint: 'n' },
+            { source: 'B', sourcePoint: 's', target: 'D', targetPoint: 'n' },
+            { source: 'C', sourcePoint: 'e', target: 'D', targetPoint: 'w' },
+            { source: 'C', sourcePoint: 's', target: 'F', targetPoint: 'n' },
+            { source: 'D', sourcePoint: 'e', target: 'E', targetPoint: 'w' },
+            { source: 'D', sourcePoint: 's', target: 'G', targetPoint: 'n' },
+            { source: 'E', sourcePoint: 's', target: 'H', targetPoint: 'n' },
+            { source: 'F', sourcePoint: 'e', target: 'G', targetPoint: 'w' },
+            { source: 'G', sourcePoint: 'e', target: 'H', targetPoint: 'w' },
         ]
-    }
+        updateLinks(JSON.parse(JSON.stringify(defaultLinks)))
 
-    const width = 50 * Math.ceil(Math.sqrt(graph.nodes.length)) + nodeRadius * 2
-    const height = width
+        const mapUpdateForm = document.getElementById('map-update-form')
+        const mapInput = document.getElementById('map-input')
 
-    for (const { source, sourcePos, target } of graph.links.map(link => [
-        link,
-        {
-            source: link.target,
-            sourcePos: link.targetPos,
-            target: link.source,
-            targetPos: link.sourcePos
-        }
-    ]).flat()) {
-        const node = graph.nodes.find(node => node.id === source)
-        if (!node) {
-            throw new Error('Linking to nonexistent node!')
-        }
-        if (node[sourcePos]) {
-            throw new Error('Duplicate linking to the same position of the node!')
-        }
-        node[sourcePos] = target
-    }
-
-    const svg = d3.select('svg').attr("viewBox", [0, 0, width, height])
-
-    const link = svg
-        .selectAll(".link")
-        .data(graph.links)
-        .join("line")
-        .classed("link", true)
-
-    const node = svg
-        .selectAll(".node")
-        .data(graph.nodes)
-        .join('g')
-        .classed("node", true)
-    
-    node
-        .append('circle')
-        .attr("r", nodeRadius)
-    
-    for (const { text, pos, classes } of [{
-        text: d => d.id,
-        classes: 'central'
-    }/*, {
-        text: d => d.n,
-        pos: [0, -12]
-    }, {
-        text: d => d.e,
-        pos: [12, 0]
-    }, {
-        text: d => d.s,
-        pos: [0, 12]
-    }, {
-        text: d => d.w,
-        pos: [-12, 0]
-    }*/]) {
-        node
-            .append('text')
-            .attr('dominant-baseline', "middle")
-            .attr('text-anchor', 'middle')
-            .attr('x', pos?.[0])
-            .attr('y', pos?.[1])
-            .attr('class', classes)
-            .text(text)
-    }
-
-    const simulation = d3
-        .forceSimulation()
-        .nodes(graph.nodes)
-        .force('charge', d3.forceManyBody().strength(-100))
-
-        .force('top', d3.forceY(0)
-            .strength(node => !node.n ? 0.1 : 0))
-        .force('right', d3.forceX(width)
-            .strength(node => !node.e ? 0.1 : 0))
-        .force('bottom', d3.forceY(height)
-            .strength(node => !node.s ? 0.1 : 0))
-        .force('left', d3.forceX(0)
-            .strength(node => !node.w ? 0.1 : 0))
-
-        .force('boundary', forceBoundary(0 + nodeRadius, 0 + nodeRadius, width - nodeRadius, height - nodeRadius)
-            .border(nodeRadius))
-        .force('link', d3.forceLink(graph.links)
-            .id(node => node.id)
-            .distance(() => nodeDistance))
-        .on('tick', tick);
-
-    node.on('click', click);
-
-    function tick() {
-        link
-            .attr("x1", d => d.source.x)
-            .attr("y1", d => d.source.y)
-            .attr("x2", d => d.target.x)
-            .attr("y2", d => d.target.y);
-        node
-            .attr("transform", d => `translate(${d.x}, ${d.y})`)
-    }
-
-    function click(event, d) {
-        // TODO make path and visualize it
-        console.log(event, d)
-    }
+        mapInput.value = JSON.stringify(defaultLinks, null, 2)
+        mapUpdateForm.addEventListener('submit', (e) => {
+            e.preventDefault()
+            updateLinks(JSON.parse(mapInput.value))
+        })
+    })()
 
     // TODO handle map update
 </script>
