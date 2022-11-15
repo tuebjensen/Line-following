@@ -28,7 +28,10 @@ class VideoStreaming:
         async def index(request):
             return web.FileResponse('website/index.html')
 
+        lock = False
         async def websocket_handler(request):
+            if lock:
+                raise web.HTTPConflict()
             ws = web.WebSocketResponse()
             await ws.prepare(request)
             async with aiofiles.open('state.json', 'r') as f:
