@@ -1,0 +1,76 @@
+<script>
+    function asc (a, b) {
+        return a - b
+    }
+
+    function getIntersectionDistance (ray, segment) {
+        const isVert1 = ray.start.x === ray.end.x
+        const isVert2 = segment.start.x === segment.end.x
+        if (isVert1 && !isVert2) {
+            const x = ray.start.x
+            const y = segment.start.y
+            const [minX, maxX] = [segment.start.x, segment.end.x].sort(asc)
+            if (minX <= x && maxX >= x) {
+                const distance = (ray.start.y - y) * Math.sign(ray.end.y - ray.start.y)
+                if (distance >= 0) {
+                    return distance
+                }
+            }
+            return null 
+        } else if (!isVert1 && isVert2) {
+            const y = ray.start.y
+            const x = segment.start.x
+            const [minY, maxY] = [segment.start.y, segment.end.x].sort(asc)
+            if (minY <= y && maxY >= y) {
+                const distance = (ray.start.x - x) * Math.sign(ray.end.x - ray.start.x)
+                if (distance >= 0) {
+                    return distance
+                }
+            }
+            return null 
+        } else if (isVert1 && isVert1) {
+            if (ray.start.x !== segment.start.x) {
+                return null
+            }
+            const distance1 = (ray.start.y - segment.start.y) * Math.sign(ray.end.y - ray.start.y)
+            const distance2 = (ray.start.y - segment.end.y) * Math.sign(ray.end.y - ray.start.y)
+        }
+    }
+
+    function parseMap (str) {
+        const lines = []
+        const endingNodes = []
+        const intersectionNodes = []
+        
+        function _parseMap (startX, startY) {
+            let currentX = startX, currentY = startY
+            while (str.length > 0) {
+                if ('trbl'.includes(str[0])) {
+                    const direction = str[0]
+                    const distanceStr = str.slice(1).match(/x|[0-9.]+/)?.[0]
+                    if (!distanceStr) {
+                        throw new Error('distance is formatted incorrectly!')
+                    }
+                    const line = {  }
+                    const distance = parseFloat(distanceStr)
+                    str = str.slice(1 + distanceStr.length)
+                } else if (str[0] === ')') {
+                    str = str.slice(1)
+                    return
+                } else if (str[0] === '(') {
+                    str = str.slice(1)
+                    _parseMap()
+                } else if (str[0] === '|') {
+                    str = str.slice(1)
+                    currentX = startX
+                    currentY = startY
+                }
+            }
+        }
+        _parseMap(0, 0)
+
+        console.log(lines, endingNodes, intersectionNodes)
+    }
+    
+    parseMap('.r5t5.(l2.|r10.(t5|b5))t5l5.b5')
+</script>
