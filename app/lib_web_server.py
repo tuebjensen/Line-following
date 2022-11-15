@@ -35,9 +35,14 @@ class WebServer:
             async with aiofiles.open('client_state.json', 'r') as file:
                 client_state = json.loads(await file.read())
 
-            full_state = dict()
-            full_state["type"] = "full-state-update"
-            full_state["data"] = {"clientState": client_state, "serverState": server_state}
+            full_state = {
+                "type": "full-state-update", 
+                "data": {
+                    "clientState": client_state, 
+                    "serverState": server_state
+                }
+            }
+            
             return full_state
             
         async def websocket_handler(request):   
