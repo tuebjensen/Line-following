@@ -98,22 +98,22 @@
          * A new socket is created every time a socket closes or errors.
          */
         const socket$ = new Observable((subscriber) => {
-            subscriber.next(
-                new WebSocket('ws://' + location.host + '/ws')
-            )
+            const socket = new WebSocket('ws://' + location.host + '/ws')
+            subscriber.next(socket)
+            subscriber.complete()
         }).pipe(
             switchMap(socket => merge(
                 // emit the socket when it becomes open
                 fromEvent(socket, 'open').pipe(
-                    map(() => socket),
                     tap(() => console.log('websocket opened'))),
+                    map(() => socket),
                 // on the first error, emit null, close the socket, and then throw an error
                 fromEvent(socket, 'error').pipe(
+                    tap(() => console.log('eror')),
                     first(),
                     mergeMap(() =>
                         of(null).pipe(
                             tap(() => {
-                                console.log('websocket errored')
                                 socket.close()
                             })),
                             concatWith(

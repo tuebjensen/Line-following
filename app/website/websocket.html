@@ -1,6 +1,16 @@
-<script>
-    const socket = new WebSocket('ws://' + location.host + '/ws')
-    socket.onmessage = (e) => console.log('message', e)
-    socket.onopen = (e) => console.log('open', e)
-    socket.onclose = (e) => console.log('close', e)
+<script type="module">
+    import { BehaviorSubject, fromEvent, Observable, concatWith, mergeMap, switchMap, of, tap, throwError, retry, map, filter, merge, share, combineLatest } from 'https://cdn.skypack.dev/pin/rxjs@v7.5.7-j3yWv9lQY9gNeD9CyX5Y/mode=imports,min/optimized/rxjs.js'
+
+    const socket$ = new Observable((subscriber) => {
+            const socket = new WebSocket('ws://' + location.host + '/ws')
+            subscriber.next(socket)
+            subscriber.complete()
+    }).pipe(
+        tap(socket => {
+            console.log(socket)
+            socket.onmessage = (e) => console.log('message', e)
+            socket.onopen = (e) => console.log('open', e)
+            socket.onclose = (e) => console.log('close', e)
+        })
+    ).subscribe(() => {})
 </script>
