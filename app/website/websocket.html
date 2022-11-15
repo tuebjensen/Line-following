@@ -1,0 +1,6 @@
+<script>
+    const socket = new WebSocket('ws://' + location.host + '/ws')
+    socket.onmessage = (e) => console.log('message', e)
+    socket.onopen = (e) => console.log('open', e)
+    socket.onclose = (e) => console.log('close', e)
+</script>
