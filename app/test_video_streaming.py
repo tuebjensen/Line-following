@@ -15,8 +15,7 @@ async def main():
     camera.release()
 
 def path_callback(path):
-    parsed_path = parse_path(path)
-    print(parsed_path)
+    print(path)
 
 def parse_path(path):
     pass
