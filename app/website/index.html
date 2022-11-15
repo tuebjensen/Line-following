@@ -140,8 +140,7 @@
         const message$ = socket$.pipe(
             filter(socket => socket),
             mergeMap(socket => fromEvent(socket, 'message')),
-            map((msg) => msg.data),
-            map(JSON.parse),
+            map((msg) => JSON.parse(msg.data)),
             share()
         )
         
