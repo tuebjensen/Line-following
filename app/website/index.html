@@ -198,7 +198,7 @@
         )
 
         // make it possible for the client to emit new client state
-        const clientStateSubject$ = new BehaviorSubject()
+        const clientStateSubject$ = new Subject()
         function updateClientState (clientState) {
             clientStateSubject$.next(clientState)
         }
