@@ -105,7 +105,7 @@
             switchMap(socket => merge(
                 // emit the socket when it becomes open
                 fromEvent(socket, 'open').pipe(
-                    () => socket),
+                    map(() => socket)),
                 // on the first error, emit null, close the socket, and then throw an error
                 fromEvent(socket, 'error').pipe(
                     first(),
@@ -118,7 +118,7 @@
                                 throwError(() => new Error('WebSocket stream either closed or had an error!'))))),
                 // emit null if the socket is closed
                 fromEvent(socket, 'close').pipe(
-                    () => null))),
+                    map(() => null)))),
             retry({
                 delay: 3000
             }),
