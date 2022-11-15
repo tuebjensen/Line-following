@@ -53,7 +53,7 @@ class VideoStreaming:
         app = web.Application(loop=loop)
         app.router.add_route('GET', '/', index)
         app.router.add_route('GET', '/video', show_image)
-        app.router.add_route('GET', '/ws', websocket_handler)
+        app.router.add_routes([web.get('/ws', websocket_handler)])
 
         return await loop.create_server(app.make_handler(), address, port)
 
