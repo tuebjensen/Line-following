@@ -204,11 +204,10 @@
         }
 
         // if the client emits new states, send them to the server
-        combineLatest([
-            clientStateSubject$,
-            socket$
-        ]).subscribe(([clientState, socket]) => {
-            socket?.send(clientState)
+        clientStateSubject$.pipe(
+            withLatestFrom(socket$)
+        ).subscribe(([clientState, socket]) => {
+            socket?.send(JSON.stringify(clientState))
         })
 
         const clientState$ = merge(
