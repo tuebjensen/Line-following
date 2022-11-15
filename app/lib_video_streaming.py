@@ -1,5 +1,6 @@
 from aiohttp import web
 import asyncio
+import aiofiles
 class VideoStreaming:
 
     def __init__(self):
@@ -25,7 +26,9 @@ class VideoStreaming:
         async def websocket_handler(request):
             ws = web.WebSocketResponse()
             await ws.prepare(request)
-            await ws.send_json({'type': 'full-state-update', 'data': {'clientState': 'hi', 'serverState': 'bye'}}) # Load file and send
+            async with aiofiles.open('state.json', 'r') as f:
+                contents = await f.read()
+            await ws.send_json(contents) # Load file and send
 
             async for msg in ws:
                 print(msg)
