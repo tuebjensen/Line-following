@@ -15,8 +15,11 @@ async def main():
     camera.release()
 
 def path_callback(path):
-    print(path)
+    parsed_path = parse_path(path)
+    print(parsed_path)
 
+def parse_path(path):
+    pass
 async def start():
     await asyncio.gather(video.start_running('0.0.0.0', 5000, path_callback), main())
 asyncio.run(start())
