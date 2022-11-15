@@ -12,6 +12,7 @@ class VideoStreaming:
         self._is_running = False
         self._frame_encoded = None
         self._is_frame_encoded_changed = False
+        self._websocket_lock = False
 
     def set_frame_encoded(self, frame_encoded):
         self._frame_encoded = frame_encoded
@@ -28,11 +29,10 @@ class VideoStreaming:
         async def index(request):
             return web.FileResponse('website/index.html')
 
-        lock = False
-        async def websocket_handler(request):
-            if self.lock:
+        async def websocket_handler(request):   
+            if self._websocket_lock:
                 raise web.HTTPConflict()
-            self.lock = True
+            self._websocket_lock = True
             ws = web.WebSocketResponse()
             await ws.prepare(request)
             async with aiofiles.open('state.json', 'r') as f:
