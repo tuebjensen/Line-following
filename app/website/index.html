@@ -249,8 +249,6 @@
                 }
                 node[sourcePoint] = target
             }
-
-            console.log(graph)
     
             const width = 50 * Math.ceil(Math.sqrt(graph.nodes.length)) + nodeRadius * 2
             const height = width
@@ -338,6 +336,10 @@
             updateLinks(JSON.parse(mapInput.value))
         })
     })()
+
+    window['updateClientState'] = updateClientState
+    clientState$.subscribe((state) => console.log('clientStateUpdated', state))
+    serverState$.subscribe((state) => console.log('serverStateUpdated', state))
 
     // TODO handle map update
 </script>
