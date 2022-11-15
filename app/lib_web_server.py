@@ -50,7 +50,7 @@ class WebServer:
             #async with aiofiles.open('state.json', 'r') as file:
             #    contents = await file.read()
             contents = await make_full_state()
-            await ws.send_str(contents) 
+            await ws.send_str(json.dumps(contents)) 
         
             async for msg in ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:
