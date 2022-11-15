@@ -36,7 +36,7 @@ class VideoStreaming:
             async for msg in ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:
                     data = json.loads(msg.data)
-                    print(data)
+                    print(data["path"])
             return ws
 
 
