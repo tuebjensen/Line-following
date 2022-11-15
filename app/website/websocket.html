@@ -7,6 +7,18 @@
             subscriber.complete()
         }).pipe(
             tap(socket => console.log(socket)),
+            switchMap(socket => merge(
+                // emit the socket when it becomes open
+                fromEvent(socket, 'open').pipe(
+                    tap(() => {
+                        socket.onmessage = console.log
+                        console.log('websocket opened')
+                    })),
+                    map(() => socket),
+                // emit null if the socket is closed
+                fromEvent(socket, 'close').pipe(
+                    tap(() => console.log('websocket closed')),
+                    map(() => null)))),
             retry({
                 delay: 3000
             }),
