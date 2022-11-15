@@ -126,6 +126,8 @@
                 delay: 3000
             }),
             share())
+        
+        socket$.subscribe(s => console.log('socket', s))
     
         /**
          * Stream of parsed messages coming from the sockets.
@@ -134,6 +136,8 @@
             mergeMap(socket => fromEvent(socket, 'message')),
             map(JSON.parse),
             share())
+        
+        message$.subscribe(m => console.log('message', m))
 
         /**
          * Stream which includes updates coming from the sockets targeting both client and server states.
