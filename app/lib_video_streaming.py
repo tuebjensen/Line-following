@@ -16,6 +16,9 @@ class VideoStreaming:
             return
         self._is_running = True
 
+        async def index(request):
+            return web.FileResponse('website/index.html')
+
         async def websocket_handler(request):
             ws = web.WebSocketResponse()
             await ws.prepare(request)
@@ -48,7 +51,8 @@ class VideoStreaming:
                 await asyncio.sleep(0.05)   
         loop = asyncio.get_event_loop()
         app = web.Application(loop=loop)
-        app.router.add_route('GET', "/video", show_image)
+        app.router.add_route('GET', '/', index)
+        app.router.add_route('GET', '/video', show_image)
         app.router.add_route('GET', '/ws', websocket_handler)
 
         return await loop.create_server(app.make_handler(), address, port)
