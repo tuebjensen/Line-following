@@ -22,7 +22,7 @@ class VideoStreaming:
         async def websocket_handler(request):
             ws = web.WebSocketResponse()
             await ws.prepare(request)
-            ws.send_json({'type': 'full-state-update', 'data': {'clientState': 'hi', 'serverState': 'bye'}}) # Load file and send
+            await ws.send_json({'type': 'full-state-update', 'data': {'clientState': 'hi', 'serverState': 'bye'}}) # Load file and send
 
             async for msg in ws:
                 print(msg)
