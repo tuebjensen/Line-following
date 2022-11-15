@@ -4,6 +4,8 @@ import asyncio
 import aiofiles
 import json
 
+
+
 class VideoStreaming:
 
     def __init__(self):
@@ -15,7 +17,7 @@ class VideoStreaming:
         self._frame_encoded = frame_encoded
         self._is_frame_encoded_changed = True
 
-    async def start_running(self, address, port):
+    async def start_running(self, address, port, path_callback):
         if self._is_running:
             return
         self._is_running = True
@@ -36,7 +38,7 @@ class VideoStreaming:
             async for msg in ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:
                     data = json.loads(msg.data)
-                    print(data["path"])
+                    path_callback(data["path"])
             return ws
 
 
