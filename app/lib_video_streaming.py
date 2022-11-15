@@ -1,6 +1,9 @@
+import aiohttp #Is there a better way?
 from aiohttp import web
 import asyncio
 import aiofiles
+import json
+
 class VideoStreaming:
 
     def __init__(self):
@@ -28,10 +31,12 @@ class VideoStreaming:
             await ws.prepare(request)
             async with aiofiles.open('state.json', 'r') as f:
                 contents = await f.read()
-            await ws.send_str(contents) # Load file and send
-
+            await ws.send_str(contents) 
+        
             async for msg in ws:
-                print(msg)
+                if msg.type == aiohttp.WSMsgType.TEXT:
+                    data = json.loads(msg.data)
+                    print(data)
             return ws
 
 
