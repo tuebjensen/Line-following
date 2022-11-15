@@ -1,8 +1,8 @@
 import cv2 as cv
-from lib_web_server import VideoStreaming
+from lib_web_server import WebServer
 import asyncio
 camera = cv.VideoCapture(0)
-video = VideoStreaming()
+video = WebServer()
 
 
 async def main():

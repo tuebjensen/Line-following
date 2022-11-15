@@ -6,12 +6,13 @@ import json
 
 
 
-class VideoStreaming:
+class WebServer:
 
     def __init__(self):
         self._is_running = False
         self._frame_encoded = None
         self._is_frame_encoded_changed = False
+        self._websocket_lock = False
 
     def set_frame_encoded(self, frame_encoded):
         self._frame_encoded = frame_encoded
@@ -28,20 +29,42 @@ class VideoStreaming:
         async def index(request):
             return web.FileResponse('website/index.html')
 
-        async def websocket_handler(request):
+        async def make_full_state():
+            async with aiofiles.open('server_state.json', 'r') as file:
+                server_state = json.loads(await file.read())
+            async with aiofiles.open('client_state.json', 'r') as file:
+                client_state = json.loads(await file.read())
+
+            full_state = {
+                "type": "full-state-update", 
+                "data": {
+                    "clientState": client_state, 
+                    "serverState": server_state
+                }
+            }
+
+            return full_state
+            
+        async def websocket_handler(request):   
+            if self._websocket_lock:
+                raise web.HTTPConflict()
+            self._websocket_lock = True
             ws = web.WebSocketResponse()
+
             await ws.prepare(request)
-            async with aiofiles.open('state.json', 'r') as f:
-                contents = await f.read()
-            await ws.send_str(contents) 
+            #async with aiofiles.open('state.json', 'r') as file:
+            #    contents = await file.read()
+            contents = await make_full_state()
+            await ws.send_str(json.dumps(contents)) 
         
             async for msg in ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:
                     async with aiofiles.open('client_state.json', 'w') as file:
-                        message_data = msg.data
-                        file.write(message_data)
-                        data = json.loads(msg.data)
+                        await file.write(msg.data)
+                    
+                    data = json.loads(msg.data)
                     path_callback(data["path"])
+            self._websocket_lock = False
             return ws
 
 
