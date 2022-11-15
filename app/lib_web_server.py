@@ -32,6 +32,7 @@ class VideoStreaming:
         async def websocket_handler(request):
             if lock:
                 raise web.HTTPConflict()
+            lock = True
             ws = web.WebSocketResponse()
             await ws.prepare(request)
             async with aiofiles.open('state.json', 'r') as f:
@@ -45,6 +46,7 @@ class VideoStreaming:
                         await file.write(message_data)
                         data = json.loads(msg.data)
                     path_callback(data["path"])
+            lock = False
             return ws
 
 
