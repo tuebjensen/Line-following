@@ -12,6 +12,7 @@
                         socket.onmessage = console.log
                         console.log('websocket opened')
                     })),
-                    map(() => socket),
-            share())).subscribe(() => {})
+                    map(() => socket)
+            ),
+            share()).subscribe(() => {})
 </script>
