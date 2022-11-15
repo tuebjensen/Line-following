@@ -39,8 +39,7 @@ class VideoStreaming:
                 if msg.type == aiohttp.WSMsgType.TEXT:
                     async with aiofiles.open('client_state.json', 'w') as file:
                         message_data = msg.data
-                        print(message_data)
-                        file.write("Hi")
+                        await file.write(message_data)
                         data = json.loads(msg.data)
                     path_callback(data["path"])
             return ws
