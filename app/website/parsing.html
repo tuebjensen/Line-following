@@ -12,7 +12,7 @@
             const [minX, maxX] = [segment.start.x, segment.end.x].sort(asc)
             if (minX <= x && x <= maxX) {
                 const distance = (y - ray.start.y) * Math.sign(ray.end.y - ray.start.y)
-                if (distance >= 0) {
+                if (distance > 0) {
                     return distance
                 }
             }
@@ -23,7 +23,7 @@
             const [minY, maxY] = [segment.start.y, segment.end.x].sort(asc)
             if (minY <= y && y <= maxY ) {
                 const distance = (x - ray.start.x) * Math.sign(ray.end.x - ray.start.x)
-                if (distance >= 0) {
+                if (distance > 0) {
                     return distance
                 }
             }
@@ -32,24 +32,25 @@
             if (ray.start.x !== segment.start.x) {
                 return Infinity
             }
-            const distance1 = (ray.start.y - segment.start.y) * Math.sign(ray.end.y - ray.start.y)
-            const distance2 = (ray.start.y - segment.end.y) * Math.sign(ray.end.y - ray.start.y)
+            const distance1 = (segment.start.y - ray.start.y) * Math.sign(ray.end.y - ray.start.y)
+            const distance2 = (segment.end.y - ray.start.y) * Math.sign(ray.end.y - ray.start.y)
             if (distance1 > 0 && distance2 > 0) {
                 return Math.min(distance1, distance2)
-            } else if (distance1 < 0 && distance2 < 0) {
+            } else if (distance1 <= 0 && distance2 <= 0) {
                 return Infinity
             } else {
+                console.log(distance1, distance2)
                 throw new Error('Eror (vert)')
             }
         } else if (!isVert1 && !isVert2) {
             if (ray.start.y !== segment.start.y) {
                 return Infinity
             }
-            const distance1 = (ray.start.x - segment.start.x) * Math.sign(ray.end.x - ray.start.x)
-            const distance2 = (ray.start.x - segment.end.x) * Math.sign(ray.end.x - ray.start.x)
+            const distance1 = (segment.start.x - ray.start.x) * Math.sign(ray.end.x - ray.start.x)
+            const distance2 = (segment.end.x - ray.start.x) * Math.sign(ray.end.x - ray.start.x)
             if (distance1 > 0 && distance2 > 0) {
                 return Math.min(distance1, distance2)
-            } else if (distance1 < 0 && distance2 < 0) {
+            } else if (distance1 <= 0 && distance2 <= 0) {
                 return Infinity
             } else {
                 throw new Error('Eror (hori)')
@@ -64,10 +65,10 @@
     function parseMap (str) {
         const lineSegments = []
         const nodeIdIterator = createGenerateNodeId()
-        const nodes = [{x: 0, y: 0, id: nodeIdIterator.next()}]
+        const nodes = [{x: 0, y: 0, id: nodeIdIterator.next().value}]
         
         function findNode(x, y){
-            return nodes.find(node => node.x === currentX && node.y === currentY)
+            return nodes.find(node => node.x === x && node.y === y)
         }
         
         function _parseMap (startX, startY) {
@@ -96,19 +97,20 @@
                     const finalDistance = distanceStr === '*' ? smallestDistance : distance
                     const newCurrentX = (direction === 'l' ? -finalDistance : direction === 'r' ? finalDistance : 0) + currentX
                     const newCurrentY = (direction === 't' ? -finalDistance : direction === 'b' ? finalDistance : 0) + currentY
+
+                    const endNode = nodes.find(node => node.x === newCurrentX && node.y === newCurrentY) || (function(){
+                        const newNode = {x: newCurrentX, y: newCurrentY, id: nodeIdIterator.next().value}
+                        nodes.push(newNode)
+                        return newNode
+                    })()
+
                     const lineSegment = {
-                        start: {x: currentX, y: currentY},
-                        end: {x: newCurrentX, y: newCurrentY},
-                        startNode: findNode(currentX, currentY),
-                        endNode: findNode(newCurrentX, newCurrentY)
+                        start: findNode(currentX, currentY),
+                        end: endNode
                     }
                     lineSegments.push(lineSegment)
                     currentX = newCurrentX
                     currentY = newCurrentY
-                    const existingNode = nodes.find(node => node.x === newCurrentX && node.y === newCurrentY)
-                    if (!existingNode){
-                        nodes.push({x: newCurrentX, y: newCurrentY, id: nodeIdIterator.next()})
-                    }
 
                     str = str.slice(1 + distanceStr.length)
                 } else if (str[0] === ')') {
@@ -121,7 +123,7 @@
                     str = str.slice(1)
                     currentX = startX
                     currentY = startY
-                } else if (str[0] === '.') {
+                } else if (str[0] === '_') {
                     str = str.slice(1)
                     const existingNode = findNode(currentX, currentY)
                     if (existingNode){
@@ -134,8 +136,8 @@
         }
         _parseMap(0, 0)
 
-        console.log(lines, endingNodes, intersectionNodes)
+        console.log(lineSegments, nodes)
     }
     
-    parseMap('.r5t5.(l2.|r10.(t5|b5))t5l5.b5')
+    parseMap('_r5t5_(l2_|r10_(t5|b5))t5l5_b5')
 </script>
