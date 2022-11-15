@@ -138,6 +138,7 @@
          * Stream of parsed messages coming from the sockets.
          */
         const message$ = socket$.pipe(
+            filter(socket => socket),
             mergeMap(socket => fromEvent(socket, 'message')),
             map((msg) => msg.data),
             map(JSON.parse),
