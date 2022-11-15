@@ -5,12 +5,30 @@
             const socket = new WebSocket('ws://' + location.host + '/ws')
             subscriber.next(socket)
             subscriber.complete()
-    }).pipe(
-        tap(socket => {
-            console.log(socket)
-            socket.onmessage = (e) => console.log('message', e)
-            socket.onopen = (e) => console.log('open', e)
-            socket.onclose = (e) => console.log('close', e)
-        })
-    ).subscribe(() => {})
+        }).pipe(
+            tap(socket => console.log(socket)),
+            switchMap(socket => merge(
+                // emit the socket when it becomes open
+                fromEvent(socket, 'open').pipe(
+                    tap(() => console.log('websocket opened'))),
+                    map(() => socket),
+                // on the first error, emit null, close the socket, and then throw an error
+                fromEvent(socket, 'error').pipe(
+                    tap(() => console.log('eror')),
+                    first(),
+                    mergeMap(() =>
+                        of(null).pipe(
+                            tap(() => {
+                                socket.close()
+                            })),
+                            concatWith(
+                                throwError(() => new Error('WebSocket stream either closed or had an error!'))))),
+                // emit null if the socket is closed
+                fromEvent(socket, 'close').pipe(
+                    tap(() => console.log('websocket closed')),
+                    map(() => null)))),
+            retry({
+                delay: 3000
+            }),
+            share())
 </script>
