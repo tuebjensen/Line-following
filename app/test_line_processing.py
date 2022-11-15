@@ -15,9 +15,9 @@ def process_frame(frame, blur, block_size, c):
     processed_frame = cv.adaptiveThreshold(processed_frame, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 2*(block_size+1)+1, c)
     return processed_frame
 
-def find_edges_and_lines(frame):
+def find_edges_and_lines(frame, threshold):
     edges = cv.Canny(frame, 50, 150, apertureSize = 3)
-    lines = cv.HoughLines(edges, 1, np.pi/180, 100)
+    lines = cv.HoughLines(edges, 1, np.pi/180, threshold)
     return edges, lines
 
 def put_line_on_frame(frame, line: Line, color: Tuple[int, int, int]):
@@ -128,9 +128,10 @@ def process_video():
     cap = cv.VideoCapture(0)
     img = np.zeros((25, 500, 3), np.uint8)
     cv.namedWindow('image')
-    cv.createTrackbar('Blur', 'image', 5, 100, nothing)
+    cv.createTrackbar('Blur', 'image', 10, 100, nothing)
     cv.createTrackbar('Block size', 'image', 5, 100, nothing)
-    cv.createTrackbar('C', 'image', 5, 100, nothing)
+    cv.createTrackbar('C', 'image', 7, 100, nothing)
+    cv.createTrackbar('Threshold', 'image', 100, 100, nothing)
     while cap.isOpened() and guard:
         ret, original_frame = cap.read()
         original_frame = cv.flip(original_frame, 1)
@@ -143,14 +144,15 @@ def process_video():
         blur = cv.getTrackbarPos('Blur', 'image')
         block_size = cv.getTrackbarPos('Block size', 'image')
         c = cv.getTrackbarPos('C', 'image')
+        threshold = cv.getTrackbarPos('Threshold', 'image')
         processed_frame = process_frame(original_frame, blur, block_size, c)
-        edges, houghlines = find_edges_and_lines(processed_frame)
+        edges, houghlines = find_edges_and_lines(processed_frame, threshold)
 
         if isinstance(houghlines, np.ndarray):
             cv.putText(original_frame, f'lines: {len(houghlines)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2, cv.LINE_AA)
 
             lines = get_from_houghlines(houghlines)
-            merged_lines = merge_lines(lines)
+            merged_lines = merge_lines(lines, original_frame)
             merged_lines_segments = get_tape_corner_line_segments_please(merged_lines, edges)
             parallel_line_centers = get_centers_of_parallel_line_pairs(merged_lines)
             tape_segments = [x for l in list(merged_lines_segments.values()) for x in l]

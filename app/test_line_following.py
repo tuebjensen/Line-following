@@ -36,7 +36,7 @@ def process_original_frame(original_frame):
     edges, houghlines = find_edges_and_lines(processed_frame)
     if isinstance(houghlines, np.ndarray):
         lines = get_from_houghlines(houghlines)
-        merged_lines = merge_lines(lines)
+        merged_lines = merge_lines(lines, original_frame)
         parallel_line_centers = get_centers_of_parallel_line_pairs(merged_lines)
         display_all_lines(lines, original_frame)
         display_merged_parallel_lines(merged_lines, original_frame)

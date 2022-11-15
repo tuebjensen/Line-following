@@ -3,7 +3,7 @@ from typing import Tuple
 import cv2 as cv
 import numpy as np
 from lib_calculate_direction import get_direction_vector_of_line, get_displacement_vector_from_center, get_direction_to_go
-from lib_process_lines import Line, get_centers_of_parallel_line_pairs, get_from_houghlines, merge_lines
+from lib_process_lines import Line
 
 
 def nothing(x):

@@ -1,4 +1,4 @@
-from math import cos, pi, sin, tan
+from math import cos, pi, sin, sqrt, tan
 from statistics import median
 import numpy as np
 
@@ -10,20 +10,38 @@ MIN_LINE_SEGMENT_HOLE_SIZE = 4
 class Line:
     _rho_diff_threshold = 80.0
     _theta_diff_threshold = 0.3
+    _end_point_distance_threshold = 50
 
     def __init__(self, rho: float, theta: float) -> 'Line':
         self.rho = rho
         self.theta = theta
 
-    def is_similar(self, to_compare: 'Line') -> bool:
-        return (abs(self.rho - to_compare.rho) < self._rho_diff_threshold 
-                and (abs(self.theta - to_compare.theta) < self._theta_diff_threshold
-                or abs(self.theta - to_compare.theta) > pi - self._theta_diff_threshold))
+    def is_similar(self, to_compare: 'Line', frame) -> bool:
+        A, B = _get_line_frame_intersection_points(self, frame)
+        C, D = _get_line_frame_intersection_points(to_compare, frame)
+        AC = LineSegment(A, C)
+        AD = LineSegment(A, D)
+        BC = LineSegment(B, C)
+        BD = LineSegment(B, D)
+        length_1, length_2 = self._get_frame_intersection_distances(AC, AD, BC, BD)
+        return length_1 < self._end_point_distance_threshold and length_2 < self._end_point_distance_threshold
+
+    def _get_frame_intersection_distances(self, AC: 'LineSegment', AD: 'LineSegment', BC: 'LineSegment', BD: 'LineSegment'):
+        len_AC = AC.get_length()
+        len_AD = AD.get_length()
+        len_BC = BC.get_length()
+        len_BD = BD.get_length()
+        return (len_AC, len_BD) if len_AC + len_BD <= len_BC + len_AD else (len_BC, len_AD)
 
 class LineSegment:
     def __init__(self, start_point: 'tuple[int, int]', end_point: 'tuple[int, int]') -> 'LineSegment':
         self.start_point = start_point
         self.end_point = end_point
+
+    def get_length(self):
+        return sqrt((self.end_point[0] - self.start_point[0]) ** 2 + (self.end_point[1] - self.start_point[1]) ** 2)
+
+    
 
 
 def get_from_houghlines(hough_lines) -> 'list[Line]':
@@ -37,12 +55,12 @@ def get_from_houghlines(hough_lines) -> 'list[Line]':
 
 
 # probably could be better at not making duplicate lines
-def merge_lines(lines: 'list[Line]') -> 'list[Line]':
+def merge_lines(lines: 'list[Line]', frame) -> 'list[Line]':
     similar_lines: dict[Line, list[Line]] = {}
     for line in lines:
         found_similar = False
         for group_leading_line, grouped_lines in similar_lines.items():
-            if line.is_similar(group_leading_line):
+            if line.is_similar(group_leading_line, frame):
                 found_similar = True
                 grouped_lines.append(line)
                 break
@@ -240,7 +258,9 @@ def _get_line_frame_intersection_points(line, frame):
         (x_intercept, 0),
         (int(1/tan(theta - pi/2)*max_y + x_intercept), max_y)
     ]
-    return _filter_out_of_frame(possible_frame_intersection_points, max_x, max_y)
+    possible_frame_intersection_points = _filter_out_of_frame(possible_frame_intersection_points, max_x, max_y)
+    frame_intersection_points = _filter_same_points(possible_frame_intersection_points)[0:2]
+    return frame_intersection_points
 
 
 def _filter_out_of_frame(possible_frame_intersection_points, max_x, max_y):
@@ -250,6 +270,9 @@ def _filter_out_of_frame(possible_frame_intersection_points, max_x, max_y):
         if x >= 0 and x <= max_x and y >= 0 and y <= max_y:
             filtered_points.append(possible_point)
     return filtered_points
+
+def _filter_same_points(possible_frame_intersection_points):
+    return list(set(possible_frame_intersection_points))
 
 
 def _get_valid_center_line_segments(center_line_segments, tape_segments):
@@ -286,10 +309,18 @@ def _get_median_line(lines: 'list[Line]') -> 'Line':
     rhos = []
     thetas = []
     for line in lines:
-        rhos.append(line.rho)
-        thetas.append(line.theta)
+        rho = line.rho
+        theta = line.theta
+        if(rho < 0):
+            theta -= pi
+            rho *= -1
+        rhos.append(rho)
+        thetas.append(theta)
     median_rho = median(rhos)
     median_theta = median(thetas)
+    if median_theta < 0:
+        median_theta += pi
+        median_rho *= -1
     return Line(median_rho, median_theta)
 
 
@@ -300,7 +331,8 @@ def get_centers_of_parallel_line_pairs(lines: 'list[Line]') -> 'list[Line]':
     for line in lines:
         found_parallel = False
         for parallel_line_angle, same_angle_lines in parallel_lines.items():
-            if(abs(line.theta - parallel_line_angle) < 2*Line._theta_diff_threshold):
+            if(abs(line.theta - parallel_line_angle) < Line._theta_diff_threshold 
+                    or abs(line.theta - parallel_line_angle) > pi - Line._theta_diff_threshold):
                 same_angle_lines.append(line)
                 found_parallel = True
                 break
@@ -316,6 +348,17 @@ def get_centers_of_parallel_line_pairs(lines: 'list[Line]') -> 'list[Line]':
 
 
 def _get_center_line(line_one: 'Line', line_two: 'Line') -> 'Line':
-    mean_rho = (line_one.rho + line_two.rho) / 2
-    mean_theta = (line_one.theta + line_two.theta) / 2
+    rho_one, theta_one = line_one.rho, line_one.theta
+    rho_two, theta_two = line_two.rho, line_two.theta
+    if(rho_one < 0):
+        theta_one -= pi
+        rho_one *= -1
+    if(rho_two < 0):
+        theta_two -= pi
+        rho_two *= -1
+    mean_rho = (rho_one + rho_two) / 2
+    mean_theta = (theta_one + theta_two) / 2
+    if mean_theta < 0:
+        mean_theta += pi
+        mean_rho *= -1
     return Line(mean_rho, mean_theta)
