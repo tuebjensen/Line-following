@@ -14,11 +14,11 @@ from lib_car import Car
 from lib_motor import Motor
 from lib_process_lines import Line, get_centers_of_parallel_line_pairs, get_from_houghlines, merge_lines
 from lib_line_following import process_frame, find_edges_and_lines, display_all_lines, display_center_of_parallel_lines, display_direction_to_go, display_displacement_and_direction_vectors, display_merged_parallel_lines
-from lib_web_server import VideoStreaming
+from lib_web_server import WebServer
 
 cap = None
 car = None
-video = VideoStreaming()
+video = WebServer()
 
 def signal_handler(sig, frame):
     GPIO.cleanup()

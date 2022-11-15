@@ -6,7 +6,7 @@ import json
 
 
 
-class VideoStreaming:
+class WebServer:
 
     def __init__(self):
         self._is_running = False
