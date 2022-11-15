@@ -6,8 +6,8 @@
             subscriber.next(socket)
             subscriber.complete()
         }).pipe(
-            tap(socket => console.log(socket)),
             switchMap(socket => merge(
+                console.log(socket) ||
                 // emit the socket when it becomes open
                 fromEvent(socket, 'open').pipe(
                     tap(() => {
