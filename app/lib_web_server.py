@@ -40,7 +40,7 @@ class VideoStreaming:
                     async with aiofiles.open('client_state.json', 'w') as file:
                         message_data = msg.data
                         print(message_data)
-                        file.write(message_data)
+                        file.write("Hi")
                         data = json.loads(msg.data)
                     path_callback(data["path"])
             return ws
