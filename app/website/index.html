@@ -99,25 +99,28 @@
          */
         const socket$ = new Observable((subscriber) => {
             subscriber.next(
-                new WebSocket('ws://' + location.host + '/ws')
+                new WebSocket('http://' + location.host + '/ws')
             )
         }).pipe(
             switchMap(socket => merge(
                 // emit the socket when it becomes open
                 fromEvent(socket, 'open').pipe(
-                    map(() => socket)),
+                    map(() => socket),
+                    tap(() => console.log('websocket opened'))),
                 // on the first error, emit null, close the socket, and then throw an error
                 fromEvent(socket, 'error').pipe(
                     first(),
                     mergeMap(() =>
                         of(null).pipe(
                             tap(() => {
+                                console.log('websocket errored')
                                 socket.close()
                             })),
                             concatWith(
                                 throwError(() => new Error('WebSocket stream either closed or had an error!'))))),
                 // emit null if the socket is closed
                 fromEvent(socket, 'close').pipe(
+                    tap(() => console.log('websocket closed')),
                     map(() => null)))),
             retry({
                 delay: 3000
