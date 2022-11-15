@@ -105,8 +105,9 @@
             switchMap(socket => merge(
                 // emit the socket when it becomes open
                 fromEvent(socket, 'open').pipe(
-                    tap(() => console.log('websocket opened'))),
+                    tap(() => console.log('websocket opened')),
                     map(() => socket),
+                ),
                 // on the first error, emit null, close the socket, and then throw an error
                 fromEvent(socket, 'error').pipe(
                     tap(() => console.log('eror')),
@@ -115,17 +116,24 @@
                         of(null).pipe(
                             tap(() => {
                                 socket.close()
-                            })),
-                            concatWith(
-                                throwError(() => new Error('WebSocket stream either closed or had an error!'))))),
+                            })
+                        ),
+                        concatWith(
+                            throwError(() => new Error('WebSocket stream either closed or had an error!'))
+                        )
+                    )
+                ),
                 // emit null if the socket is closed
                 fromEvent(socket, 'close').pipe(
                     tap(() => console.log('websocket closed')),
-                    map(() => null)))),
+                    map(() => null)
+                )
+            )),
             retry({
                 delay: 3000
             }),
-            share())
+            share()
+        )
         
         socket$.subscribe(s => console.log('socket', s))
     
@@ -135,7 +143,8 @@
         const message$ = socket$.pipe(
             mergeMap(socket => fromEvent(socket, 'message')),
             map(JSON.parse),
-            share())
+            share()
+        )
         
         message$.subscribe(m => console.log('message', m))
 
@@ -148,15 +157,18 @@
         const fullStateUpdate$ = merge(
             message$.pipe(
                 filter(({ type, data }) => type === 'full-state-update'),
-                map(message => message.data)),
+                map(message => message.data)
+            ),
             socket$.pipe(
                 filter(socket => socket === null),
                 map(() => ({
                     clientState: null,
                     serverState: null
-                })))
+                }))
+            )
         ).pipe(
-            share())
+            share()
+        )
 
         /**
          * Stream which includes updates coming from the sockets targeting the server state.
@@ -165,12 +177,15 @@
          */
         const serverStateUpdate$ = merge(
             fullStateUpdate$.pipe(
-                map(data => data.serverState)),
+                map(data => data.serverState)
+            ),
             message$.pipe(
                 filter(message => message.type === 'server-state-update'),
-                map(message => message.data))
+                map(message => message.data)
+            )
         ).pipe(
-            share())
+            share()
+        )
 
         /**
          * Stream which includes updates coming from the sockets targeting the client state. 
@@ -180,7 +195,8 @@
                 map(data => data.clientState)
             )
         ).pipe(
-            share())
+            share()
+        )
 
         // make it possible for the client to emit new client state
         const clientStateSubject$ = new BehaviorSubject()
