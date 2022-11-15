@@ -11,8 +11,10 @@
                     tap(() => {
                         socket.onmessage = console.log
                         console.log('websocket opened')
-                    })),
+                    }),
                     map(() => socket)
+                )
             ),
-            share()).subscribe(() => {})
+            share()
+        ).subscribe(() => {})
 </script>
