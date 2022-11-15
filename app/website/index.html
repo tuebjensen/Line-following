@@ -139,7 +139,6 @@
          */
         const message$ = socket$.pipe(
             mergeMap(socket => fromEvent(socket, 'message')),
-            tap((message) => console.log(message)),
             map(JSON.parse),
             share()
         )
