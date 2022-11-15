@@ -42,7 +42,7 @@ class WebServer:
                     "serverState": server_state
                 }
             }
-            
+
             return full_state
             
         async def websocket_handler(request):   
@@ -60,11 +60,11 @@ class WebServer:
             async for msg in ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:
                     async with aiofiles.open('client_state.json', 'w') as file:
-                        message_data = msg.data
-                        await file.write(message_data)
-                        data = json.loads(msg.data)
+                        await file.write(msg.data)
+                    
+                    data = json.loads(msg.data)
                     path_callback(data["path"])
-            lock = False
+            self._websocket_lock = False
             return ws
 
 
