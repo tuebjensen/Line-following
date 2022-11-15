@@ -18,5 +18,5 @@ def path_callback(path):
     print(path)
 
 async def start():
-    await asyncio.gather(video.start_running('0.0.0.0', 5000), main(), path_callback)
+    await asyncio.gather(video.start_running('0.0.0.0', 5000, path_callback), main())
 asyncio.run(start())
