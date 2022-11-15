@@ -116,10 +116,10 @@
                         of(null).pipe(
                             tap(() => {
                                 socket.close()
-                            })
-                        ),
-                        concatWith(
-                            throwError(() => new Error('WebSocket stream either closed or had an error!'))
+                            }),
+                            concatWith(
+                                throwError(() => new Error('WebSocket stream either closed or had an error!'))
+                            )
                         )
                     )
                 ),
