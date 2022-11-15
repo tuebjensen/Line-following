@@ -6,7 +6,7 @@
             subscriber.next(socket)
             subscriber.complete()
         }).pipe(
-            mergeMap(socket => merge(
+            switchMap(socket => merge(
                 console.log(socket) ||
                 // emit the socket when it becomes open
                 fromEvent(socket, 'open').pipe(
@@ -19,8 +19,5 @@
                 fromEvent(socket, 'close').pipe(
                     tap(() => console.log('websocket closed')),
                     map(() => null)))),
-            retry({
-                delay: 3000
-            }),
             share()).subscribe(() => {})
 </script>
