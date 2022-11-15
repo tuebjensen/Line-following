@@ -6,18 +6,12 @@
             subscriber.next(socket)
             subscriber.complete()
         }).pipe(
-            switchMap(socket => merge(
-                console.log(socket) ||
-                // emit the socket when it becomes open
+            switchMap(socket => 
                 fromEvent(socket, 'open').pipe(
                     tap(() => {
                         socket.onmessage = console.log
                         console.log('websocket opened')
                     })),
                     map(() => socket),
-                // emit null if the socket is closed
-                fromEvent(socket, 'close').pipe(
-                    tap(() => console.log('websocket closed')),
-                    map(() => null)))),
             share()).subscribe(() => {})
 </script>
