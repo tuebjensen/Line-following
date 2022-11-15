@@ -29,14 +29,27 @@ class WebServer:
         async def index(request):
             return web.FileResponse('website/index.html')
 
+        async def make_full_state():
+            async with aiofiles.open('server_state.json', 'r') as file:
+                server_state = json.loads(await file.read())
+            async with aiofiles.open('client_state.json', 'r') as file:
+                client_state = json.loads(await file.read())
+
+            full_state = dict()
+            full_state["type"] = "full-state-update"
+            full_state["data"] = {"clientState": client_state, "serverState": server_state}
+            return full_state
+            
         async def websocket_handler(request):   
             if self._websocket_lock:
                 raise web.HTTPConflict()
             self._websocket_lock = True
             ws = web.WebSocketResponse()
+
             await ws.prepare(request)
-            async with aiofiles.open('state.json', 'r') as f:
-                contents = await f.read()
+            #async with aiofiles.open('state.json', 'r') as file:
+            #    contents = await file.read()
+            contents = await make_full_state()
             await ws.send_str(contents) 
         
             async for msg in ws:
