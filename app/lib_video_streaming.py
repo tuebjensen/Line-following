@@ -28,7 +28,7 @@ class VideoStreaming:
             await ws.prepare(request)
             async with aiofiles.open('state.json', 'r') as f:
                 contents = await f.read()
-            await ws.send_json(contents) # Load file and send
+            await ws.send_str(contents) # Load file and send
 
             async for msg in ws:
                 print(msg)
