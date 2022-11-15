@@ -30,6 +30,7 @@ class VideoStreaming:
 
         lock = False
         async def websocket_handler(request):
+            global lock
             if lock:
                 raise web.HTTPConflict()
             lock = True
