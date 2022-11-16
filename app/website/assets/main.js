@@ -200,12 +200,9 @@ const { clientState$, serverState$, updateClientState } = (function(){
     document.getElementById('map-update-form').addEventListener('submit', e => {
         e.preventDefault()
         const map = parseMap(mapInput.value)
-        try{
-            console.log(findPath(map, map.nodes[0].id, map.nodes.at(-1).id))
-            //console.log(findPath(map, map.nodes[0].id, 20))
-        } catch(ex) { 
-            console.log('Eror (source or target not valid)')
-        }
+        console.log(findPath(map, map.nodes[0].id, map.nodes.at(-1).id))
+        //console.log(findPath(map, map.nodes[0].id, 20))
+
         console.log(map.lineSegments)
         displayMap(map)
     })
