@@ -19,7 +19,7 @@ function getIntersectionDistance (ray, segment) {
     } else if (!isVert1 && isVert2) {
         const y = ray.start.y
         const x = segment.start.x
-        const [minY, maxY] = [segment.start.y, segment.end.x].sort(asc)
+        const [minY, maxY] = [segment.start.y, segment.end.y].sort(asc)
         if (minY <= y && y <= maxY ) {
             const distance = (x - ray.start.x) * Math.sign(ray.end.x - ray.start.x)
             if (distance > 0) {

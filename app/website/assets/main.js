@@ -1,7 +1,7 @@
 import * as d3 from 'https://cdn.skypack.dev/pin/d3@v7.6.1-1Q0NZ0WZnbYeSjDusJT3/mode=imports,min/optimized/d3.js'
 import { Subject, fromEvent, Observable, withLatestFrom, first, concatWith, mergeMap, switchMap, of, tap, throwError, retry, map, filter, merge, share, combineLatest } from 'https://cdn.skypack.dev/pin/rxjs@v7.5.7-j3yWv9lQY9gNeD9CyX5Y/mode=imports,min/optimized/rxjs.js'
 import { parseMap } from './parse-map.js'
-
+import { findPath } from './pathfinding.js'
 // Handle WebSocket streams
 const { clientState$, serverState$, updateClientState } = (function(){
 
@@ -187,6 +187,7 @@ const { clientState$, serverState$, updateClientState } = (function(){
     document.getElementById('map-update-form').addEventListener('submit', e => {
         e.preventDefault()
         const map = parseMap(mapInput.value)
+        console.log(findPath(map, 2, 9))
         displayMap(map)
     })
 })()
