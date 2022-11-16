@@ -42,10 +42,12 @@ def process_original_frame(original_frame):
         display_merged_parallel_lines(merged_lines, original_frame)
         display_center_of_parallel_lines(parallel_line_centers, original_frame)
         display_displacement_and_direction_vectors(parallel_line_centers, original_frame)
-        display_direction_to_go(parallel_line_centers, original_frame)
+        # display_direction_to_go(parallel_line_centers, original_frame)
         
         if parallel_line_centers is not None and len(parallel_line_centers) > 0:
-            velocity_vector = get_direction_to_go(parallel_line_centers[0], original_frame)
+            displacement_vector = get_displacement_vector_from_center(parallel_line_centers[0], original_frame)
+            direction_vector = get_direction_vector_of_line(parallel_line_centers[0])
+            velocity_vector = get_direction_to_go(displacement_vector, direction_vector, original_frame)
             direction = velocity_vector.y, velocity_vector.x
             #print(str(direction))
     

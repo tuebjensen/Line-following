@@ -1,10 +1,11 @@
+from math import pi
 import cv2 as cv
 import numpy as np
 from typing import Tuple
-from lib_process_lines import Line, BOX_SIZE, get_tape_paths, _get_box_centers_please, get_centers_of_parallel_line_pairs, get_from_houghlines, get_tape_corner_line_segments_please, merge_lines
+from lib_process_lines import Line, BOX_SIZE, get_tape_paths_and_lines, _get_box_centers_please, get_centers_of_parallel_line_pairs, get_from_houghlines, get_tape_corner_line_segments_please, merge_lines, _get_intersection_point
 from lib_calculate_direction import get_direction_to_go, get_direction_vector_of_line, get_displacement_vector_from_center
 
-
+INTERSECTION_TRESHOLD = 0.4 # ratio of image height
 
 def nothing(x):
     pass
@@ -61,9 +62,10 @@ def display_merged_lines_segments(merged_lines_segments, frame):
             cv.line(frame, (line_segments[j].start_point[0],line_segments[j].start_point[1]), (line_segments[j].end_point[0],line_segments[j].end_point[1]), color, 2)
 
 
-def display_tape_paths(tape_paths, frame):
-    if tape_paths is None:
+def display_tape_paths(tape_paths_and_lines, frame):
+    if tape_paths_and_lines is None:
         return
+    tape_paths = list(tape_paths_and_lines.keys())
     for i in range(len(tape_paths)):
         tape_path = tape_paths[i]
         color = (255-255/len(tape_paths)*i, 0, 255-255/len(tape_paths)*i)
@@ -119,7 +121,9 @@ def display_direction_to_go(parallel_line_centers, frame):
     frame_height = frame.shape[0]
     center_x = frame_width / 2
     center_y = frame_height / 2
-    direction_to_go = get_direction_to_go(line, frame) * 50
+    displacement_vector = get_displacement_vector_from_center(line, frame)
+    direction_vector = get_direction_vector_of_line(line)
+    direction_to_go = get_direction_to_go(displacement_vector, direction_vector, frame) * 50
     cv.line(frame, (int(center_x), int(center_y)), (int(direction_to_go.x) + int(center_x), int(center_y) - int(direction_to_go.y)), (0,69,255), 2)
 
 
@@ -151,18 +155,60 @@ def process_video():
         if isinstance(houghlines, np.ndarray):
             cv.putText(original_frame, f'lines: {len(houghlines)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2, cv.LINE_AA)
 
-            lines = get_from_houghlines(houghlines)
-            merged_lines = merge_lines(lines, original_frame)
-            merged_lines_segments = get_tape_corner_line_segments_please(merged_lines, edges)
-            parallel_line_centers = get_centers_of_parallel_line_pairs(merged_lines)
-            tape_segments = [x for l in list(merged_lines_segments.values()) for x in l]
-            tape_paths = get_tape_paths(parallel_line_centers, tape_segments, original_frame)
+            lines = get_from_houghlines(houghlines)                                                               #blue
+            merged_lines = merge_lines(lines, original_frame)                                                     #green
+            merged_lines_segments = get_tape_corner_line_segments_please(merged_lines, edges)                     #brown based on edge image, related to greens
+            parallel_line_centers = get_centers_of_parallel_line_pairs(merged_lines)                              #red
+            tape_segments = [x for l in list(merged_lines_segments.values()) for x in l]                          #brown by itself, no relationship with greens
+            tape_paths_and_lines = get_tape_paths_and_lines(parallel_line_centers, tape_segments, original_frame) #purple
+            if tape_paths_and_lines is not None:
+                tape_paths = list(tape_paths_and_lines.keys())
+                intersection_red = _get_intersection_point(parallel_line_centers[0], parallel_line_centers[1])
+                if intersection_red[1] > original_frame.shape[0]*INTERSECTION_TRESHOLD:
+                    if len(tape_paths) == 2: #it is an L turn
+                        path1 = tape_paths[0]
+                        path2 = tape_paths[1]
+                        vector1 = path1.get_direction_vector_please()
+                        vector2 = path2.get_direction_vector_please()
+                        angle1 = vector1.get_angle()
+                        angle2 = vector2.get_angle()
+                        # TODO: wraparound
+                        vector1_diff_from_vertical = min(abs(angle1 - pi/2), abs(angle1 - 3*pi/2))
+                        vector2_diff_from_vertical = min(abs(angle2 - pi/2), abs(angle2 - 3*pi/2))
+
+                        current = path1 if vector1_diff_from_vertical < vector2_diff_from_vertical else path2
+                        target = path2 if vector1_diff_from_vertical < vector2_diff_from_vertical else path1
+
+                        displacement_vector = get_displacement_vector_from_center(tape_paths_and_lines[target], original_frame)
+                        direction_vector = target.get_direction_vector_please()
+                        direction_to_go = get_direction_to_go(displacement_vector, direction_vector, original_frame)
+                    elif len(tape_paths) >= 3:
+                        #pick command from the path list, it's an intersection
+                        pass
+                    elif len(tape_paths) == 1:
+                        #dead end this is whitin if intersection exists, so it will never ever ever run
+                        pass
+                else: #intersection exists but above INTERSECTION_TRESHOLD line
+                    target = None
+                    lowest_diff_from_down = pi
+                    for tape_path in tape_paths:
+                        vector = tape_path.get_direction_vector_please()
+                        angle = vector.get_angle()
+                        diff_from_down = abs(angle - pi/2)
+                        if(diff_from_down < lowest_diff_from_down): # TODO: wraparound
+                            lowest_diff_from_down = diff_from_down
+                            target = tape_path
+                    
+                    displacement_vector = get_displacement_vector_from_center(tape_paths_and_lines[target], original_frame) # turquoise
+                    direction_vector = -1 * target.get_direction_vector_please()
+                    direction_to_go = get_direction_to_go(displacement_vector, direction_vector, original_frame)
+                pass
             display_all_lines(lines, original_frame)
             display_merged_parallel_lines(merged_lines, original_frame)
             display_boxes_around_merged_lines(merged_lines, original_frame, edges)
             display_merged_lines_segments(merged_lines_segments, original_frame)
             display_center_of_parallel_lines(parallel_line_centers, original_frame)
-            display_tape_paths(tape_paths, original_frame)
+            display_tape_paths(tape_paths_and_lines, original_frame)
             display_displacement_and_direction_vectors(parallel_line_centers, original_frame)
             display_direction_to_go(parallel_line_centers, original_frame)
 

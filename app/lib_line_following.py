@@ -72,16 +72,11 @@ def display_displacement_and_direction_vectors(parallel_line_centers, frame):
         2
     )
 
-def display_direction_to_go(parallel_line_centers, frame):
-    if(not isinstance(parallel_line_centers, (list, tuple, np.ndarray))):
-        return
-    if(len(parallel_line_centers) < 1):
-        return
-    line = parallel_line_centers[0]
+def display_direction_to_go(displacement_vector, direction_vector, frame):
     frame_width = frame.shape[1]
     frame_height = frame.shape[0]
     center_x = frame_width / 2
     center_y = frame_height / 2
-    direction_to_go = get_direction_to_go(line, frame) * 50
+    direction_to_go = get_direction_to_go(displacement_vector, direction_vector, frame) * 50
     cv.line(frame, (int(center_x), int(center_y)), (int(direction_to_go.x) + int(center_x), int(center_y) - int(direction_to_go.y)), (0,69,255), 2)
 

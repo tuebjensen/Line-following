@@ -1,4 +1,4 @@
-from math import sqrt
+from math import atan2, sqrt
 
 class Vector2D:
     def __init__(self, x: float, y: float) -> 'Vector2D':
@@ -35,3 +35,6 @@ class Vector2D:
 
     def normalize(self) -> 'Vector2D':
         return self / self.get_length()
+
+    def get_angle(self):
+        return atan2(self.y, self.x)
