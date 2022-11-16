@@ -38,7 +38,6 @@ function getIntersectionDistance (ray, segment) {
         } else if (distance1 <= 0 && distance2 <= 0) {
             return Infinity
         } else {
-            console.log(distance1, distance2)
             throw new Error('Eror (vert)')
         }
     } else if (!isVert1 && !isVert2) {
@@ -130,6 +129,17 @@ export function parseMap (str) {
                 } else {
                     throw new Error('Eror (no node)')    
                 }
+            } else if (/\s/.test(str[0])) {
+                str = str.slice(1)
+            } else if (/#/.test(str[0])) {
+                const commentEnd = str.indexOf('\n')
+                if (commentEnd === -1) {
+                    str = ''
+                    return
+                }
+                str = str.slice(commentEnd + 1)
+            } else {
+                throw new Error('Unknown token: ' + str[0])
             }
         }
     }
