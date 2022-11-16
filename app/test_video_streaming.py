@@ -1,8 +1,8 @@
 import cv2 as cv
-from lib_video_streaming import VideoStreaming
+from lib_web_server import WebServer
 import asyncio
 camera = cv.VideoCapture(0)
-video = VideoStreaming()
+video = WebServer()
 
 
 async def main():
@@ -14,7 +14,12 @@ async def main():
         await asyncio.sleep(0.1)
     camera.release()
 
+def path_callback(path):
+    pass
+    # print(path)
 
+def parse_path(path):
+    pass
 async def start():
-    await asyncio.gather(video.start_running('0.0.0.0', 5000), main())
+    await asyncio.gather(video.start_running('0.0.0.0', 5000, path_callback), main())
 asyncio.run(start())

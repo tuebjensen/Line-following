@@ -4,26 +4,25 @@ from simple_pid import PID
 import asyncio
 import sys
 import signal
+import os
+
 class Motor:
     def __init__(
         self,
         speed_pin: int,
         direction_pin: int,
-        encoder_interrupt_pin: int,
+        encoder_interrupt_wiring_pi_pin: int,
         speed: int = 20,
         forwards: bool = True
     ):
         self._speed_pin = speed_pin
         self._direction_pin = direction_pin
-        self._encoder_interrupt_pin = encoder_interrupt_pin
+        self._encoder_interrupt_wiring_pi_pin = encoder_interrupt_wiring_pi_pin
         self._encoder_interrupt_count = 0
         self._speed = speed
         self._forwards = forwards
         self._running = False
         self._pid = None
-
-    def _encoder_callback(self, arg):
-        self._encoder_interrupt_count += 1
 
     def set_speed(self, speed):
         if self._pid is not None:
@@ -54,18 +53,26 @@ class Motor:
         
         async def do_encoder_process():
             while True:
-                print('Hi')
-                self._encoder_interrupt_count = int((await encoder_process.stdout.readline()).decode('ascii').rstrip())
-                print(self._encoder_interrupt_count)
+                try:
+                    output = await encoder_process.stdout.readline()
+                    outputStr = output.decode('ascii').rstrip()
+                    if (outputStr.isdigit() and len(outputStr) > 0):
+                        print(outputStr)
+                        self._encoder_interrupt_count = int(outputStr)
+                    await asyncio.sleep(0)
+                except ProcessLookupError:
+                    pass
 
-        def signal_handler(sig, frame):
-            encoder_process.kill()
         # setup pins
         GPIO.setup(self._speed_pin, GPIO.OUT)
         GPIO.setup(self._direction_pin, GPIO.OUT)
 
-        encoder_process = await asyncio.create_subprocess_exec(sys.executable, 'run_encoder.py', str(self._encoder_interrupt_pin), stdout = asyncio.subprocess.PIPE, stderr = asyncio.subprocess.STDOUT)
-        signal.signal(signal.SIGINT, signal_handler)
+        encoder_process = await asyncio.create_subprocess_exec(
+            os.path.join(os.path.dirname(__file__), 'run_encoder'), str(self._encoder_interrupt_wiring_pi_pin),
+            stdout = asyncio.subprocess.PIPE,
+            stderr = asyncio.subprocess.STDOUT,
+            stdin = asyncio.subprocess.DEVNULL
+        )
         GPIO.output(self._direction_pin, self._forwards)
 
         # setup PID for the encoder(=input) + dutycycle(=output)        
@@ -76,9 +83,6 @@ class Motor:
         self._pid = pid
 
         self._speed_pwm = GPIO.PWM(self._speed_pin, 50) # 50 Hz
-
-        #GPIO.add_event_detect(self._encoder_interrupt_pin, GPIO.FALLING, callback=self._encoder_callback)
-        # (lambda arg: Motor._encoder_callback(self, arg)
 
         # start with a small duty cycle
         self._speed_pwm.start(5 if not self._forwards else 95)
