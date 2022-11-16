@@ -136,6 +136,9 @@ const { clientState$, serverState$, updateClientState } = (function(){
 // Setup D3 & the graph visualization.
 ;(function() { 
     const svg = d3.select('svg')
+    const lineGroup = svg.append('g')
+    const nodeGroup = svg.append('g')
+
     function displayMap (map) {
         const smallestDistance = Math.min(
             ...map.lineSegments.map(l =>
@@ -151,9 +154,9 @@ const { clientState$, serverState$, updateClientState } = (function(){
         const width = maxX - minX
         const height = maxY - minY
 
-        const line = svg
+        const line = lineGroup
             .selectAll('.line')
-            .data(map.lineSegments, line => line)
+            .data(map.lineSegments)
             .join(
                 enter => enter
                     .append('line')
@@ -162,21 +165,31 @@ const { clientState$, serverState$, updateClientState } = (function(){
             .attr('y1', line => line.start.y)
             .attr('x2', line => line.end.x)
             .attr('y2', line => line.end.y)
-            .attr('stroke-width', smallestDistance / 10)
+            .attr('stroke-width', smallestDistance * 0.1)
             .attr('stroke-linecap', 'round')
-            .classed('line', true)
+            .classed('line', true)        
 
-        const node = svg
+        const node = nodeGroup
             .selectAll('.node')
-            .data(map.nodes, node => node)
+            .data(map.nodes, node => node.id)
             .join(
                 enter => enter
-                    .append('circle')
+                    .append('g')
+                    .call(g => {
+                        g
+                            .append('circle')
+                            .attr('r', smallestDistance * 0.4)
+                        g
+                            .append('text')
+                            .attr('dominant-baseline', 'central')
+                            .attr('text-anchor', 'middle')
+                            .attr('font-size', smallestDistance * 0.4 + 'px')
+                            .text(node => node.id)
+                    })
             )
-            .attr('cx', node => node.x)
-            .attr('cy', node => node.y)
-            .attr('r', smallestDistance / 2.1)
-            .classed('destination', node => console.log(node) || node.isPossibleDestination)
+            .attr('transform', node => `translate(${node.x},${node.y})`)
+            .attr('r', smallestDistance * 0.4)
+            .classed('destination', node => node.isPossibleDestination)
             .classed('node', true)
 
 
