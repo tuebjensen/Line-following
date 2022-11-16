@@ -65,7 +65,6 @@ function dijkstra(graph, src) {
             }
         }
     }
-    printSolution(dist)
     console.log(parent)
     return parent
 }
@@ -81,10 +80,20 @@ function printGraph(graph) {
     console.log(graphline)
 
 }
+
+function isInMap(nodes, source, target){
+    return nodes.find(node => node.id == source) && nodes.find(node => node.id == target) 
+}
+
 export function findPath(map, source, target) {
-    //r1t2r3(t4|b5)r6(t5|b5(l2|r4)) string used for tests
+    //r1t2r3(t4|b5)r6(t5|b5(l2|r4))r3t2l* string used for tests
     const lineSegments = map.lineSegments
     const nodes = map.nodes
+
+    if (!isInMap(nodes, source, target)){
+        throw new Error('The source or the target are invalid for this map')   
+    }
+
     const adjacencyMatrix = makeAdjacencyMatrix(lineSegments, nodes.length)
     const sptParent = dijkstra(adjacencyMatrix, source)
     const pathFromSourceToTarget = [target]
