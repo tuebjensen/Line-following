@@ -83,6 +83,7 @@ function printGraph(graph) {
 }
 export function findPath(map, source, target) {
     //r1t2r3(t4|b5)r6(t5|b5(l2|r4)) string used for tests
+    //r1t2r3(t4|b5r2t2r8)r1r1r1r1r1r1(t5|b*b2(l2|r4)) string used for tests
     const lineSegments = map.lineSegments
     const nodes = map.nodes
     const adjacencyMatrix = makeAdjacencyMatrix(lineSegments, nodes.length)
