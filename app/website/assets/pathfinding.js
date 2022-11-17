@@ -98,10 +98,6 @@ export function findPath(map, source, target) {
     const sptParentArray = dijkstra(adjacencyMatrix, source)
     console.log(sptParentArray)
     console.log(target)
-    if (!isInShortestPath(sptParentArray, target)) {
-        throw new Error('Target is not present in map')
-    }
-    
     
     const pathFromSourceToTarget = [target]
     let foundPath = false
@@ -110,6 +106,8 @@ export function findPath(map, source, target) {
         newTarget = sptParentArray[newTarget]
         if (newTarget === -1) {
             foundPath = true
+        } else if (sptParentArray[newTarget] == newTarget){
+            throw new Error('Target is not present in map')
         } else {
             pathFromSourceToTarget.push(newTarget)
         }
