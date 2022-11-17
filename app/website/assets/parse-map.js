@@ -79,12 +79,16 @@ export function parseMap (str) {
                 const endX = (direction === 'l' ? -distance : direction === 'r' ? distance : 0) + currentX
                 const endY = (direction === 't' ? -distance : direction === 'b' ? distance : 0) + currentY                    
                 const ray = {start: {x: currentX, y: currentY}, end: {x: endX, y: endY}}
-                const smallestDistance = Math.min(...(lineSegments.map((lineSegment) => getIntersectionDistance(ray, lineSegment))))
+                const lineSegmentsMapped = lineSegments.map((lineSegment) => getIntersectionDistance(ray, lineSegment))
+                const smallestDistance = Math.min(...(lineSegmentsMapped))
+                const smallestDistanceIndex = lineSegmentsMapped.indexOf(smallestDistance)
+
                 if (distanceStr === '*' && smallestDistance === Infinity){
                     throw new Error('The newly created line segment would go to infinity.')
                 } else if (distanceStr !== '*' && smallestDistance < distance) {
                     throw new Error('The newly created line segment would cross an other line segment.')
                 }
+
                 const finalDistance = distanceStr === '*' ? smallestDistance : distance
                 const newCurrentX = (direction === 'l' ? -finalDistance : direction === 'r' ? finalDistance : 0) + currentX
                 const newCurrentY = (direction === 't' ? -finalDistance : direction === 'b' ? finalDistance : 0) + currentY
@@ -92,6 +96,15 @@ export function parseMap (str) {
                 const endNode = nodes.find(node => node.x === newCurrentX && node.y === newCurrentY) || (function(){
                     const newNode = {x: newCurrentX, y: newCurrentY, id: nodeIdIterator.next().value}
                     nodes.push(newNode)
+                    if (smallestDistance == finalDistance){
+                        const oldEndNode = lineSegments[smallestDistanceIndex].end
+                        lineSegments[smallestDistanceIndex].end = newNode
+                        const newLineSegment = {
+                            start: newNode,
+                            end: oldEndNode
+                        }
+                        lineSegments.push(newLineSegment)
+                    }
                     return newNode
                 })()
 
