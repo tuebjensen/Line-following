@@ -12,7 +12,7 @@ MIN_LINE_SEGMENT_HOLE_SIZE = 4
 class Line:
     _rho_diff_threshold = 80.0
     _theta_diff_threshold = 0.3
-    _end_point_distance_threshold = 50
+    _distance_threshold = 30
 
     def __init__(self, rho: float, theta: float) -> 'Line':
         self.rho = rho
@@ -21,19 +21,25 @@ class Line:
     def is_similar(self, to_compare: 'Line', frame) -> bool:
         A, B = _get_line_frame_intersection_points(self, frame)
         C, D = _get_line_frame_intersection_points(to_compare, frame)
-        AC = LineSegment(A, C)
-        AD = LineSegment(A, D)
-        BC = LineSegment(B, C)
-        BD = LineSegment(B, D)
-        length_1, length_2 = self._get_frame_intersection_distances(AC, AD, BC, BD)
-        return length_1 < self._end_point_distance_threshold and length_2 < self._end_point_distance_threshold
+        AB = LineSegment(A, B)
+        CD = LineSegment(C, D)
+        dist_A_to_CD = self._distance_from_point_to_line_segment(A, CD)
+        dist_B_to_CD = self._distance_from_point_to_line_segment(B, CD)
+        dist_C_to_AB = self._distance_from_point_to_line_segment(C, AB)
+        dist_D_to_AB = self._distance_from_point_to_line_segment(D, AB)
+        return (dist_A_to_CD < self._distance_threshold
+                and dist_B_to_CD < self._distance_threshold
+                and dist_C_to_AB < self._distance_threshold
+                and dist_D_to_AB < self._distance_threshold)
 
-    def _get_frame_intersection_distances(self, AC: 'LineSegment', AD: 'LineSegment', BC: 'LineSegment', BD: 'LineSegment'):
-        len_AC = AC.get_length()
-        len_AD = AD.get_length()
-        len_BC = BC.get_length()
-        len_BD = BD.get_length()
-        return (len_AC, len_BD) if len_AC + len_BD <= len_BC + len_AD else (len_BC, len_AD)
+    def _distance_from_point_to_line_segment(self, point: 'tuple[int, int]', line_segment: 'LineSegment') -> float:
+        x0, y0 = point
+        x1, y1 = line_segment.start_point
+        x2, y2 = line_segment.end_point
+        return abs((x2-x1)*(y1-y0) - (x1-x0)*(y2-y1)) / sqrt((x2-x1)**2 + (y2-y1)**2)
+
+
+
 
 class LineSegment:
     def __init__(self, start_point: 'tuple[int, int]', end_point: 'tuple[int, int]') -> 'LineSegment':
@@ -46,12 +52,18 @@ class LineSegment:
     def get_direction_vector_please(self) -> 'Vector2D':
         return Vector2D(self.end_point[0]-self.start_point[0], self.end_point[1]-self.start_point[1])
 
+    def flip(self) -> 'LineSegment':
+        temp = self.start_point
+        self.start_point = self.end_point
+        self.end_point = temp
+        return self
+
     
 
 
 def get_from_houghlines(hough_lines) -> 'list[Line]':
     if hough_lines is None:
-        return None
+        return []
     lines = []
     for line in hough_lines:
         rho, theta = line[0]
@@ -119,14 +131,8 @@ def _get_white_pixels_per_box_please(box_centers: 'list[tuple[int,int]]', edges)
     pixels_per_box = []
     half_box_size = int(BOX_SIZE / 2)
     for (x, y) in box_centers:
-        pixels_count = 0
-        for delta_x in range(-half_box_size, half_box_size):
-            for delta_y in range(-half_box_size, half_box_size):
-                if (x + delta_x > 0 and x + delta_x < max_x
-                        and y + delta_y > 0 and y + delta_y < max_y
-                        and edges[y + delta_y, x + delta_x] == 255):
-                    pixels_count += 1
-        pixels_per_box.append(pixels_count)
+        box = edges[y-half_box_size:y+half_box_size, x-half_box_size:x+half_box_size]
+        pixels_per_box.append(np.count_nonzero(box == 255))
     return pixels_per_box
 
 
@@ -215,12 +221,20 @@ def _get_line_segments_please(markers: 'list[bool]', centers: 'list[tuple[int, i
 
 
 def get_tape_paths_and_lines(center_lines: 'list[Line]', tape_segments: 'list[LineSegment]', frame) -> 'dict[LineSegment, Line]':
-    if(len(center_lines) != 2 ):
-        return
-    intersection_point = _get_intersection_point(center_lines[0], center_lines[1])
-    center_line_segments = _segment_center_lines(center_lines, intersection_point, frame)
-    tape_paths = _get_valid_center_line_segments(center_line_segments, tape_segments)
-    return tape_paths
+    if len(center_lines) == 0:
+        return {}
+    if len(center_lines) == 1:
+        frame_intersection_points = _get_line_frame_intersection_points(center_lines[0], frame)
+        frame_intersection_points.sort(key= lambda point: point[1], reverse=True)
+        bottom_point = frame_intersection_points[0]
+        top_point = frame_intersection_points[1]
+        path = LineSegment(bottom_point, top_point)
+        return {path: center_lines[0]}
+    if len(center_lines) == 2:
+        intersection_point = _get_intersection_point(center_lines[0], center_lines[1])
+        center_line_segments = _segment_center_lines(center_lines, intersection_point, frame)
+        tape_paths = _get_valid_center_line_segments(center_line_segments, tape_segments)
+        return tape_paths
 
 
 def _get_intersection_point(line_one: 'Line', line_two: 'Line') -> 'tuple[int, int]':
@@ -258,10 +272,10 @@ def _get_line_frame_intersection_points(line: 'Line', frame) -> 'list[tuple[int,
     x_intercept = int(rho*cos(theta) - rho*sin(theta)/tan(theta - pi/2))
     y_intercept = int(rho*sin(theta) - rho*cos(theta)*tan(theta - pi/2))
     possible_frame_intersection_points = [
-        (0, y_intercept),
-        (max_x, int(tan(theta - pi/2)*max_x + y_intercept)),
-        (x_intercept, 0),
-        (int(1/tan(theta - pi/2)*max_y + x_intercept), max_y)
+        (0, y_intercept), # point is somewhere on the left side of the frame
+        (max_x, int(tan(theta - pi/2)*max_x + y_intercept)), # point is somewhere on the right side of the frame
+        (x_intercept, 0), # point is somewhere on the top of the frame
+        (int(1/tan(theta - pi/2)*max_y + x_intercept), max_y) # point is somwhere on the bottom of the frame
     ]
     possible_frame_intersection_points = _filter_out_of_frame(possible_frame_intersection_points, max_x, max_y)
     frame_intersection_points = _filter_same_points(possible_frame_intersection_points)[0:2]
@@ -334,7 +348,7 @@ def _get_median_line(lines: 'list[Line]') -> 'Line':
 
 def get_centers_of_parallel_line_pairs(lines: 'list[Line]') -> 'list[Line]':
     if lines is None:
-        return None
+        return []
     parallel_lines: dict[float, list[Line]] = {}
     for line in lines:
         found_parallel = False

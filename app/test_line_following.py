@@ -9,11 +9,12 @@ import numpy as np
 import signal
 import sys
 import RPi.GPIO as GPIO
+from lib_image_processing import find_edges_and_lines, process_frame
+from lib_lines_display import display_all_lines, display_center_of_parallel_lines, display_displacement_and_direction_vectors, display_merged_parallel_lines
 from lib_calculate_direction import get_direction_vector_of_line, get_displacement_vector_from_center, get_direction_to_go
 from lib_car import Car
 from lib_motor import Motor
-from lib_process_lines import Line, get_centers_of_parallel_line_pairs, get_from_houghlines, merge_lines
-from lib_line_following import process_frame, find_edges_and_lines, display_all_lines, display_center_of_parallel_lines, display_direction_to_go, display_displacement_and_direction_vectors, display_merged_parallel_lines
+from lib_process_lines import get_centers_of_parallel_line_pairs, get_from_houghlines, merge_lines
 from lib_web_server import WebServer
 
 cap = None
