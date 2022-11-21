@@ -2,7 +2,7 @@ from math import pi
 import time
 import cv2 as cv
 import numpy as np
-from lib_line_following import find_edges_and_lines, nothing, process_frame
+from lib_image_processing import find_edges_and_lines, nothing, process_frame
 from lib_lines_display import display_all_lines, display_boxes_around_merged_lines, display_center_of_parallel_lines, display_direction_to_go, display_displacement_and_direction_vectors, display_merged_lines_segments, display_merged_parallel_lines, display_tape_paths
 from lib_process_lines import Line, LineSegment, get_tape_paths_and_lines, get_centers_of_parallel_line_pairs, get_from_houghlines, get_tape_corner_line_segments_please, merge_lines, _get_intersection_point
 from lib_calculate_direction import get_direction_to_go, get_displacement_vector_from_center
@@ -264,7 +264,7 @@ def decide_target(original_frame, parallel_line_centers, tape_paths_and_lines, p
 #     display_merged_lines_segments(merged_lines_segments, original_frame)
 #     display_center_of_parallel_lines(parallel_line_centers, original_frame)
 #     display_tape_paths(tape_paths_and_lines, original_frame)
-#     # cv.imshow('original video', original_frame)
+#     cv.imshow('original video', original_frame)
 
 
 # def get_frame(capture):

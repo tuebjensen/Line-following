@@ -12,7 +12,7 @@ MIN_LINE_SEGMENT_HOLE_SIZE = 4
 class Line:
     _rho_diff_threshold = 80.0
     _theta_diff_threshold = 0.3
-    _distance_threshold = 30
+    _distance_threshold = 40
 
     def __init__(self, rho: float, theta: float) -> 'Line':
         self.rho = rho
@@ -23,14 +23,22 @@ class Line:
         C, D = _get_line_frame_intersection_points(to_compare, frame)
         AB = LineSegment(A, B)
         CD = LineSegment(C, D)
+        max_x = int(frame.shape[1] - 1)
+        max_y = int(frame.shape[0] - 1)
+
+        proj_A_to_CD = self._project_point_to_line_segment(A, CD)
         dist_A_to_CD = self._distance_from_point_to_line_segment(A, CD)
         dist_B_to_CD = self._distance_from_point_to_line_segment(B, CD)
+        proj_B_to_CD = self._project_point_to_line_segment(B, CD)
         dist_C_to_AB = self._distance_from_point_to_line_segment(C, AB)
+        proj_C_to_AB = self._project_point_to_line_segment(C, AB)
         dist_D_to_AB = self._distance_from_point_to_line_segment(D, AB)
-        return (dist_A_to_CD < self._distance_threshold
-                and dist_B_to_CD < self._distance_threshold
-                and dist_C_to_AB < self._distance_threshold
-                and dist_D_to_AB < self._distance_threshold)
+        proj_D_to_AB = self._project_point_to_line_segment(D, AB)
+        
+        return not (_is_within_frame(proj_A_to_CD, max_x, max_y) and dist_A_to_CD > self._distance_threshold
+                or _is_within_frame(proj_B_to_CD, max_x, max_y) and dist_B_to_CD > self._distance_threshold
+                or _is_within_frame(proj_C_to_AB, max_x, max_y) and dist_C_to_AB > self._distance_threshold
+                or _is_within_frame(proj_D_to_AB, max_x, max_y) and dist_D_to_AB > self._distance_threshold)
 
     def _distance_from_point_to_line_segment(self, point: 'tuple[int, int]', line_segment: 'LineSegment') -> float:
         x0, y0 = point
@@ -38,6 +46,16 @@ class Line:
         x2, y2 = line_segment.end_point
         return abs((x2-x1)*(y1-y0) - (x1-x0)*(y2-y1)) / sqrt((x2-x1)**2 + (y2-y1)**2)
 
+    def _project_point_to_line_segment(self, point: 'tuple[int, int]', line_segment: 'LineSegment') -> 'tuple[int, int]':
+        start_point, end_point = line_segment.start_point, line_segment.end_point
+        e1 = Vector2D(end_point[0] - start_point[0], end_point[1] - start_point[1])
+        e2 = Vector2D(point[0] - start_point[0], point[1] - start_point[1])
+        dot_product = e1.dot(e2)
+        length_squared = e1.x**2 + e1.y**2
+        return (
+            (int)(start_point[0] + (dot_product * e1.x) / length_squared),
+            (int)(start_point[1] + (dot_product * e1.y) / length_squared)
+        )
 
 
 
@@ -285,10 +303,13 @@ def _get_line_frame_intersection_points(line: 'Line', frame) -> 'list[tuple[int,
 def _filter_out_of_frame(possible_frame_intersection_points: 'list[tuple[int, int]]', max_x, max_y) -> 'list[tuple[int, int]]':
     filtered_points = []
     for possible_point in possible_frame_intersection_points:
-        x, y = possible_point
-        if x >= 0 and x <= max_x and y >= 0 and y <= max_y:
+        if _is_within_frame(possible_point, max_x, max_y):
             filtered_points.append(possible_point)
     return filtered_points
+
+def _is_within_frame(point: 'tuple[int, int]', max_x, max_y) -> bool:
+    x, y = point
+    return x >= 0 and x <= max_x and y >= 0 and y <= max_y
 
 
 def _filter_same_points(possible_frame_intersection_points: 'list[tuple[int, int]]') -> 'list[tuple[int, int]]':
@@ -328,14 +349,15 @@ def _intersect(A,B,C,D) -> bool:
 
 
 def _get_median_line(lines: 'list[Line]') -> 'Line':
+    has_to_convert = max_theta_diff(lines) > 2*Line._theta_diff_threshold
     rhos = []
     thetas = []
     for line in lines:
         rho = line.rho
         theta = line.theta
-        if(rho < 0):
-            theta -= pi
-            rho *= -1
+        if(has_to_convert and theta > pi - Line._theta_diff_threshold):
+            line = _convert_to_comparable_form(line)
+            rho, theta = line.rho, line.theta
         rhos.append(rho)
         thetas.append(theta)
     median_rho = median(rhos)
@@ -343,8 +365,17 @@ def _get_median_line(lines: 'list[Line]') -> 'Line':
     if median_theta < 0:
         median_theta += pi
         median_rho *= -1
-    return Line(median_rho, median_theta)
+    return _convert_to_conventional_form(Line(median_rho, median_theta))
 
+def max_theta_diff(lines: 'list[Line]') -> float:
+    min_theta = lines[0].theta
+    max_diff = 0
+    for line in lines:
+        if (line.theta < min_theta):
+            min_theta = line.theta
+        elif (line.theta - min_theta > max_diff):
+            max_diff = line.theta - min_theta
+    return max_diff
 
 def get_centers_of_parallel_line_pairs(lines: 'list[Line]') -> 'list[Line]':
     if lines is None:
@@ -370,8 +401,11 @@ def get_centers_of_parallel_line_pairs(lines: 'list[Line]') -> 'list[Line]':
 
 
 def _get_center_line(line_one: 'Line', line_two: 'Line') -> 'Line':
-    line_one = _convert_to_comparable_form(line_one)
-    line_two = _convert_to_comparable_form(line_two)
+    if(abs(line_one.theta - line_two.theta) > Line._theta_diff_threshold):
+        if line_one.theta > line_two.theta:
+            line_one = _convert_to_comparable_form(line_one)
+        else:
+            line_two = _convert_to_comparable_form(line_two)
 
     rho_one, theta_one = line_one.rho, line_one.theta
     rho_two, theta_two = line_two.rho, line_two.theta
@@ -386,9 +420,9 @@ def _get_center_line(line_one: 'Line', line_two: 'Line') -> 'Line':
 
 def _convert_to_comparable_form(line: 'Line') -> 'Line':
     rho, theta = line.rho, line.theta
-    if(rho < 0):
-        theta -= pi
-        rho *= -1
+    # if(rho < 0):
+    theta -= pi
+    rho *= -1
     return Line(rho, theta)
 
 
