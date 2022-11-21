@@ -21,24 +21,30 @@ class Line:
     def is_similar(self, to_compare: 'Line', frame) -> bool:
         A, B = _get_line_frame_intersection_points(self, frame)
         C, D = _get_line_frame_intersection_points(to_compare, frame)
+        # A, B = sorted(sorted(_get_line_frame_intersection_points(self, frame), key=lambda point: point[1]), key=lambda point: point[0])
+        # C, D = sorted(sorted(_get_line_frame_intersection_points(to_compare, frame), key=lambda point: point[1]), key=lambda point: point[0])
         AB = LineSegment(A, B)
         CD = LineSegment(C, D)
         max_x = int(frame.shape[1] - 1)
         max_y = int(frame.shape[0] - 1)
 
-        proj_A_to_CD = self._project_point_to_line_segment(A, CD)
         dist_A_to_CD = self._distance_from_point_to_line_segment(A, CD)
         dist_B_to_CD = self._distance_from_point_to_line_segment(B, CD)
-        proj_B_to_CD = self._project_point_to_line_segment(B, CD)
         dist_C_to_AB = self._distance_from_point_to_line_segment(C, AB)
-        proj_C_to_AB = self._project_point_to_line_segment(C, AB)
         dist_D_to_AB = self._distance_from_point_to_line_segment(D, AB)
-        proj_D_to_AB = self._project_point_to_line_segment(D, AB)
+        # proj_A_to_CD = self._project_point_to_line_segment(A, CD)
+        # proj_B_to_CD = self._project_point_to_line_segment(B, CD)
+        # proj_C_to_AB = self._project_point_to_line_segment(C, AB)
+        # proj_D_to_AB = self._project_point_to_line_segment(D, AB)
         
-        return not (_is_within_frame(proj_A_to_CD, max_x, max_y) and dist_A_to_CD > self._distance_threshold
-                or _is_within_frame(proj_B_to_CD, max_x, max_y) and dist_B_to_CD > self._distance_threshold
-                or _is_within_frame(proj_C_to_AB, max_x, max_y) and dist_C_to_AB > self._distance_threshold
-                or _is_within_frame(proj_D_to_AB, max_x, max_y) and dist_D_to_AB > self._distance_threshold)
+        # return not (_is_within_frame(proj_A_to_CD, max_x, max_y) and dist_A_to_CD > self._distance_threshold
+        #         or _is_within_frame(proj_B_to_CD, max_x, max_y) and dist_B_to_CD > self._distance_threshold
+        #         or _is_within_frame(proj_C_to_AB, max_x, max_y) and dist_C_to_AB > self._distance_threshold
+        #         or _is_within_frame(proj_D_to_AB, max_x, max_y) and dist_D_to_AB > self._distance_threshold)
+        return (dist_A_to_CD < self._distance_threshold
+                and dist_B_to_CD < self._distance_threshold
+                and dist_C_to_AB < self._distance_threshold
+                and dist_D_to_AB < self._distance_threshold)
 
     def _distance_from_point_to_line_segment(self, point: 'tuple[int, int]', line_segment: 'LineSegment') -> float:
         x0, y0 = point
@@ -46,16 +52,16 @@ class Line:
         x2, y2 = line_segment.end_point
         return abs((x2-x1)*(y1-y0) - (x1-x0)*(y2-y1)) / sqrt((x2-x1)**2 + (y2-y1)**2)
 
-    def _project_point_to_line_segment(self, point: 'tuple[int, int]', line_segment: 'LineSegment') -> 'tuple[int, int]':
-        start_point, end_point = line_segment.start_point, line_segment.end_point
-        e1 = Vector2D(end_point[0] - start_point[0], end_point[1] - start_point[1])
-        e2 = Vector2D(point[0] - start_point[0], point[1] - start_point[1])
-        dot_product = e1.dot(e2)
-        length_squared = e1.x**2 + e1.y**2
-        return (
-            (int)(start_point[0] + (dot_product * e1.x) / length_squared),
-            (int)(start_point[1] + (dot_product * e1.y) / length_squared)
-        )
+    # def _project_point_to_line_segment(self, point: 'tuple[int, int]', line_segment: 'LineSegment') -> 'tuple[int, int]':
+    #     start_point, end_point = line_segment.start_point, line_segment.end_point
+    #     e1 = Vector2D(end_point[0] - start_point[0], end_point[1] - start_point[1])
+    #     e2 = Vector2D(point[0] - start_point[0], point[1] - start_point[1])
+    #     dot_product = e1.dot(e2)
+    #     length_squared = e1.x**2 + e1.y**2
+    #     return (
+    #         (int)(start_point[0] + (dot_product * e1.x) / length_squared),
+    #         (int)(start_point[1] + (dot_product * e1.y) / length_squared)
+    #     )
 
 
 
@@ -362,19 +368,16 @@ def _get_median_line(lines: 'list[Line]') -> 'Line':
         thetas.append(theta)
     median_rho = median(rhos)
     median_theta = median(thetas)
-    if median_theta < 0:
-        median_theta += pi
-        median_rho *= -1
     return _convert_to_conventional_form(Line(median_rho, median_theta))
 
 def max_theta_diff(lines: 'list[Line]') -> float:
     min_theta = lines[0].theta
     max_diff = 0
     for line in lines:
+        if (abs(line.theta - min_theta) > max_diff):
+            max_diff = abs(line.theta - min_theta)
         if (line.theta < min_theta):
             min_theta = line.theta
-        elif (line.theta - min_theta > max_diff):
-            max_diff = line.theta - min_theta
     return max_diff
 
 def get_centers_of_parallel_line_pairs(lines: 'list[Line]') -> 'list[Line]':

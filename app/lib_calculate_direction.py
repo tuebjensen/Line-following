@@ -36,4 +36,7 @@ def get_displacement_vector_from_center(line: Line, frame) -> Vector2D:
     gamma = asin((frame_height / 2) / max_distance)
     displacement_length = (max_distance - (rho / sin(pi / 2 - theta + gamma))) * sin(pi / 2 - theta + gamma)
 
-    return Vector2D(displacement_length * cos(displacement_angle), displacement_length * sin(displacement_angle))
+    x_coord = displacement_length * cos(displacement_angle)
+    y_coord = -1 * displacement_length * sin(displacement_angle) # have to multiply by -1 because of difference in reference frame
+
+    return Vector2D(x_coord, y_coord)

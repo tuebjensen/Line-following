@@ -10,7 +10,7 @@ from lib_calculate_direction import get_direction_to_go, get_displacement_vector
 BLUR = 10
 BLOCK_SIZE = 5
 C = 7
-HOUGH_THRESHOLD = 65
+HOUGH_THRESHOLD = 85
 INTERSECTION_THRESHOLD = 0.3 # ratio of image height
 
 STATE_FOLLOWING_LINE = 0
@@ -20,9 +20,14 @@ STATE_STOP = 3
 STATE_TURN180 = 4
 STATE_IM_LOST = 5
 
+STATE_CHANGE_THRESHOLD = 50
+last_incoming_state = STATE_FOLLOWING_LINE
+same_incoming_states_count = STATE_CHANGE_THRESHOLD
+stable_state = STATE_FOLLOWING_LINE
+last_target = None
+last_line = None
+command_list = ['R', 'S', 'L']
 turning_just_initiated = False
-current_state = STATE_FOLLOWING_LINE
-target = None
 close_my_eyes = False
 
 
@@ -31,11 +36,11 @@ def process_video():
     cap = cv.VideoCapture(0)
     img = np.zeros((25, 500, 3), np.uint8)
     cv.namedWindow('image')
-    cv.createTrackbar('Blur', 'image', 10, 100, nothing)
-    cv.createTrackbar('Block size', 'image', 5, 100, nothing)
-    cv.createTrackbar('C', 'image', 7, 100, nothing)
-    cv.createTrackbar('Threshold', 'image', 100, 100, nothing)
-    target = None
+    cv.createTrackbar('Blur', 'image', BLUR, 100, nothing)
+    cv.createTrackbar('Block size', 'image', BLOCK_SIZE, 100, nothing)
+    cv.createTrackbar('C', 'image', C, 100, nothing)
+    cv.createTrackbar('Threshold', 'image', HOUGH_THRESHOLD, 100, nothing)
+    target_segment, target_line = None, None
     while cap.isOpened() and guard:
         last_time = time.time()
         
@@ -53,7 +58,7 @@ def process_video():
         threshold = cv.getTrackbarPos('Threshold', 'image')
         processed_frame = process_frame(original_frame, blur, block_size, c)
         edges, houghlines = find_edges_and_lines(processed_frame, threshold)
-        print(f'Hough transform time to process: {time.time() - last_time}')
+        opencv_processing_time = time.time() - last_time
 
         if isinstance(houghlines, np.ndarray):
             cv.putText(original_frame, f'lines: {len(houghlines)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2, cv.LINE_AA)
@@ -71,13 +76,14 @@ def process_video():
             display_center_of_parallel_lines(parallel_line_centers, original_frame)
             display_tape_paths(tape_paths_and_lines, original_frame)
 
-            # target = decide_target(original_frame, parallel_line_centers, tape_paths_and_lines, target)
-            # if target is not None:
-            #     displacement_vector = get_displacement_vector_from_center(tape_paths_and_lines[target], original_frame)
-            #     direction_vector = target.get_direction_vector_please()
-            #     velocity_vector = get_direction_to_go(displacement_vector, direction_vector, original_frame)
-            #     display_displacement_and_direction_vectors(displacement_vector, direction_vector, original_frame)
-            #     display_direction_to_go(velocity_vector, original_frame)
+            target_segment, target_line = decide_target(original_frame, parallel_line_centers, tape_paths_and_lines, target_segment)
+            if target_segment is not None:
+                cv.putText(original_frame, _get_state_string(), (0,80), cv.FONT_HERSHEY_SIMPLEX, 1, (0,69,255), 2, cv.LINE_AA)
+                displacement_vector = get_displacement_vector_from_center(target_line, original_frame)
+                direction_vector = target_segment.get_direction_vector_please()
+                velocity_vector = get_direction_to_go(displacement_vector, direction_vector, original_frame)
+                display_displacement_and_direction_vectors(displacement_vector, direction_vector, original_frame)
+                display_direction_to_go(velocity_vector, original_frame)
             
 
         cv.imshow('original video', original_frame)
@@ -89,9 +95,25 @@ def process_video():
         if cv.waitKey(10) == ord('q'):
             guard = False
         
-        print(f'Total time to process: {time.time() - last_time}')
+        total_time_to_process = time.time() - last_time
+        print(f'Total time to process: {round(total_time_to_process, 3)}, of which opencv was: {round(opencv_processing_time, 3)}')
     cap.release()
     cv.destroyAllWindows()
+
+def _get_state_string() -> str:
+    global stable_state
+    if stable_state == STATE_FOLLOWING_LINE:
+        return 'Following line'
+    if stable_state == STATE_I_SEE_INTERSECTION:
+        return 'Intersection noticed, following line'
+    if stable_state == STATE_TURNING:
+        return 'Turning'
+    if stable_state == STATE_STOP:
+        return 'Stopped'
+    if stable_state == STATE_TURN180:
+        return 'Turning 180'
+    if stable_state == STATE_IM_LOST:
+        return 'Line lost'
 
 
 def get_next_state(current_state, frame, parallel_line_centers, tape_paths_and_lines):
@@ -136,7 +158,7 @@ def get_next_state(current_state, frame, parallel_line_centers, tape_paths_and_l
     elif current_state == STATE_TURN180:
         if count_paths > 1:
             next_state = STATE_TURN180
-            print('fuck your stupid map')
+            print('Turned around and saw an intersection')
         elif count_paths == 1:
             if close_my_eyes == True:
                 next_state = STATE_TURN180
@@ -153,8 +175,32 @@ def get_next_state(current_state, frame, parallel_line_centers, tape_paths_and_l
         elif count_paths == 0:
             next_state = STATE_IM_LOST
     else:
-        print('i died')
+        print(current_state)
+
+    next_state = _get_stable_state(next_state)
     return next_state
+
+
+def _get_stable_state(incoming_state):
+    global stable_state
+    global last_incoming_state
+    global same_incoming_states_count
+
+    if incoming_state != stable_state:
+        if incoming_state == last_incoming_state:
+            same_incoming_states_count += 1
+            if same_incoming_states_count >= STATE_CHANGE_THRESHOLD:
+                same_incoming_states_count = 1
+                return incoming_state
+        else :
+            same_incoming_states_count = 1
+        
+        last_incoming_state = incoming_state
+    else:
+        return incoming_state
+
+    return stable_state
+
 
 def get_most_like(turning_direction: str, tape_paths_and_lines: 'dict[LineSegment, Line]') -> LineSegment:
     for path in list(tape_paths_and_lines.keys()):
@@ -179,144 +225,57 @@ def update_target(old_target: LineSegment, tape_paths_and_lines: 'dict[LineSegme
             min_angle_path = path
     return min_angle_path
 
-    
-command_list = ['R', 'S', 'L']
 
 def decide_target(original_frame, parallel_line_centers, tape_paths_and_lines, previous_target) -> LineSegment:
-    global current_state
-    state = get_next_state(current_state, original_frame, parallel_line_centers, tape_paths_and_lines)
-    current_state = state
+    global stable_state
+    state = get_next_state(stable_state, original_frame, parallel_line_centers, tape_paths_and_lines)
+    stable_state = state
+    global last_target
+    global last_line
     target = None
+    line = None
+    paths = list(tape_paths_and_lines.keys())
     if state == STATE_FOLLOWING_LINE:
-        target = list(tape_paths_and_lines.keys())[0]
+        if(len(paths) == 1): # stable state
+            target = paths[0]
+            line = tape_paths_and_lines[target]
+        if(len(paths) > 1): # transient state
+            target = get_most_like('B', tape_paths_and_lines).flip()
+            line = tape_paths_and_lines[target]
+        if(len(paths) == 0): # transient state
+            target = last_target
+            line = last_line
     elif state == STATE_I_SEE_INTERSECTION:
-        target = get_most_like('B', tape_paths_and_lines).flip()
+        if(len(paths) > 1): # stable state
+            target = get_most_like('B', tape_paths_and_lines).flip()
+            line = tape_paths_and_lines[target]
+        if(len(paths) <= 1): # transient state
+            target = last_target
+            line = last_line
     elif state == STATE_TURNING:
-        if turning_just_initiated:
-            turning_dir = command_list.pop(0) # TODO handle empty list
-            target = get_most_like(turning_dir, tape_paths_and_lines)
-        else:
-            target = update_target(previous_target, tape_paths_and_lines)
+        if(len(paths) > 1): # stable state
+            if turning_just_initiated: 
+                turning_dir = command_list.pop(0) # TODO handle empty list
+                target = get_most_like(turning_dir, tape_paths_and_lines)
+                line = tape_paths_and_lines[target]
+            else:
+                target = update_target(previous_target, tape_paths_and_lines)
+                line = tape_paths_and_lines[target]
+        if(len(paths) <= 1): # transient state
+            target = last_target
+            line = last_line
     elif state == STATE_STOP:
         #some input has to go here if we wanna be able to get out of this state
         pass
     elif state == STATE_TURN180:
         pass 
     elif state == STATE_IM_LOST:
-        pass
-    return target
+        target = None
+        line = None
+    last_target = target
+    last_line = line
+    return target, line
 
-# class ProcessedFrameInfo:
-#     def __init__(self,
-#                 frame,
-#                 edges,
-#                 lines: 'list[Line]',
-#                 merged_lines: 'list[Line]',
-#                 merged_lines_segments: 'dict[Line, LineSegment]',
-#                 parallel_line_centers: 'list[Line]',
-#                 tape_paths_and_lines: 'dict[LineSegment, Line]') -> 'ProcessedFrameInfo':
-#         self.frame = frame
-#         self.edges = edges
-#         self.lines = lines
-#         self.merged_lines = merged_lines
-#         self.merged_lines_segments = merged_lines_segments
-#         self.tape_segments = [x for l in list(merged_lines_segments.values()) for x in l]
-#         self.parallel_line_centers = parallel_line_centers
-#         self.tape_paths_and_lines = tape_paths_and_lines
-#         self.tape_paths = list(tape_paths_and_lines.keys())
-
-# def process_one_frame(capture):
-#     original_frame = get_frame(capture)
-#     if original_frame is None:
-#         capture.set(cv.CAP_PROP_POS_FRAMES, 0)
-#         return
-#     original_frame = cv.flip(original_frame, 1)
-#     original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
-
-#     processed_frame = process_frame(original_frame, BLUR, BLOCK_SIZE, C)
-#     edges, houghlines = find_edges_and_lines(processed_frame, HOUGH_THRESHOLD)
-#     if not isinstance(houghlines, np.ndarray):
-#         return
-
-#     lines = get_from_houghlines(houghlines)                                                               #blue
-#     merged_lines = merge_lines(lines, original_frame)                                                     #green
-#     merged_lines_segments = get_tape_corner_line_segments_please(merged_lines, edges)                     #brown based on edge image, related to greens
-#     parallel_line_centers = get_centers_of_parallel_line_pairs(merged_lines)                              #red
-#     tape_segments = [x for l in list(merged_lines_segments.values()) for x in l]                          #brown by itself, no relationship with greens
-#     tape_paths_and_lines = get_tape_paths_and_lines(parallel_line_centers, tape_segments, original_frame) #purple
-
-#     return ProcessedFrameInfo(original_frame, edges, lines, merged_lines, merged_lines_segments, parallel_line_centers, tape_paths_and_lines)
-    
-
-# def display_processed_info(processed_frame_info: ProcessedFrameInfo):
-#     if processed_frame_info is None:
-#         return
-#     original_frame = processed_frame_info.frame
-#     edges = processed_frame_info.edges
-#     lines = processed_frame_info.lines
-#     merged_lines = processed_frame_info.merged_lines
-#     merged_lines_segments = processed_frame_info.merged_lines_segments
-#     parallel_line_centers = processed_frame_info.parallel_line_centers
-#     tape_paths_and_lines = processed_frame_info.tape_paths_and_lines
-#     display_all_lines(lines, original_frame)
-#     display_merged_parallel_lines(merged_lines, original_frame)
-#     display_boxes_around_merged_lines(merged_lines, original_frame, edges)
-#     display_merged_lines_segments(merged_lines_segments, original_frame)
-#     display_center_of_parallel_lines(parallel_line_centers, original_frame)
-#     display_tape_paths(tape_paths_and_lines, original_frame)
-#     cv.imshow('original video', original_frame)
-
-
-# def get_frame(capture):
-#     if capture.isOpened():
-#         ret, original_frame = capture.read()
-#         if ret:
-#             return original_frame
-
-
-# def main():
-#     guard = True
-#     capture = cv.VideoCapture(0)
-#     img = np.zeros((25, 500, 3), np.uint8)
-#     cv.namedWindow('image')
-#     cv.createTrackbar('Blur', 'image', 10, 100, nothing)
-#     cv.createTrackbar('Block size', 'image', 5, 100, nothing)
-#     cv.createTrackbar('C', 'image', 7, 100, nothing)
-#     cv.createTrackbar('Threshold', 'image', 100, 100, nothing)
-#     while capture.isOpened() and guard:
-#         ret, original_frame = capture.read()
-#         original_frame = cv.flip(original_frame, 1)
-#         original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
-#         if not ret:
-#             print("Can't receive next frame")
-#             capture.set(cv.CAP_PROP_POS_FRAMES, 0)
-#             continue
-        
-#         blur = cv.getTrackbarPos('Blur', 'image')
-#         block_size = cv.getTrackbarPos('Block size', 'image')
-#         c = cv.getTrackbarPos('C', 'image')
-#         threshold = cv.getTrackbarPos('Threshold', 'image')
-#         processed_frame = process_frame(original_frame, blur, block_size, c)
-#         edges, houghlines = find_edges_and_lines(processed_frame, threshold)
-
-#         if isinstance(houghlines, np.ndarray):
-#             cv.putText(original_frame, f'lines: {len(houghlines)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2, cv.LINE_AA)
-
-#             processed_frame_info = process_one_frame(capture)
-#             display_processed_info(processed_frame_info)
-#             print("Frame processed")
-
-#         cv.imshow('original video', original_frame)
-#         cv.imshow('processed video', processed_frame)
-#         cv.imshow('edges', edges)
-#         cv.imshow('image', img)
-#         cv.moveWindow('processed video', 700, 208)
-#         cv.moveWindow('edges', 1200, 208)
-#         if cv.waitKey(10) == ord('q'):
-#             guard = False
-#     capture.release()
-#     cv.destroyAllWindows()
-        
 
 
 if __name__ == "__main__":

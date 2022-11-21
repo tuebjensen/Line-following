@@ -76,10 +76,10 @@ def display_displacement_and_direction_vectors(displacement_vector, direction_ve
     frame_height = frame.shape[0]
     center_x = frame_width / 2
     center_y = frame_height / 2
-    cv.line(frame, (int(center_x), int(center_y)), (int(displacement_vector.x) + int(center_x), int(center_y) - int(displacement_vector.y)), (255,255,0), 2)
+    cv.line(frame, (int(center_x), int(center_y)), (int(displacement_vector.x) + int(center_x), int(center_y) + int(displacement_vector.y)), (255,255,0), 2)
     cv.line(frame,
-        (int(displacement_vector.x) + int(center_x), int(center_y) - int(displacement_vector.y)),
-        (int(displacement_vector.x) + int(direction_vector.x) + int(center_x), int(center_y) + int(direction_vector.y) - int(displacement_vector.y)),
+        (int(displacement_vector.x) + int(center_x), int(center_y) + int(displacement_vector.y)),
+        (int(displacement_vector.x) + int(direction_vector.x) + int(center_x), int(center_y) + int(direction_vector.y) + int(displacement_vector.y)),
         (0,255,255),
         2
     )
