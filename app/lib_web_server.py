@@ -27,14 +27,14 @@ class WebServer:
             'processedIds': self._processed_ids        
         }
 
-        self._ws.send_str(json.dumps(message))
+        await self._ws.send_str(json.dumps(message))
         
         self._processed_ids.clear()
 
     async def set_current_node(self, current_node):
         async with aiofiles.open('server_state.json', 'r') as file:
             await file.write(json.dumps({'currentNode': current_node}))
-        self.send_message('server-state-update', {'currentNode': current_node})
+        await self.send_message('server-state-update', {'currentNode': current_node})
 
     async def start_running(self, address, port, path_callback):
         if self._is_running:
