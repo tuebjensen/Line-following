@@ -71,13 +71,13 @@ class WebServer:
             path_callback(client_state['path'])
 
         async def update_client_state(client_state):
-            async with aiofiles.open('client-state.json', 'w+') as file:
+            new_client_state = {}
+            async with aiofiles.open('client-state.json', 'r') as file:
                 old_client_state = json.loads(await file.read())
                 new_client_state = old_client_state | client_state
-                file.seek(0)
-                await file.write(json.dumps(new_client_state))
                 print(new_client_state)
-                
+            async with aiofiles.open('client-state.json', 'w') as file:
+                await file.write(json.dumps(new_client_state))
             if 'path' in client_state:
                 path_callback(client_state['path'])
         
