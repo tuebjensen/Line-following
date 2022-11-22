@@ -2,6 +2,7 @@ from math import pi
 import time
 import cv2 as cv
 import numpy as np
+from lib_vector2d import Vector2D
 from lib_image_processing import find_edges_and_lines, nothing, process_frame
 from lib_lines_display import display_all_lines, display_boxes_around_merged_lines, display_center_of_parallel_lines, display_direction_to_go, display_displacement_and_direction_vectors, display_merged_lines_segments, display_merged_parallel_lines, display_tape_paths
 from lib_process_lines import Line, LineSegment, get_tape_paths_and_lines, get_centers_of_parallel_line_pairs, get_from_houghlines, get_tape_corner_line_segments_please, merge_lines, _get_intersection_point
@@ -31,23 +32,17 @@ turning_just_initiated = False
 close_my_eyes = False
 
 
-def get_processed_frame(cap):
+def get_processed_frame(original_frame):
     target_segment, target_line = None, None
     last_time = time.time()
-    
-
-    ret, original_frame = cap.read()
-    if not ret:
-        print("Can't receive next frame")
-        cap.set(cv.CAP_PROP_POS_FRAMES, 0)
-        return ret, original_frame
     
     original_frame = original_frame[30:,]
     original_frame = cv.rotate(original_frame, cv.ROTATE_90_COUNTERCLOCKWISE)
     processed_frame = process_frame(original_frame, BLUR, BLOCK_SIZE, C)
     edges, houghlines = find_edges_and_lines(processed_frame, HOUGH_THRESHOLD)
     opencv_processing_time = time.time() - last_time
-
+    velocity_vector = Vector2D(0, 0)
+    
     if isinstance(houghlines, np.ndarray):
         cv.putText(original_frame, f'lines: {len(houghlines)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2, cv.LINE_AA)
         lines = get_from_houghlines(houghlines)                                                               #blue
@@ -74,7 +69,7 @@ def get_processed_frame(cap):
     
     total_time_to_process = time.time() - last_time
     print(f'Total time to process: {round(total_time_to_process, 3)}, of which opencv was: {round(opencv_processing_time, 3)}')
-    return ret, original_frame
+    return original_frame, velocity_vector
 
 
 def process_video():

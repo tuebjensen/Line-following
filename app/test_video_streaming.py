@@ -8,7 +8,8 @@ video = WebServer()
 
 async def main():
     while camera.isOpened():
-        ret, original_frame = get_processed_frame(camera)   
+        ret_read, original_frame = camera.read()
+        original_frame, velocity_vector = get_processed_frame(original_frame)   
         ret, buffer = cv.imencode('.jpg', original_frame)
         frame = buffer.tobytes()
         video.set_frame_encoded(frame)

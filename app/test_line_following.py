@@ -9,6 +9,7 @@ import numpy as np
 import signal
 import sys
 import RPi.GPIO as GPIO
+from test_line_processing import get_processed_frame
 from lib_image_processing import find_edges_and_lines, process_frame
 from lib_lines_display import display_all_lines, display_center_of_parallel_lines, display_displacement_and_direction_vectors, display_merged_parallel_lines
 from lib_calculate_direction import get_direction_vector_of_line, get_displacement_vector_from_center, get_direction_to_go
@@ -63,7 +64,7 @@ async def process_video():
         while cap.isOpened():
             ret_read, original_frame = cap.read() # <3ms
             if ret_read:
-                frame_encoded, direction = await loop.run_in_executor(executor, partial(process_original_frame, original_frame))
+                frame_encoded, direction = await loop.run_in_executor(executor, partial(get_processed_frame, original_frame))
                 start = perf_counter()
                 video.set_frame_encoded(frame_encoded)
                 car.set_velocity(direction)
