@@ -305,7 +305,7 @@ def decide_target(original_frame, parallel_line_centers, tape_paths_and_lines, p
                 line = tape_paths_and_lines[target]
             else:
                 target = update_target(previous_target, tape_paths_and_lines) if previous_target is not None else None
-                line = tape_paths_and_lines[target]
+                line = tape_paths_and_lines[target] if target is not None else None
         if(len(paths) <= 1): # transient state
             target = last_target
             line = last_line
