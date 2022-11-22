@@ -9,7 +9,7 @@ from lib_calculate_direction import get_direction_to_go, get_displacement_vector
 
 BLUR = 10
 BLOCK_SIZE = 5
-C = 7
+C = 3
 HOUGH_THRESHOLD = 85
 INTERSECTION_THRESHOLD = 0.3 # ratio of image height
 
