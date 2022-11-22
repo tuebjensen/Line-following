@@ -1,8 +1,5 @@
 { 
-    "map": {},
-    "path": [
-        {"dest": "N", "available_paths": ""},
-        {"dest": "E", "available_paths": 2}
-    ]
+    "map": {"lineSegments": [], "nodes": []},
+    "path": []
 }
 
