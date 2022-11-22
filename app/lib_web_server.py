@@ -13,6 +13,8 @@ class WebServer:
         self._frame_encoded = None
         self._is_frame_encoded_changed = False
         self._websocket_lock = False
+        self._ws = None
+        self._processed_ids = []
 
     def set_frame_encoded(self, frame_encoded):
         self._frame_encoded = frame_encoded
