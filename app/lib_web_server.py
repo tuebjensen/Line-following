@@ -71,12 +71,13 @@ class WebServer:
             path_callback(client_state['path'])
 
         async def update_client_state(client_state):
-            async with aiofiles.open('client-state.json', 'wr') as file:
+            async with aiofiles.open('client-state.json', 'w') as file:
                 old_client_state = json.loads(await file.read())
                 new_client_state = old_client_state | client_state
                 await file.write(json.dumps(new_client_state))
             if 'path' in client_state:
                 path_callback(client_state['path'])
+        
             
         async def websocket_handler(request):   
             if self._ws is not None:
@@ -102,7 +103,7 @@ class WebServer:
                         
             self._ws = None 
             self._processed_ids.clear()
-            await update_client_state({'path': []})
+            await update_client_state({'targetNode': None, 'path': []})
             return self._ws
 
 
