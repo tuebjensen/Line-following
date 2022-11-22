@@ -30,7 +30,7 @@ const inputtedMap$ = fromEvent(document.getElementById('map-update-form'), 'subm
 
 clientStateUpdate$.subscribe(clientState => {
     if (clientState) {
-        mapInput.value = clientState.mapStr
+        mapInput.value = clientState.mapStr || ''
     }
 })
 
