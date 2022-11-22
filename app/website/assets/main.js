@@ -37,8 +37,12 @@ merge(
         }))
     ),
     nodeLeftClick$.pipe(
-        withLatestFrom(serverState$),
-        map()
+        withLatestFrom(clientState$, serverState$),
+        map(([node, clientState, serverState]) => ({
+            ...clientState,
+            targetNode: node.id,
+            path: findPath(clientState.map, serverState?.currentNode || 0, node.id)
+        }))
     )
 ).pipe(
     distinctUntilChanged(undefined, JSON.stringify),
@@ -72,7 +76,8 @@ combineLatest([
         return
     }
 
-    const { map, targetNode } = clientState
+    const { map, targetNode, path } = clientState
+    const { currentNode } = serverState || { currentNode: null }
 
     // calculate dimensions of the newly displayed map
     const smallestDistance = Math.min(
@@ -103,7 +108,15 @@ combineLatest([
         .attr('y2', line => line.end.y)
         .attr('stroke-width', smallestDistance * 0.1)
         .attr('stroke-linecap', 'round')
-        .classed('line', true)        
+        .classed('line', true)
+        .classed('path-line', line => {
+            let start = path.findIndex(node => line.start.id === node)
+            let end = path.findIndex(node => line.end.id === node)
+            if (start === -1 || end === -1) {
+                return false
+            }
+            return Math.abs(start - end) === 1
+        })
 
     // update the display of the nodes
     const node = nodeGroup
@@ -124,9 +137,13 @@ combineLatest([
         )
         .attr('transform', node => `translate(${node.x},${node.y}) scale(${node.isPossibleDestination ? 1 : 0.5})`)
         .classed('destination', node => node.isPossibleDestination)
+        .classed('current-destination', node => (console.log(node.id, targetNode), node.id === targetNode))
+        .classed('current', node => node.id === currentNode)
         .classed('node', true)
-        .on('click', node => {
-            nodeLeftClick$.next(node)
+
+    nodeGroup.selectAll('.node.destination')
+        .on('click', function(event, datum) {
+            nodeLeftClick$.next(datum)
         })
     
     node
