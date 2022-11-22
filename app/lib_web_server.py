@@ -96,13 +96,13 @@ class WebServer:
                     if 'id' in message:
                         self._processed_ids.append(message['id'])
                     if message['type'] == 'server-state-update':
-                        set_server_state(data)
+                        await set_server_state(data)
                     elif message['type'] == 'client-state-update':
-                        set_client_state(data)
+                        await set_client_state(data)
                         
             self._ws = None 
             self._processed_ids.clear()
-            update_client_state({'path': []})
+            await update_client_state({'path': []})
             return self._ws
 
 
