@@ -41,19 +41,21 @@ function printSolution(dist)
     }
 }
 function dijkstra(graph, src) {
-    //Array with MST
-    const parent = new Array()
+    //Array to store the array representation of the SPT (shortest path tree) 
+    //Where the index is the id of the node and the element at that index is the preceding node in the SPT 
+    const parentArray = new Array()
     //Array to store distances
     const dist = new Array(graph.length) 
-    //Array to store vertices in the MST
+    //Array to store vertices in the SPT
     const sptSet = new Array(graph.length)
 
     for (let i = 0; i < graph.length; i++){
         dist[i] = Infinity
         sptSet[i] = false
     }
+
     dist[src] = 0
-    parent[src] = -1
+    parentArray[src] = -1
     for (let i = 0; i < graph.length - 1; i++){
         let u = minDistance(dist, sptSet)
         sptSet[u] = true
@@ -61,13 +63,11 @@ function dijkstra(graph, src) {
         for (let v = 0; v < graph.length; v++) {
             if (!sptSet[v] && graph[u][v] != 0 && dist[u] != Infinity && dist[u] + graph[u][v] < dist[v]){
                 dist[v] = dist[u] + graph[u][v]
-                parent[v] = u 
+                parentArray[v] = u 
             }
         }
     }
-    printSolution(dist)
-    console.log(parent)
-    return parent
+    return parentArray
 }
 function printGraph(graph) {
     let graphline = ""
@@ -81,19 +81,33 @@ function printGraph(graph) {
     console.log(graphline)
 
 }
+
+function isInShortestPath(parentArray, target){
+    return parentArray.find(node => node == target)
+}
+
 export function findPath(map, source, target) {
-    //r1t2r3(t4|b5)r6(t5|b5(l2|r4)) string used for tests
+    // strings used for test:
+    //r1t2r3(t4|b5)r6(t5|b5(l2|r4))
+    //r1t2r3(t4|b5)r6(t5|b5(l2|r4))r3b2l*
+    //r1t2r3(t4|b5r2t2r8)r1r1r1r1r1r1(t5|b*b2(l2|r4))
     const lineSegments = map.lineSegments
+    //const lineSegments = map.lineSegments.filter(lineSegment => !(lineSegment.start.id === 3 && lineSegment.end.id === 6)) //NOT CORRECT JUST FOR TEST
     const nodes = map.nodes
     const adjacencyMatrix = makeAdjacencyMatrix(lineSegments, nodes.length)
-    const sptParent = dijkstra(adjacencyMatrix, source)
+    const sptParentArray = dijkstra(adjacencyMatrix, source)
+    console.log(sptParentArray)
+    console.log(target)
+    
     const pathFromSourceToTarget = [target]
     let foundPath = false
     let newTarget = target
     while (!foundPath) {
-        newTarget = sptParent[newTarget]
+        newTarget = sptParentArray[newTarget]
         if (newTarget === -1) {
             foundPath = true
+        } else if (sptParentArray[newTarget] == newTarget){
+            throw new Error('Target is not present in map')
         } else {
             pathFromSourceToTarget.push(newTarget)
         }

@@ -14,6 +14,9 @@
         margin-left: auto;
         margin-right: auto;
     }
+    .error {
+        color: red;
+    }
     header {
         overflow: auto;
         box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
@@ -32,10 +35,6 @@
         border: 1px solid grey;
         border-radius: 4px;
     }
-    .node:hover {
-        opacity: 0.8;
-        cursor: pointer;
-    }
     text {
         fill: white;
     }
@@ -45,8 +44,15 @@
     circle {
         fill: rgba(100, 0, 0, 1)
     }
-    .destination {
-        fill: yellow;
+    .node:not(.destination) {
+        opacity: 0.4;
+    }
+    .node:not(.destination) text {
+        display: none;
+    }
+    .node.destination:hover {
+        opacity: 0.8;
+        cursor: pointer;
     }
 </style>
 
@@ -81,7 +87,9 @@
             <button>Update</button>
         </p>
     </form>
+    <div id="map-update-error" class="error"></div>
 </section>
+
 <!--
     <img src="/video-feed" width="100%">
 -->
