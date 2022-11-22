@@ -98,7 +98,7 @@ class WebServer:
                     elif message['type'] == 'client-state-update':
                         set_client_state(data)
                         
-            self._ws = None
+            self._ws = None 
             self._processed_ids.clear()
             update_client_state({'path': []})
             return self._ws
@@ -129,7 +129,7 @@ class WebServer:
         app.router.add_route('GET', '/websocket', websocket_test)
         app.router.add_route('GET', '/', index)
         app.router.add_route('GET', '/video', show_image)
-        app.router.add_routes([web.get('/self._ws', websocket_handler)])
+        app.router.add_routes([web.get('/ws', websocket_handler)])
         app.add_routes([web.static('/assets', 'website/assets')])
         
 
