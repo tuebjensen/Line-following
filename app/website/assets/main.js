@@ -1,10 +1,10 @@
 import * as d3 from 'https://cdn.skypack.dev/pin/d3@v7.6.1-1Q0NZ0WZnbYeSjDusJT3/mode=imports,min/optimized/d3.js'
-import { Subject, EMPTY, merge, map, of, concatMap, switchMap, fromEvent, tap } from 'https://cdn.skypack.dev/pin/rxjs@v7.5.7-j3yWv9lQY9gNeD9CyX5Y/mode=imports,min/optimized/rxjs.js'
+import { Subject, EMPTY, share, map, of, distinctUntilChanged, withLatestFrom, switchMap, tap, fromEvent, merge, combineLatest } from 'https://cdn.skypack.dev/pin/rxjs@v7.5.7-j3yWv9lQY9gNeD9CyX5Y/mode=imports,min/optimized/rxjs.js'
 import { initalizeSharedState } from './initalize-shared-state.js'
 import { parseMap } from './parse-map.js'
 import { findPath } from './pathfinding.js'
 
-const { sharedState$, updateClientState, updateServerState } = initalizeSharedState()
+const { clientState$, serverState$, updateClientState, updateServerState } = initalizeSharedState()
  
 const nodeLeftClick$ = new Subject()
 const nodeRightClick$ = new Subject()
@@ -12,52 +12,42 @@ const nodeRightClick$ = new Subject()
 const mapInput = document.getElementById('map-input')
 const mapUpdateError = document.getElementById('map-update-error')
 const inputtedMap$ = fromEvent(document.getElementById('map-update-form'), 'submit').pipe(
-    concatMap((e) => {
-        console.log(e)
+    switchMap((e) => {
         e.preventDefault()
         try {
+            mapUpdateError.innerText = ''
             return of(parseMap(mapInput.value))
         } catch (err) {
             mapUpdateError.innerText = 'Parsing error: ' + err.message
             return EMPTY
         }
-    })
+    }),
+    share()
 )
 
-// Update shared state
-sharedState$.pipe(
-    tap(console.log),
-    switchMap(sharedState =>
-        merge(
-            inputtedMap$.pipe(
-                map(map => ({
-                    map,
-                    targetNode: null,
-                    path: []
-                }))
-            ),
-            nodeLeftClick$.pipe(
-                map(targetNode => ({
-                    targetNode,
-                    path: findPath(
-                        sharedState.clientState.map,
-                        sharedState.serverState.currentNode,
-                        targetNode
-                    )
-                }))
-            )
-        ).pipe(
-            map((newClientState) => ({
-                ...sharedState.clientState,
-                ...newClientState
-            }))
-        )
+inputtedMap$.subscribe(x => console.log('new map', x))
+
+// Update client state from client
+merge(
+    inputtedMap$.pipe(
+        map((map) => ({
+            map,
+            targetNode: null,
+            path: []
+        }))
+    ),
+    nodeLeftClick$.pipe(
+        withLatestFrom(serverState$),
+        map()
     )
+).pipe(
+    distinctUntilChanged(undefined, JSON.stringify),
 ).subscribe(clientState => {
-    console.log(clientState)
+    console.log('new client state', clientState)
     updateClientState(clientState)
 })
 
+// Update shared state from client
 nodeRightClick$.pipe(
     map((node) => ({
         currentNode: node
@@ -71,12 +61,18 @@ const svg = d3.select('svg')
 const lineGroup = svg.append('g')
 const nodeGroup = svg.append('g')
 
-sharedState$.subscribe((state) => {
-    if(!state.clientState) {
+combineLatest([
+    serverState$,
+    clientState$
+]).subscribe(([serverState, clientState]) => {
+    console.log(serverState, clientState)
+    if(!clientState) {
         lineGroup.selectAll('*').remove()
         nodeGroup.selectAll('*').remove()
         return
     }
+
+    const { map, targetNode } = clientState
 
     // calculate dimensions of the newly displayed map
     const smallestDistance = Math.min(

@@ -1,4 +1,4 @@
-import { Subject, fromEvent, Observable, withLatestFrom, mergeMap, switchMap, of, tap, repeat, map, filter, merge, share, combineLatest, catchError } from 'https://cdn.skypack.dev/pin/rxjs@v7.5.7-j3yWv9lQY9gNeD9CyX5Y/mode=imports,min/optimized/rxjs.js'
+import { Subject, shareReplay, concatMap, fromEvent, Observable, withLatestFrom, EMPTY, startWith, switchMap, of, tap, repeat, map, filter, merge, share, distinctUntilChanged, catchError } from 'https://cdn.skypack.dev/pin/rxjs@v7.5.7-j3yWv9lQY9gNeD9CyX5Y/mode=imports,min/optimized/rxjs.js'
 import { createCounter } from './create-counter.js';
 
 /**
@@ -41,7 +41,9 @@ export function initalizeSharedState () {
         repeat({
             delay: 3000
         }),
-        share()
+        startWith(null),
+        distinctUntilChanged(),
+        shareReplay(1)
     )
     
     socket$.subscribe(s => console.log('socket', s))
@@ -62,8 +64,14 @@ export function initalizeSharedState () {
      */
     const message$ = socket$.pipe(
         filter(socket => socket),
-        mergeMap(socket => fromEvent(socket, 'message')),
-        map((msg) => JSON.parse(msg.data)),
+        switchMap(socket => fromEvent(socket, 'message')),
+        concatMap((msg) => {
+            try {
+                return of(JSON.parse(msg.data))
+            } catch (err) {
+                return EMPTY
+            }
+        }),
         tap((msg) => {
             if (!msg.processedIds) {
                 return
@@ -112,7 +120,7 @@ export function initalizeSharedState () {
     ).subscribe(([serverState, socket]) => {
         const id = generateUnprocessedMessageId()
         socket?.send(JSON.stringify({
-            type: 'update-server-state',
+            type: 'server-state-update',
             id,
             data: serverState
         }))
@@ -159,32 +167,34 @@ export function initalizeSharedState () {
     clientStateSubject$.pipe(
         withLatestFrom(socket$)
     ).subscribe(([clientState, socket]) => {
-        socket?.send(JSON.stringify(clientState))
+        socket?.send(JSON.stringify({
+            type: 'client-state-update',
+            data: clientState
+        }))
     })
 
     const serverState$ = merge(
         serverStateSubject$,
         serverStateUpdate$
+    ).pipe(
+        distinctUntilChanged(),
+        tap(x => console.log('SERVER STATE CHANGED')),
+        shareReplay(1)
     )
 
     const clientState$ = merge(
         clientStateSubject$,
         clientStateUpdate$
-    )
-
-    const sharedState$ = combineLatest([
-        clientState$,
-        serverState$
-    ]).pipe(
-        map(([clientState, serverState]) => ({
-            clientState,
-            serverState
-        }))
+    ).pipe(
+        distinctUntilChanged(),
+        tap(x => console.log('CLIENT STATE CHANGED')),
+        shareReplay(1)
     )
 
     return {
         updateServerState,
         updateClientState,
-        sharedState$
+        serverState$,
+        clientState$
     }
 }
