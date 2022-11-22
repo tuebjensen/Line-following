@@ -304,7 +304,7 @@ def decide_target(original_frame, parallel_line_centers, tape_paths_and_lines, p
                 target = get_most_like(turning_dir, tape_paths_and_lines)
                 line = tape_paths_and_lines[target]
             else:
-                target = update_target(previous_target, tape_paths_and_lines)
+                target = update_target(previous_target, tape_paths_and_lines) if previous_target is not None else None
                 line = tape_paths_and_lines[target]
         if(len(paths) <= 1): # transient state
             target = last_target
