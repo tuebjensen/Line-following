@@ -21,6 +21,9 @@ class WebServer:
         self._is_frame_encoded_changed = True
 
     async def send_message(self, type, data):
+        if self._ws.closed:
+            return
+            
         message = {
             'type': type,
             'data': data,
@@ -75,7 +78,6 @@ class WebServer:
             async with aiofiles.open('client_state.json', 'r') as file:
                 old_client_state = json.loads(await file.read())
                 new_client_state = old_client_state | client_state
-                print(new_client_state)
             async with aiofiles.open('client_state.json', 'w') as file:
                 await file.write(json.dumps(new_client_state))
             if 'path' in client_state:
