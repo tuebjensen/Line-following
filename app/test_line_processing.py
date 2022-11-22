@@ -31,6 +31,53 @@ turning_just_initiated = False
 close_my_eyes = False
 
 
+def get_processed_frame(cap):
+    target_segment, target_line = None, None
+    while cap.isOpened():
+        last_time = time.time()
+        
+
+        ret, original_frame = cap.read()
+        original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
+        if not ret:
+            print("Can't receive next frame")
+            cap.set(cv.CAP_PROP_POS_FRAMES, 0)
+            continue
+
+        processed_frame = process_frame(original_frame, BLUR, BLOCK_SIZE, C)
+        edges, houghlines = find_edges_and_lines(processed_frame, HOUGH_THRESHOLD)
+        opencv_processing_time = time.time() - last_time
+
+        if isinstance(houghlines, np.ndarray):
+            cv.putText(original_frame, f'lines: {len(houghlines)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2, cv.LINE_AA)
+            lines = get_from_houghlines(houghlines)                                                               #blue
+            merged_lines = merge_lines(lines, original_frame)                                                     #green
+            merged_lines_segments = get_tape_corner_line_segments_please(merged_lines, edges)                     #brown based on edge image, related to greens
+            parallel_line_centers = get_centers_of_parallel_line_pairs(merged_lines)                              #red
+            tape_segments = [x for l in list(merged_lines_segments.values()) for x in l]                          #brown by itself, no relationship with greens
+            tape_paths_and_lines = get_tape_paths_and_lines(parallel_line_centers, tape_segments, original_frame) #purple
+            display_all_lines(lines, original_frame)
+            display_merged_parallel_lines(merged_lines, original_frame)
+            display_boxes_around_merged_lines(merged_lines, original_frame, edges)
+            display_merged_lines_segments(merged_lines_segments, original_frame)
+            display_center_of_parallel_lines(parallel_line_centers, original_frame)
+            display_tape_paths(tape_paths_and_lines, original_frame)
+
+            target_segment, target_line = decide_target(original_frame, parallel_line_centers, tape_paths_and_lines, target_segment)
+            if target_segment is not None:
+                cv.putText(original_frame, _get_state_string(), (0,80), cv.FONT_HERSHEY_SIMPLEX, 1, (0,69,255), 2, cv.LINE_AA)
+                displacement_vector = get_displacement_vector_from_center(target_line, original_frame)
+                direction_vector = target_segment.get_direction_vector_please()
+                velocity_vector = get_direction_to_go(displacement_vector, direction_vector, original_frame)
+                display_displacement_and_direction_vectors(displacement_vector, direction_vector, original_frame)
+                display_direction_to_go(velocity_vector, original_frame)
+        
+        total_time_to_process = time.time() - last_time
+        print(f'Total time to process: {round(total_time_to_process, 3)}, of which opencv was: {round(opencv_processing_time, 3)}')
+        yield original_frame
+    cap.release()
+
+
 def process_video():
     guard = True
     cap = cv.VideoCapture(0)
