@@ -37,12 +37,13 @@ def get_processed_frame(cap):
     
 
     ret, original_frame = cap.read()
-    original_frame = cv.rotate(original_frame, cv.ROTATE_90_COUNTERCLOCKWISE)
     if not ret:
         print("Can't receive next frame")
         cap.set(cv.CAP_PROP_POS_FRAMES, 0)
         return ret, original_frame
-
+    
+    original_frame = original_frame[30:,]
+    original_frame = cv.rotate(original_frame, cv.ROTATE_90_COUNTERCLOCKWISE)
     processed_frame = process_frame(original_frame, BLUR, BLOCK_SIZE, C)
     edges, houghlines = find_edges_and_lines(processed_frame, HOUGH_THRESHOLD)
     opencv_processing_time = time.time() - last_time
