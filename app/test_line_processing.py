@@ -42,7 +42,7 @@ def get_processed_frame(original_frame):
     edges, houghlines = find_edges_and_lines(processed_frame, HOUGH_THRESHOLD)
     opencv_processing_time = time.time() - last_time
     velocity_vector = Vector2D(0, 0)
-    
+
     if isinstance(houghlines, np.ndarray):
         cv.putText(original_frame, f'lines: {len(houghlines)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2, cv.LINE_AA)
         lines = get_from_houghlines(houghlines)                                                               #blue
@@ -69,7 +69,7 @@ def get_processed_frame(original_frame):
     
     total_time_to_process = time.time() - last_time
     print(f'Total time to process: {round(total_time_to_process, 3)}, of which opencv was: {round(opencv_processing_time, 3)}')
-    return original_frame, velocity_vector
+    return original_frame, (velocity_vector.x, -velocity_vector.y)
 
 
 def process_video():
