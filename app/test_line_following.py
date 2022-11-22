@@ -26,6 +26,9 @@ def signal_handler(sig, frame):
     GPIO.cleanup()
     sys.exit(0)
 
+def nothing():
+    pass
+
 def process_original_frame(original_frame):
     original_frame = original_frame[:, 30:]
     #original_frame = cv.flip(original_frame, 1)
@@ -77,7 +80,7 @@ async def process_video():
 async def start():
     await asyncio.gather(
         car.start_running(),
-        video.start_running('0.0.0.0', 5000),
+        video.start_running('0.0.0.0', 5000, nothing),
         process_video()
     )
 

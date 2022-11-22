@@ -245,20 +245,20 @@ def _get_line_segments_please(markers: 'list[bool]', centers: 'list[tuple[int, i
 
 
 def get_tape_paths_and_lines(center_lines: 'list[Line]', tape_segments: 'list[LineSegment]', frame) -> 'dict[LineSegment, Line]':
-    if len(center_lines) == 0:
-        return {}
+    tape_paths_and_lines = {}
     if len(center_lines) == 1:
         frame_intersection_points = _get_line_frame_intersection_points(center_lines[0], frame)
         frame_intersection_points.sort(key= lambda point: point[1], reverse=True)
         bottom_point = frame_intersection_points[0]
         top_point = frame_intersection_points[1]
         path = LineSegment(bottom_point, top_point)
-        return {path: center_lines[0]}
-    if len(center_lines) == 2:
+        tape_paths_and_lines = {path: center_lines[0]}
+    elif len(center_lines) == 2:
         intersection_point = _get_intersection_point(center_lines[0], center_lines[1])
         center_line_segments = _segment_center_lines(center_lines, intersection_point, frame)
         tape_paths = _get_valid_center_line_segments(center_line_segments, tape_segments)
-        return tape_paths
+        tape_paths_and_lines = tape_paths
+    return tape_paths_and_lines
 
 
 def _get_intersection_point(line_one: 'Line', line_two: 'Line') -> 'tuple[int, int]':
