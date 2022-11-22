@@ -59,16 +59,17 @@ class WebServer:
         
             async for msg in ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:
-                    message = msg.data
-                    data = json.loads(message)
-                    if data['type'] == 'server-state-update':
+                    message_string = msg.data
+                    message = json.loads(message_string)
+                    data = message['data']
+                    if message['type'] == 'server-state-update':
                         async with aiofiles.open('server_state.json', 'w') as file:
-                            await file.write(msg.data)
+                            await file.write(message_string)
                         
                         # await ws.send_str(response)
-                    elif data['type'] == 'client-state-update':
+                    elif message['type'] == 'client-state-update':
                         async with aiofiles.open('client_state.json', 'w') as file:
-                            await file.write(msg.data)
+                            await file.write(message_string)
                         
                         path_callback(data['path'])
             self._websocket_lock = False
