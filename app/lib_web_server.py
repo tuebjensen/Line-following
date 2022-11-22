@@ -34,12 +34,6 @@ class WebServer:
         
         self._processed_ids.clear()
 
-    async def write_to_response(self, response, chunk):
-        try:
-            await response.write(chunk) 
-        except ConnectionResetError:
-            print('Dropping response')
-
     async def set_current_node(self, current_node):
         async with aiofiles.open('server_state.json', 'r') as file:
             await file.write(json.dumps({'currentNode': current_node}))
@@ -116,8 +110,7 @@ class WebServer:
             self._processed_ids.clear()
             await update_client_state({'targetNode': None, 'path': []})
             return self._ws
-
-
+            
         async def show_image(request):
             resp = web.StreamResponse(status=200, 
                               reason='OK', 
@@ -126,18 +119,16 @@ class WebServer:
             # The StreamResponse is a FSM. Enter it with a call to prepare.
             await resp.prepare(request)
 
-            await self.write_to_response(resp, b'--frame\r\n')
+            await resp.write(b'--frame\r\n')
             while True:
                 if self._is_frame_encoded_changed:
                     self._is_frame_encoded_changed = False       
-                    await self.write_to_response(
-                        resp, 
+                    await resp.write(
                         b'Content-Type: image/jpeg\r\n\r\n' 
-                            + (self._frame_encoded if self._frame_encoded is not None else b'') 
-                            + b'\r\n'
-                            + b'--frame\r\n'
-                    )
-                    
+                        + (self._frame_encoded if self._frame_encoded is not None else b'') 
+                        + b'\r\n'
+                        + b'--frame\r\n'
+                    ) 
                     await resp.drain()
                 await asyncio.sleep(0.05)   
         loop = asyncio.get_event_loop()
