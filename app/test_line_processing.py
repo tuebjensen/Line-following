@@ -74,7 +74,7 @@ def get_processed_frame(cap):
         
         total_time_to_process = time.time() - last_time
         print(f'Total time to process: {round(total_time_to_process, 3)}, of which opencv was: {round(opencv_processing_time, 3)}')
-        yield original_frame
+        yield ret, original_frame
     cap.release()
 
 
