@@ -37,7 +37,7 @@ def get_processed_frame(cap):
     
 
     ret, original_frame = cap.read()
-    original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
+    original_frame = cv.rotate(original_frame, cv.ROTATE_90_COUNTERCLOCKWISE)
     if not ret:
         print("Can't receive next frame")
         cap.set(cv.CAP_PROP_POS_FRAMES, 0)
