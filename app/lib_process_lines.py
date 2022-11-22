@@ -6,8 +6,8 @@ from lib_vector2d import Vector2D
 
 BOX_SIZE= 20
 PIXELS_THRESHOLD = 2*BOX_SIZE*0.5
-MIN_LINE_SEGMENT_SIZE = 4
-MIN_LINE_SEGMENT_HOLE_SIZE = 4
+MIN_LINE_SEGMENT_SIZE = 3
+MIN_LINE_SEGMENT_HOLE_SIZE = 2
 
 class Line:
     _rho_diff_threshold = 80.0

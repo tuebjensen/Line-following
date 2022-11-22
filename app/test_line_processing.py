@@ -10,7 +10,7 @@ from lib_calculate_direction import get_direction_to_go, get_displacement_vector
 BLUR = 10
 BLOCK_SIZE = 5
 C = 3
-HOUGH_THRESHOLD = 85
+HOUGH_THRESHOLD = 65
 INTERSECTION_THRESHOLD = 0.3 # ratio of image height
 
 STATE_FOLLOWING_LINE = 0
@@ -20,7 +20,7 @@ STATE_STOP = 3
 STATE_TURN180 = 4
 STATE_IM_LOST = 5
 
-STATE_CHANGE_THRESHOLD = 50
+STATE_CHANGE_THRESHOLD = 10
 last_incoming_state = STATE_FOLLOWING_LINE
 same_incoming_states_count = STATE_CHANGE_THRESHOLD
 stable_state = STATE_FOLLOWING_LINE
