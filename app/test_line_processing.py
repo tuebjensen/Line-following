@@ -70,7 +70,7 @@ def get_processed_frame(original_frame):
     
     total_time_to_process = time.time() - last_time
     #print(f'Total time to process: {round(total_time_to_process, 3)}, of which opencv was: {round(opencv_processing_time, 3)}')
-    return original_frame, (velocity_vector.x, -velocity_vector.y)
+    return original_frame, (-velocity_vector.x, -velocity_vector.y)
 
 
 def process_video():
