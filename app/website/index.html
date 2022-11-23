@@ -15,8 +15,25 @@
         margin-left: auto;
         margin-right: auto;
     }
+    .hidden {
+        display: none !important;
+    }
     .error {
         color: red;
+    }
+    .blocker {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        background: rgba(0, 0, 0, 0.8);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        font-weight: bold;
     }
     header {
         overflow: auto;
@@ -43,7 +60,7 @@
         stroke: rgba(0, 100, 255);
     }
     .path-line {
-        stroke: green;
+        stroke: orange;
     }
     .current-destination circle {
         fill: black;
@@ -100,8 +117,15 @@
     <div id="map-update-error" class="error"></div>
 </section>
 
-<!--
-    <img src="/video-feed" width="100%">
--->
+<section class="container">
+    <h2>What the camera sees</h2>
+    <img src="/video" width="100%">
+</section>
+
+<div class="blocker">
+    <div class="blocker__text">
+        Connecting to the WebSocket…
+    </div>
+</div>
 
 <script type="module" src="./assets/main.js"></script>

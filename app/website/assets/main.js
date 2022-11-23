@@ -4,7 +4,7 @@ import { initalizeSharedState } from './initalize-shared-state.js'
 import { parseMap } from './parse-map.js'
 import { findPath } from './pathfinding.js'
 
-const { clientState$, serverState$, updateClientState, updateServerState } = initalizeSharedState()
+const { clientState$, clientStateUpdate$, serverState$, updateClientState, updateServerState } = initalizeSharedState()
  
 const nodeLeftClick$ = new Subject()
 const nodeRightClick$ = new Subject()
@@ -24,6 +24,10 @@ const inputtedMap$ = fromEvent(document.getElementById('map-update-form'), 'subm
     }),
     share()
 )
+
+clientStateUpdate$.subscribe(clientState => {
+    mapInput.value = JSON.stringify(clientState, clientState.map)
+})
 
 inputtedMap$.subscribe(x => console.log('new map', x))
 
@@ -69,7 +73,7 @@ combineLatest([
     serverState$,
     clientState$
 ]).subscribe(([serverState, clientState]) => {
-    console.log(serverState, clientState)
+    d3.select('#blocker').classed('hidden', !!clientState)
     if(!clientState) {
         lineGroup.selectAll('*').remove()
         nodeGroup.selectAll('*').remove()

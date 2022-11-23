@@ -196,7 +196,9 @@ export function initalizeSharedState () {
     return {
         updateServerState,
         updateClientState,
+        serverStateUpdate$,
         serverState$,
+        clientStateUpdate$,
         clientState$
     }
 }
