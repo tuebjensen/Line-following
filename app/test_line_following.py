@@ -71,7 +71,6 @@ async def process_video():
                 ret, buffer = cv.imencode('.jpg', frame)
                 frame_encoded = buffer.tobytes()
                 video.set_frame_encoded(frame_encoded)
-                print(f'Direction: {direction}')
                 car.set_velocity(direction)
             else:
                 cap.set(cv.CAP_PROP_POS_FRAMES, 0)
