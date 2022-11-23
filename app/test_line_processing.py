@@ -27,7 +27,7 @@ same_incoming_states_count = STATE_CHANGE_THRESHOLD
 stable_state = STATE_FOLLOWING_LINE
 last_target = None
 last_line = None
-command_list = ['R', 'S', 'L']
+command_list = ['R', 'R', 'R', 'R']
 turning_just_initiated = False
 close_my_eyes = False
 
