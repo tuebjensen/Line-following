@@ -38,7 +38,7 @@ def get_processed_frame(original_frame):
     last_time = time.time()
     
     original_frame = original_frame[:,30:]
-    original_frame = cv.rotate(original_frame, cv.ROTATE_90_COUNTERCLOCKWISE)
+    original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
     processed_frame = process_frame(original_frame, BLUR, BLOCK_SIZE, C)
     edges, houghlines = find_edges_and_lines(processed_frame, HOUGH_THRESHOLD)
     opencv_processing_time = time.time() - last_time
