@@ -108,7 +108,7 @@ function directionFromLineSegment(lineSegment) {
     } else if ((lineSegment.end.y - lineSegment.start.y) < 0) {
         direction.x = 0
         direction.y = -1
-    } else {
+    } else if ((lineSegment.end.y - lineSegment.start.y) > 0){
         direction.x = 0
         direction.y = 1
     }
@@ -142,21 +142,6 @@ function directionFromLineSegment(lineSegment) {
         }
     }
 
-    function normaliseLineSegments(lineSegments) {
-        // makes all line segments go from smaller node id to larger node id
-        const normalisedLineSegments = []
-        for (let i = 0; i < lineSegments.length; i++){
-            if (lineSegments[i].start.id > lineSegments[i].end.id){
-                let start = lineSegments[i].start
-                let end = lineSegments[i].end
-                let normalisedLineSegment = {start: {x: end.x, y: end.y, id: end.id}, end: {x: start.x, y: start.y, id: start.id}}
-                normalisedLineSegments.push(normalisedLineSegment)
-            } else {
-                normalisedLineSegments.push(lineSegments[i])
-            }
-        }
-        return normalisedLineSegments
-    }
 
 function generatePathObject(pathIds, lineSegments) {
     const normalisedLineSegments = lineSegments
