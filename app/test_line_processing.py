@@ -297,9 +297,10 @@ def decide_target(original_frame, parallel_line_centers, tape_paths_and_lines, p
     elif state == STATE_TURNING:
         if(len(paths) > 1): # stable state
             if turning_just_initiated: 
-                turning_dir = command_list.pop(0) # TODO handle empty list
-                target = get_most_like(turning_dir, tape_paths_and_lines)
-                line = tape_paths_and_lines[target] if target is not None else None
+                if len(command_list) != 0:
+                    turning_dir = command_list.pop(0)
+                    target = get_most_like(turning_dir, tape_paths_and_lines)
+                    line = tape_paths_and_lines[target] if target is not None else None
             else:
                 target = update_target(previous_target, tape_paths_and_lines) if previous_target is not None else None
                 line = tape_paths_and_lines[target] if target is not None else None
