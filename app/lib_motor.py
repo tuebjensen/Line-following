@@ -45,8 +45,8 @@ class Motor:
                     #print("PID", time())
                     try:
                         GPIO.output(self._direction_pin, self._forwards)
-                    except ValueError:
-                        print("ValueError")
+                    except ValueError as e:
+                        print(e)
                         print("self._direction_pin", self._direction_pin)
                         print("self._forwards", self._forwards)
                     output = self._pid(self._encoder_interrupt_count)
