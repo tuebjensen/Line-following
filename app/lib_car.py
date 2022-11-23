@@ -41,6 +41,7 @@ class Car:
         #     self._motor_right.set_forwards(True)
         left_motor_intensity = y + x
         right_motor_intensity = y - x
+        print(left_motor_intensity, right_motor_intensity)
         self._motor_left.set_speed(abs(self._speed * left_motor_intensity))
         self._motor_left.set_forwards(left_motor_intensity >= 0)
         self._motor_right.set_speed(abs(self._speed * right_motor_intensity))
