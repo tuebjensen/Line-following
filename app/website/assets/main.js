@@ -16,7 +16,10 @@ const inputtedMap$ = fromEvent(document.getElementById('map-update-form'), 'subm
         e.preventDefault()
         try {
             mapUpdateError.innerText = ''
-            return of(parseMap(mapInput.value))
+            return of({
+                map: parseMap(mapInput.value),
+                mapStr: mapInput.value
+            })
         } catch (err) {
             mapUpdateError.innerText = 'Parsing error: ' + err.message
             return EMPTY
@@ -27,7 +30,7 @@ const inputtedMap$ = fromEvent(document.getElementById('map-update-form'), 'subm
 
 clientStateUpdate$.subscribe(clientState => {
     if (clientState) {
-        mapInput.value = JSON.stringify(clientState, clientState.map)
+        mapInput.value = clientState.mapStr
     }
 })
 
@@ -36,8 +39,9 @@ inputtedMap$.subscribe(x => console.log('new map', x))
 // Update client state from client
 merge(
     inputtedMap$.pipe(
-        map((map) => ({
+        map(({ map, mapStr }) => ({
             map,
+            mapStr,
             targetNode: null,
             path: []
         }))
