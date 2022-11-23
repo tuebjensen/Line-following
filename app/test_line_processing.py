@@ -69,7 +69,6 @@ def get_processed_frame(original_frame):
             display_direction_to_go(velocity_vector, original_frame)
     
     total_time_to_process = time.time() - last_time
-    print(f'Velocity vector: x={-velocity_vector.x} y={-velocity_vector.y}')
     #print(f'Total time to process: {round(total_time_to_process, 3)}, of which opencv was: {round(opencv_processing_time, 3)}')
     return original_frame, (-velocity_vector.x, -velocity_vector.y)
 
