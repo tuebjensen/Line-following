@@ -79,7 +79,7 @@ combineLatest([
     serverState$,
     clientState$
 ]).subscribe(([serverState, clientState]) => {
-    d3.select('#blocker').classed('hidden', !!clientState)
+    d3.select('.blocker').classed('hidden', !!clientState)
     if(!clientState) {
         lineGroup.selectAll('*').remove()
         nodeGroup.selectAll('*').remove()
