@@ -67,12 +67,11 @@ async def process_video():
         while cap.isOpened():
             ret_read, original_frame = cap.read() # <3ms
             if ret_read:
-                frame_encoded, direction = await loop.run_in_executor(executor, partial(get_processed_frame, original_frame))
-                start = perf_counter()
+                frame, direction = await loop.run_in_executor(executor, partial(get_processed_frame, original_frame))
+                ret, buffer = cv.imencode('.jpg', frame)
+                frame_encoded = buffer.tobytes()
                 video.set_frame_encoded(frame_encoded)
                 car.set_velocity(direction)
-                stop = perf_counter()
-                print(stop - start)
             else:
                 cap.set(cv.CAP_PROP_POS_FRAMES, 0)
         cap.release()
