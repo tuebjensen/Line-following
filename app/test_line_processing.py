@@ -33,6 +33,7 @@ close_my_eyes = False
 
 
 def get_processed_frame(original_frame):
+    global last_target
     target_segment, target_line = None, None
     last_time = time.time()
     
@@ -58,7 +59,7 @@ def get_processed_frame(original_frame):
         display_center_of_parallel_lines(parallel_line_centers, original_frame)
         display_tape_paths(tape_paths_and_lines, original_frame)
 
-        target_segment, target_line = decide_target(original_frame, parallel_line_centers, tape_paths_and_lines, target_segment)
+        target_segment, target_line = decide_target(original_frame, parallel_line_centers, tape_paths_and_lines, last_target)
         if target_segment is not None:
             cv.putText(original_frame, _get_state_string(), (0,80), cv.FONT_HERSHEY_SIMPLEX, 1, (0,69,255), 2, cv.LINE_AA)
             displacement_vector = get_displacement_vector_from_center(target_line, original_frame)
@@ -282,14 +283,14 @@ def decide_target(original_frame, parallel_line_centers, tape_paths_and_lines, p
             line = tape_paths_and_lines[target]
         if(len(paths) > 1): # transient state
             target = get_most_like('B', tape_paths_and_lines).flip()
-            line = tape_paths_and_lines[target]
+            line = tape_paths_and_lines[target] if target is not None else None
         if(len(paths) == 0): # transient state
             target = last_target
             line = last_line
     elif state == STATE_I_SEE_INTERSECTION:
         if(len(paths) > 1): # stable state
             target = get_most_like('B', tape_paths_and_lines).flip()
-            line = tape_paths_and_lines[target]
+            line = tape_paths_and_lines[target] if target is not None else None
         if(len(paths) <= 1): # transient state
             target = last_target
             line = last_line
@@ -298,7 +299,7 @@ def decide_target(original_frame, parallel_line_centers, tape_paths_and_lines, p
             if turning_just_initiated: 
                 turning_dir = command_list.pop(0) # TODO handle empty list
                 target = get_most_like(turning_dir, tape_paths_and_lines)
-                line = tape_paths_and_lines[target]
+                line = tape_paths_and_lines[target] if target is not None else None
             else:
                 target = update_target(previous_target, tape_paths_and_lines) if previous_target is not None else None
                 line = tape_paths_and_lines[target] if target is not None else None
