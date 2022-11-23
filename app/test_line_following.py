@@ -72,7 +72,7 @@ async def process_video():
                 frame_encoded = buffer.tobytes()
                 video.set_frame_encoded(frame_encoded)
                 print(f'Direction: {direction}')
-                # car.set_velocity(direction)
+                car.set_velocity(direction)
             else:
                 cap.set(cv.CAP_PROP_POS_FRAMES, 0)
         cap.release()
