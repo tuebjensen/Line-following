@@ -120,8 +120,8 @@ combineLatest([
         .attr('stroke-linecap', 'round')
         .classed('line', true)
         .classed('path-line', line => {
-            let start = path.findIndex(node => line.start.id === node)
-            let end = path.findIndex(node => line.end.id === node)
+            let start = path.findIndex(element => line.start.id === element.nodeId)
+            let end = path.findIndex(element => line.end.id === element.nodeId)
             if (start === -1 || end === -1) {
                 return false
             }
@@ -147,7 +147,7 @@ combineLatest([
         )
         .attr('transform', node => `translate(${node.x},${node.y}) scale(${node.isPossibleDestination ? 1 : 0.5})`)
         .classed('destination', node => node.isPossibleDestination)
-        .classed('current-destination', node => (console.log(node.id, targetNode), node.id === targetNode))
+        .classed('current-destination', node => (node.id === targetNode))
         .classed('current', node => node.id === currentNode)
         .classed('node', true)
 

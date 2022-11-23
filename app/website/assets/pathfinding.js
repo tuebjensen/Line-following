@@ -43,7 +43,7 @@ function printSolution(dist)
 function dijkstra(graph, src) {
     //Array to store the array representation of the SPT (shortest path tree) 
     //Where the index is the id of the node and the element at that index is the preceding node in the SPT 
-    const parentArray = new Array()
+    const parentArray = []
     //Array to store distances
     const dist = new Array(graph.length) 
     //Array to store vertices in the SPT
@@ -74,7 +74,7 @@ function printGraph(graph) {
     for (let i = 0; i < graph.length; i++) {
        for (let j = 0; j < graph[i].length; j++) {
            graphline += graph[i][j]
-           graphline += ' '
+           graphline += " "
         }
         graphline += '\n'
     }
@@ -82,24 +82,136 @@ function printGraph(graph) {
 
 }
 
-function isInShortestPath(parentArray, target){
-    return parentArray.find(node => node == target)
+function isLineSegmentOnPath(lineSegment, startNodeId, endNodeId){
+    return lineSegment.start.id === startNodeId && lineSegment.end.id === endNodeId
+}
+
+function possibleLineSegmentsFromNode(lineSegments, nodeId) {
+    const possibleLineSegments = []
+    for (let i = 0; i < lineSegments.length; i++){
+        if (lineSegments[i].start.id === nodeId) {
+            possibleLineSegments.push(lineSegments[i])
+        }
+    }
+    return possibleLineSegments
+}
+
+function directionFromLineSegment(lineSegment) {
+
+    const direction = {x: 0, y: 0}
+    if ((lineSegment.end.x - lineSegment.start.x) < 0) {
+        direction.x = -1
+        direction.y = 0
+    } else if ((lineSegment.end.x - lineSegment.start.x) > 0) {
+        direction.x = 1
+        direction.y = 0
+    } else if ((lineSegment.end.y - lineSegment.start.y) < 0) {
+        direction.x = 0
+        direction.y = -1
+    } else {
+        direction.x = 0
+        direction.y = 1
+    }
+
+    return direction
+
+}
+
+    function cross(v, w) {
+        //returns the z component of the cross product
+        return (v.x * w.y) - (v.y * w.x)
+    }
+    function dot(v, w) {
+        return (v.x * w.x) + (v.y * w.y)
+    }
+
+    function directionToGo(v, w){
+        if ((v.x === 0 && v.y === 0) || (w.x === 0 && w.y === 0)){
+            throw new Error('vector bad')
+        }
+        const crossProduct = cross(v, w)
+        const dotProduct = dot(v, w) 
+        if (dotProduct === 0) {
+            if (crossProduct === 1) {
+                return "right"
+            } else {
+                return "left"
+            }
+        } else {
+            return "straight"
+        }
+    }
+
+    function normaliseLineSegments(lineSegments) {
+        // makes all line segments go from smaller node id to larger node id
+        const normalisedLineSegments = []
+        for (let i = 0; i < lineSegments.length; i++){
+            if (lineSegments[i].start.id > lineSegments[i].end.id){
+                let start = lineSegments[i].start
+                let end = lineSegments[i].end
+                let normalisedLineSegment = {start: {x: end.x, y: end.y, id: end.id}, end: {x: start.x, y: start.y, id: start.id}}
+                normalisedLineSegments.push(normalisedLineSegment)
+            } else {
+                normalisedLineSegments.push(lineSegments[i])
+            }
+        }
+        return normalisedLineSegments
+    }
+
+function generatePathObject(pathIds, lineSegments) {
+    const normalisedLineSegments = lineSegments
+    const pathFromSourceToTarget = []
+    let previousLineSegmentOnPath = null
+    let orientation = null
+    for (let i = 1; i < pathIds.length; i++) {
+        let possibilities = []
+        let choose = ""
+        let nodeId = pathIds[i - 1]
+        let nextNodeId = pathIds[i]
+        let possibleLineSegments = possibleLineSegmentsFromNode(normalisedLineSegments, nodeId)        
+        if (orientation == null) {
+            for (let j = 0; j < possibleLineSegments.length; j++){
+
+                if (isLineSegmentOnPath(possibleLineSegments[j], nodeId, nextNodeId)) {
+                    orientation = directionFromLineSegment(possibleLineSegments[j])
+                }
+            }
+        } else {
+            orientation = directionFromLineSegment(previousLineSegmentOnPath)
+        }
+
+        for (let j = 0; j < possibleLineSegments.length; j++){
+            let possibleLineSegment = possibleLineSegments[j]
+            let direction = directionFromLineSegment(possibleLineSegment)
+            let instruction = directionToGo(orientation, direction)
+            possibilities.push(instruction)
+            if (isLineSegmentOnPath(possibleLineSegment, nodeId, nextNodeId)) {
+                choose = instruction
+                previousLineSegmentOnPath = possibleLineSegment
+            }
+            
+        }
+        pathFromSourceToTarget.push({possibilities: possibilities, choose: choose, nodeId: nodeId})
+    }
+    pathFromSourceToTarget.push({possibilities: [], choose: "", nodeId: pathIds[pathIds.length - 1]})
+    console.log(pathFromSourceToTarget)
+    return pathFromSourceToTarget
 }
 
 export function findPath(map, source, target) {
     // strings used for test:
     //r1t2r3(t4|b5)r6(t5|b5(l2|r4))
     //r1t2r3(t4|b5)r6(t5|b5(l2|r4))r3b2l*
-    //r1t2r3(t4|b5r2t2r8)r1r1r1r1r1r1(t5|b*b2(l2|r4))
+    //_r1_t2_r3_(t4_|b5_r2_t2_r8_)r6_(t5_|b*_b2_(l2_|r4_))
     const lineSegments = map.lineSegments
     //const lineSegments = map.lineSegments.filter(lineSegment => !(lineSegment.start.id === 3 && lineSegment.end.id === 6)) //NOT CORRECT JUST FOR TEST
     const nodes = map.nodes
     const adjacencyMatrix = makeAdjacencyMatrix(lineSegments, nodes.length)
     const sptParentArray = dijkstra(adjacencyMatrix, source)
     console.log(sptParentArray)
-    console.log(target)
+
     
-    const pathFromSourceToTarget = [target]
+    const pathIds = [target]
     let foundPath = false
     let newTarget = target
     while (!foundPath) {
@@ -109,10 +221,12 @@ export function findPath(map, source, target) {
         } else if (sptParentArray[newTarget] == newTarget){
             throw new Error('Target is not present in map')
         } else {
-            pathFromSourceToTarget.push(newTarget)
+            pathIds.push(newTarget)
         }
     }
 
-    return pathFromSourceToTarget.reverse()
-    
+    pathIds.reverse()
+    console.log(pathIds)
+    return generatePathObject(pathIds, lineSegments)
+
 }
