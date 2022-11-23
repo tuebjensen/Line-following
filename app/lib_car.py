@@ -19,9 +19,9 @@ class Car:
         left_motor_intensity = (y + x) / sqrt(2)
         right_motor_intensity = (y - x) / sqrt(2)  
         self._motor_left.set_speed(abs(self._speed * left_motor_intensity))
-        self._motor_left.set_forwards(left_motor_intensity >= 0)
+        self._motor_left.set_forwards(True if left_motor_intensity >= 0 else False)
         self._motor_right.set_speed(abs(self._speed * right_motor_intensity))
-        self._motor_right.set_forwards(right_motor_intensity >= 0)
+        self._motor_right.set_forwards(True if right_motor_intensity >= 0 else False)
 
     
     async def start_running(self):
