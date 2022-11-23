@@ -21,6 +21,7 @@ car = Car(
 async def main():
     for i in range(12):
         direction = cos(i * pi / 6), sin(i * pi / 6)
+        print(direction)
         car.set_velocity(direction)
         await asyncio.sleep(3)
     # for i in range(3):
