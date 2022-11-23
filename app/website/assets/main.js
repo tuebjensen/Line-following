@@ -26,7 +26,9 @@ const inputtedMap$ = fromEvent(document.getElementById('map-update-form'), 'subm
 )
 
 clientStateUpdate$.subscribe(clientState => {
-    mapInput.value = JSON.stringify(clientState, clientState.map)
+    if (clientState) {
+        mapInput.value = JSON.stringify(clientState, clientState.map)
+    }
 })
 
 inputtedMap$.subscribe(x => console.log('new map', x))
