@@ -23,6 +23,7 @@ class ImageProcessor:
             cv.THRESH_BINARY,
             2*(self._BLOCK_SIZE+1)+1,
             self._C)
+        return processed_frame
 
     def _find_edges_and_houghlines(self, processed_frame):
         edges = cv.Canny(processed_frame, 50, 150, apertureSize = 3)

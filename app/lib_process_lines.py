@@ -233,7 +233,7 @@ class LineProcessor:
         return line_segments
 
 
-    def _get_tape_paths_and_lines(self, center_lines: 'list[Line]', tape_boundaries: 'dict[Line, LineSegment]', frame) -> 'dict[LineSegment, Line]':
+    def _get_tape_paths_and_lines(self, center_lines: 'list[Line]', tape_boundaries: 'dict[Line, list[LineSegment]]', frame) -> 'dict[LineSegment, Line]':
         tape_segments = [x for l in list(tape_boundaries.values()) for x in l]
         tape_paths_and_lines = {}
         if len(center_lines) == 1:
@@ -244,7 +244,7 @@ class LineProcessor:
             path = LineSegment(bottom_point, top_point)
             tape_paths_and_lines = {path: center_lines[0]}
         elif len(center_lines) == 2:
-            intersection_point = self._get_intersection_point(center_lines[0], center_lines[1])
+            intersection_point = _get_intersection_point(center_lines[0], center_lines[1])
             center_line_segments = self._segment_center_lines(center_lines, intersection_point, frame)
             tape_paths = self._get_valid_center_line_segments(center_line_segments, tape_segments)
             tape_paths_and_lines = tape_paths
@@ -409,3 +409,21 @@ def _filter_same_points(possible_frame_intersection_points: 'list[tuple[int, int
 def _is_within_frame(point: 'tuple[int, int]', max_x, max_y) -> bool:
         x, y = point
         return x >= 0 and x <= max_x and y >= 0 and y <= max_y
+
+
+def _get_intersection_point(line_one: 'Line', line_two: 'Line') -> 'tuple[int, int]':
+        """Finds the intersection of two lines given in Hesse normal form.
+
+        Returns closest integer pixel locations.
+        See https://stackoverflow.com/a/383527/5087436
+        """
+        rho1, theta1 = line_one.rho, line_one.theta
+        rho2, theta2 = line_two.rho, line_two.theta
+        A = np.array([
+            [np.cos(theta1), np.sin(theta1)],
+            [np.cos(theta2), np.sin(theta2)]
+        ])
+        b = np.array([[rho1], [rho2]])
+        x0, y0 = np.linalg.solve(A, b)
+        x0, y0 = int(np.round(x0)), int(np.round(y0))
+        return (x0, y0)

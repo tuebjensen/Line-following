@@ -1,6 +1,6 @@
 from math import asin, cos, pi, sin, sqrt
 import numpy as np
-from lib_process_lines import Line, LineSegment
+from lib_process_lines import Line, LineSegment, _get_intersection_point
 from lib_vector2d import Vector2D
 
 
@@ -130,19 +130,19 @@ class DirectionCalculator:
         next_state = None
         if current_state == STATE_FOLLOWING_LINE:
             if count_paths > 1:
-                intersection_red = self._get_intersection_point(parallel_line_centers[0], parallel_line_centers[1])
+                intersection_red = _get_intersection_point(parallel_line_centers[0], parallel_line_centers[1])
                 if intersection_red[1] > frame.shape[0]*self._REACT_TO_INTERSECTION_THRESHOLD:
                     next_state = STATE_TURNING
                     self._turning_just_initiated = True
                 else:
                     next_state = STATE_I_SEE_INTERSECTION
             elif count_paths == 1:
-                next_state = STATE_FOLLOWING_LINE   
+                next_state = STATE_FOLLOWING_LINE
             elif count_paths == 0:
                 next_state = STATE_IM_LOST
         elif current_state == STATE_I_SEE_INTERSECTION:
             if count_paths > 1:
-                intersection_red = self._get_intersection_point(parallel_line_centers[0], parallel_line_centers[1])
+                intersection_red = _get_intersection_point(parallel_line_centers[0], parallel_line_centers[1])
                 if intersection_red[1] > frame.shape[0]*self._REACT_TO_INTERSECTION_THRESHOLD:
                     next_state = STATE_TURNING
                     self._turning_just_initiated = True
@@ -168,12 +168,12 @@ class DirectionCalculator:
                 next_state = STATE_TURN180
                 print('Turned around and saw an intersection')
             elif count_paths == 1:
-                if close_my_eyes == True:
+                if self._close_my_eyes is True:
                     next_state = STATE_TURN180
                 else:
                     next_state = STATE_FOLLOWING_LINE
             elif count_paths == 0:
-                close_my_eyes = False
+                self._close_my_eyes = False
                 next_state = STATE_TURN180
         elif current_state == STATE_IM_LOST:
             if count_paths > 1:
@@ -188,43 +188,20 @@ class DirectionCalculator:
         next_state = self._get_stable_state(next_state)
         return next_state
 
-    def _get_intersection_point(self, line_one: 'Line', line_two: 'Line') -> 'tuple[int, int]':
-        """Finds the intersection of two lines given in Hesse normal form.
-
-        Returns closest integer pixel locations.
-        See https://stackoverflow.com/a/383527/5087436
-        """
-        rho1, theta1 = line_one.rho, line_one.theta
-        rho2, theta2 = line_two.rho, line_two.theta
-        A = np.array([
-            [np.cos(theta1), np.sin(theta1)],
-            [np.cos(theta2), np.sin(theta2)]
-        ])
-        b = np.array([[rho1], [rho2]])
-        x0, y0 = np.linalg.solve(A, b)
-        x0, y0 = int(np.round(x0)), int(np.round(y0))
-        return (x0, y0)
-
 
     def _get_stable_state(self, incoming_state):
-        global stable_state
-        global last_incoming_state
-        global same_incoming_states_count
-
-        if incoming_state != stable_state:
-            if incoming_state == last_incoming_state:
-                same_incoming_states_count += 1
-                if same_incoming_states_count >= self._STATE_CHANGE_THRESHOLD:
-                    same_incoming_states_count = 1
+        if incoming_state != self._stable_state:
+            if incoming_state == self._last_incoming_state:
+                self._same_incoming_states_count += 1
+                if self._same_incoming_states_count >= self._STATE_CHANGE_THRESHOLD:
+                    self._same_incoming_states_count = 1
                     return incoming_state
             else :
-                same_incoming_states_count = 1
+                self._same_incoming_states_count = 1
             
-            last_incoming_state = incoming_state
-        else:
-            return incoming_state
+            self._last_incoming_state = incoming_state
 
-        return stable_state
+        return self._stable_state
 
 
     def _get_most_like(self, turning_direction: str, tape_paths_and_lines: 'dict[LineSegment, Line]') -> LineSegment:
