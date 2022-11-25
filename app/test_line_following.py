@@ -50,7 +50,7 @@ async def process_video():
                         line_processor,
                         direction_calculator))
                 print(5)
-                await video.set_current_node(current_node)
+                #await video.set_current_node(current_node)
                 ret, buffer = cv.imencode('.jpg', frame)
                 frame_encoded = buffer.tobytes()
                 video.set_frame_encoded(frame_encoded)
