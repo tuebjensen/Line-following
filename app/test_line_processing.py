@@ -1,6 +1,7 @@
 import time
 import cv2 as cv
 import numpy as np
+from lib_vector2d import Vector2D
 from lib_lines_display import display_all_lines, display_boxes_around_merged_lines, display_center_of_parallel_lines, display_direction_to_go, display_displacement_and_direction_vectors, display_merged_lines_segments, display_merged_parallel_lines, display_tape_paths
 from lib_calculate_direction import DirectionCalculator
 from lib_process_lines import LineProcessor
@@ -29,6 +30,7 @@ def get_processed_frame(original_frame):
     original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
     edges, houghlines = image_processor.get_edges_and_houghlines(original_frame)
     tape_paths = line_processor.get_tape_paths(original_frame, edges, houghlines)
+    velocity_vector = Vector2D(0, 0)
 
     if isinstance(houghlines, np.ndarray):
         cv.putText(original_frame, f'lines: {len(houghlines)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2, cv.LINE_AA)
