@@ -13,13 +13,14 @@ STATE_IM_LOST = 5
 
 class DirectionCalculator:
     def __init__(self, video: WebServer, path_plan=[], state_change_threshold=10, react_to_intersection_threshold=0.3):
+        self._video = video
         self._path_plan = path_plan
         self._STATE_CHANGE_THRESHOLD = state_change_threshold
         self._REACT_TO_INTERSECTION_THRESHOLD = react_to_intersection_threshold
 
-        self._last_incoming_state = STATE_FOLLOWING_LINE
+        self._last_incoming_state = STATE_STOP
         self._same_incoming_states_count = self._STATE_CHANGE_THRESHOLD
-        self._stable_state = STATE_FOLLOWING_LINE
+        self._stable_state = STATE_STOP
         self._last_target = None
         self._last_line = None
         self._turning_just_initiated = False
@@ -29,6 +30,8 @@ class DirectionCalculator:
     def set_new_path(self, path_plan):
         print(path_plan)
         self._path_plan = path_plan
+        if len(path_plan) > 0:
+            self._stable_state = STATE_TURN180
 
 
     def get_direction_vector(self, tape_paths: 'dict[LineSegment, Line]', frame) -> Vector2D:
@@ -190,7 +193,7 @@ class DirectionCalculator:
 
 
     def _get_next_state_from_lost(self, path_count):
-        next_state = None
+        next_state = None        
         if path_count > 1:
             next_state = STATE_I_SEE_INTERSECTION
         elif path_count == 1:
@@ -198,7 +201,6 @@ class DirectionCalculator:
         elif path_count == 0:
             next_state = STATE_IM_LOST
         return next_state
-
 
     def _get_stable_state(self, incoming_state):
         if incoming_state != self._stable_state:
