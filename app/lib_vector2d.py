@@ -27,6 +27,8 @@ class Vector2D:
 
     def __truediv__(self, scalar) -> 'Vector2D':
         if isinstance(scalar, int) or isinstance(scalar, float):
+            if scalar == 0:
+                return Vector2D(0, 0)
             return Vector2D(self.x / scalar, self.y / scalar)
         raise ValueError('Can only divide vector by a scalar')
 
