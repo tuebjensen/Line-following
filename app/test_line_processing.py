@@ -22,10 +22,9 @@ STATE_IM_LOST = 5
 
 frames = 0
 start = time.time()
-def get_processed_frame(original_frame, camera):
+def get_processed_frame(original_frame):
     global frames
     global start
-    ret, original_frame = camera.read()
     original_frame = original_frame[:,30:]
     original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
     edges, houghlines = image_processor.get_edges_and_houghlines(original_frame)
