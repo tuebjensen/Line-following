@@ -12,7 +12,6 @@ import RPi.GPIO as GPIO
 from lib_calculate_direction import DirectionCalculator
 from lib_image_processing import ImageProcessor
 from lib_process_lines import LineProcessor
-from test_line_processing import direction_calculator
 from test_line_processing import get_processed_frame
 from lib_car import Car
 from lib_motor import Motor
@@ -46,6 +45,7 @@ async def process_video():
                         image_processor,
                         line_processor,
                         direction_calculator))
+                video.set_current_node(current_node)
                 ret, buffer = cv.imencode('.jpg', frame)
                 frame_encoded = buffer.tobytes()
                 video.set_frame_encoded(frame_encoded)
