@@ -7,8 +7,8 @@ from lib_process_lines import LineProcessor
 from lib_image_processing import ImageProcessor
 
 # camera = cv.VideoCapture(0)
-# image_processor = ImageProcessor()
-image_processor = ImageProcessor(10, 5, 7, 85)
+image_processor = ImageProcessor()
+# image_processor = ImageProcessor(10, 5, 7, 85)
 line_processor = LineProcessor()
 direction_calculator = DirectionCalculator('W')
 
