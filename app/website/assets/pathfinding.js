@@ -136,7 +136,6 @@ function directionFromLineSegment(startNode, endNode) {
 
 function generatePathObject(pathIds, lineSegments, nodes) {
     const pathFromSourceToTarget = []
-    let previousLineSegmentOnPath = null
     let orientation = null
     let lastNodeId = null
     for (let i = 0; i < pathIds.length - 1; i++) {
@@ -158,12 +157,12 @@ function generatePathObject(pathIds, lineSegments, nodes) {
 
         for (let j = 0; j < possibleLineSegments.length; j++){
             let possibleLineSegment = possibleLineSegments[j]
-            let direction = directionFromLineSegment(nodes[nodeId], nodes[nextNodeId])
+            let possibleNodeId = nodeId === possibleLineSegment.start.id ? nodeId : possibleLineSegment.end.id
+            let direction = directionFromLineSegment(nodes[nodeId], nodes[possibleNodeId])
             let instruction = directionToGo(orientation, direction)
             possibilities.push(instruction)
             if (isLineSegmentOnPath(possibleLineSegment, nodeId, nextNodeId)) {
                 choose = instruction
-                previousLineSegmentOnPath = possibleLineSegment
             }
             
         }
