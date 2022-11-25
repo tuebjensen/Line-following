@@ -13,13 +13,14 @@ STATE_IM_LOST = 5
 
 class DirectionCalculator:
     def __init__(self, video: WebServer, path_plan=[], state_change_threshold=10, react_to_intersection_threshold=0.3):
+        self._video = video
         self._path_plan = path_plan
         self._STATE_CHANGE_THRESHOLD = state_change_threshold
         self._REACT_TO_INTERSECTION_THRESHOLD = react_to_intersection_threshold
 
-        self._last_incoming_state = STATE_FOLLOWING_LINE
+        self._last_incoming_state = STATE_STOP
         self._same_incoming_states_count = self._STATE_CHANGE_THRESHOLD
-        self._stable_state = STATE_FOLLOWING_LINE
+        self._stable_state = STATE_STOP
         self._last_target = None
         self._last_line = None
         self._turning_just_initiated = False
@@ -28,6 +29,8 @@ class DirectionCalculator:
 
     def set_new_path(self, path_plan):
         self._path_plan = path_plan
+        if len(path_plan) > 0:
+            self._stable_state = STATE_TURN180
 
 
     def get_direction_vector(self, tape_paths: 'dict[LineSegment, Line]', frame) -> Vector2D:
@@ -190,12 +193,15 @@ class DirectionCalculator:
 
     def _get_next_state_from_lost(self, path_count):
         next_state = None
-        if path_count > 1:
-            next_state = STATE_I_SEE_INTERSECTION
-        elif path_count == 1:
-            next_state = STATE_FOLLOWING_LINE
-        elif path_count == 0:
-            next_state = STATE_IM_LOST
+        if(len(self._path_plan) > 0 and self._path_plan[0]['choose'] == ''):
+            next_state = STATE_STOP
+        else:
+            if path_count > 1:
+                next_state = STATE_I_SEE_INTERSECTION
+            elif path_count == 1:
+                next_state = STATE_FOLLOWING_LINE
+            elif path_count == 0:
+                next_state = STATE_IM_LOST
         return next_state
 
 
@@ -251,7 +257,7 @@ class DirectionCalculator:
             if self._turning_just_initiated:
                 if len(self._path_plan) != 0:
                     instruction = self._path_plan.pop(0)
-                    video.set_current_node(instruction['nodeId'])
+                    self._video.set_current_node(instruction['nodeId'])
                     target_path = self._get_most_like(instruction['choose'], tape_paths_and_lines)
                     target_line = tape_paths_and_lines.get(target_path)
             else:
