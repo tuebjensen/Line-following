@@ -1,5 +1,5 @@
 import * as d3 from 'https://cdn.skypack.dev/pin/d3@v7.6.1-1Q0NZ0WZnbYeSjDusJT3/mode=imports,min/optimized/d3.js'
-import { Subject, EMPTY, share, map, of, distinctUntilChanged, withLatestFrom, switchMap, tap, fromEvent, merge, combineLatest } from 'https://cdn.skypack.dev/pin/rxjs@v7.5.7-j3yWv9lQY9gNeD9CyX5Y/mode=imports,min/optimized/rxjs.js'
+import { Subject, EMPTY, share, map, of, distinctUntilChanged, pairwise, withLatestFrom, switchMap, tap, fromEvent, merge, combineLatest } from 'https://cdn.skypack.dev/pin/rxjs@v7.5.7-j3yWv9lQY9gNeD9CyX5Y/mode=imports,min/optimized/rxjs.js'
 import { initalizeSharedState } from './initalize-shared-state.js'
 import { parseMap } from './parse-map.js'
 import { findPath } from './pathfinding.js'
@@ -29,12 +29,19 @@ const inputtedMap$ = fromEvent(document.getElementById('map-update-form'), 'subm
 )
 
 clientStateUpdate$.subscribe(clientState => {
-    if (clientState) {
-        mapInput.value = clientState.mapStr || ''
-    }
+    if (!clientState) return
+    mapInput.value = clientState.mapStr || ''
 })
 
-inputtedMap$.subscribe(x => console.log('new map', x))
+const videoEl = document.getElementById('video')
+clientStateUpdate$.pipe(
+    pairwise()
+).subscribe(([previousClientState, clientState]) => {
+    if (!previousClientState && clientState) {
+        console.log('reset video stream')
+        videoEl.src = videoEl.src
+    }
+})
 
 // Update client state from client
 merge(

@@ -38,9 +38,7 @@ export function initalizeSharedState () {
             console.error(err)
             return of(null)
         }),
-        repeat({
-            delay: 3000
-        }),
+        repeat({ delay: 1000 }),
         startWith(null),
         distinctUntilChanged(),
         shareReplay(1)
