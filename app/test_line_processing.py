@@ -29,7 +29,6 @@ def get_processed_frame(original_frame):
     original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
     edges, houghlines = image_processor.get_edges_and_houghlines(original_frame)
     tape_paths = line_processor.get_tape_paths(original_frame, edges, houghlines)
-    direction_vector = direction_calculator.get_direction_vector(tape_paths)
 
     if isinstance(houghlines, np.ndarray):
         cv.putText(original_frame, f'lines: {len(houghlines)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2, cv.LINE_AA)
