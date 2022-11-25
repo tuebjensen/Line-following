@@ -45,6 +45,8 @@ class DirectionCalculator:
 
     def _get_direction_to_go(self, displacement_vector: Vector2D, direction_vector: Vector2D, image_frame) -> Vector2D:
         distance_from_center = displacement_vector.get_length()
+        if distance_from_center == 0:
+            return 0
         displacement_vector = displacement_vector.normalize()
         direction_vector = direction_vector.normalize()
 

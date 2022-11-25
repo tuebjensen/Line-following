@@ -108,7 +108,7 @@ class WebServer:
                     print('6')
                     message = json.loads(msg.data)
                     data = message['data']
-                    print('message data', data)
+                    #print('message data', data)
                     if 'id' in message:
                         self._processed_ids.append(message['id'])
                     if message['type'] == 'server-state-update':
