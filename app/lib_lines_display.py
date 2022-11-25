@@ -1,7 +1,9 @@
-from lib_process_lines import BOX_SIZE, Line, _get_box_centers_please
+from lib_process_lines import Line, LineProcessor
 from lib_vector2d import Vector2D
 import cv2 as cv
 import numpy as np
+
+BOX_SIZE = 20
 
 
 def put_line_on_frame(frame, line: Line, color: 'tuple[int, int, int]'):
@@ -18,10 +20,11 @@ def put_line_on_frame(frame, line: Line, color: 'tuple[int, int, int]'):
 
 
 def display_boxes_around_merged_lines(merged_lines: 'list[Line]', frame, edges):
+    line_processor = LineProcessor()
     for i in range(len(merged_lines)):
         line = merged_lines[i]
         color = (0, 255-255/len(merged_lines)*i ,0) # same shade of green as the merged line
-        boxes = _get_box_centers_please(line, edges)
+        boxes = line_processor._get_box_centers_please(line, edges)
         for box in boxes:
             x, y = box
             x = int(x)
