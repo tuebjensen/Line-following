@@ -89,11 +89,15 @@ class WebServer:
                 raise web.HTTPConflict()
             self._ws = web.WebSocketResponse()
             self._processed_ids = []
+            print('1')
             await self._ws.prepare(request)
+            print('2')
             #async with aiofiles.open('state.json', 'r') as file:
             #    contents = await file.read()
             contents = await make_full_state()
+            print('3')
             await self.send_message('full-state-update', contents) 
+            print('4')
 
             async for msg in self._ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:
