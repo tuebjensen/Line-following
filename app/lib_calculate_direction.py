@@ -28,6 +28,7 @@ class DirectionCalculator:
 
 
     def set_new_path(self, path_plan):
+        print(path_plan)
         self._path_plan = path_plan
         if len(path_plan) > 0:
             self._stable_state = STATE_TURN180
