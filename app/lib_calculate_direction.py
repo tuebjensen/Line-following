@@ -82,13 +82,15 @@ class DirectionCalculator:
         state = self._stable_state
         target_path = None
         target_line = None
+        # TODO: clean up -> current_node should be in some different process
+        current_node = None
         
         if state == STATE_FOLLOWING_LINE:
             target_path, target_line = self._decide_target_from_following(tape_paths)
         elif state == STATE_I_SEE_INTERSECTION:
             target_path, target_line = self._decide_target_from_seeing_intersection(tape_paths)
         elif state == STATE_TURNING:
-            target_path, target_line = self._decide_target_from_turning(tape_paths)
+            target_path, target_line, current_node = self._decide_target_from_turning(tape_paths)
         elif state == STATE_STOP:
             #some input has to go here if we wanna be able to get out of this state
             target_path, target_line = self._decide_target_from_stopped()
@@ -100,7 +102,7 @@ class DirectionCalculator:
         self._last_target = target_path
         self._last_line = target_line
 
-        return target_path, target_line
+        return target_path, target_line, current_node
 
 
     def _update_state(self, frame, tape_paths_and_lines):
@@ -254,23 +256,22 @@ class DirectionCalculator:
     def _decide_target_from_turning(self, tape_paths_and_lines):
         target_path = None
         target_line = None
+        current_node = None
         paths = list(tape_paths_and_lines.keys())
         if(len(paths) > 1): # stable state
             if self._turning_just_initiated:
                 if len(self._path_plan) != 0:
                     instruction = self._path_plan.pop(0)
-                    setting_current_node = asyncio.create_task(
-                        self._video.set_current_node(instruction['nodeId'])
-                    )
                     target_path = self._get_most_like(instruction['choose'], tape_paths_and_lines)
                     target_line = tape_paths_and_lines.get(target_path)
+                    current_node = instruction['nodeId']
             else:
                 target_path = self._update_target(self._last_target, tape_paths_and_lines) if self._last_target is not None else None
                 target_line = tape_paths_and_lines.get(target_path)
         if(len(paths) <= 1): # transient state
             target_path = self._last_target
             target_line = self._last_line
-        return target_path, target_line
+        return target_path, target_line, current_node
 
 
     def _decide_target_from_stopped(self):
