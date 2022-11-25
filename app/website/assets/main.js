@@ -48,6 +48,7 @@ merge(
     ),
     nodeLeftClick$.pipe(
         withLatestFrom(clientState$, serverState$),
+        tap(([node, clientState, serverState]) => console.log(clientState.map, serverState?.currentNode || 0, node.id)),
         map(([node, clientState, serverState]) => ({
             ...clientState,
             targetNode: node.id,
@@ -55,7 +56,7 @@ merge(
         }))
     )
 ).pipe(
-    distinctUntilChanged(undefined, JSON.stringify),
+    distinctUntilChanged(),
 ).subscribe(clientState => {
     console.log('new client state', clientState)
     updateClientState(clientState)
@@ -64,10 +65,16 @@ merge(
 // Update shared state from client
 nodeRightClick$.pipe(
     map((node) => ({
-        currentNode: node
-    }))
-).subscribe(serverState => {
+        currentNode: node.id
+    })),
+    withLatestFrom(clientState$)
+).subscribe(([serverState, clientState]) => {
     updateServerState(serverState)
+    updateClientState({
+        ...clientState,
+        targetNode: null,
+        path: [],
+    })
 })
 
 // Display interface with D3
@@ -88,6 +95,8 @@ combineLatest([
 
     const { map, targetNode, path } = clientState
     const { currentNode } = serverState || { currentNode: null }
+
+    console.log('CURRENT NODE', currentNode)
 
     // calculate dimensions of the newly displayed map
     const smallestDistance = Math.min(
@@ -152,7 +161,13 @@ combineLatest([
         .classed('node', true)
 
     nodeGroup.selectAll('.node.destination')
+        .on('contextmenu', (event, datum) => {
+            event.preventDefault()
+            console.log(event)
+            nodeRightClick$.next(datum)
+        })
         .on('click', function(event, datum) {
+            console.log(event)
             nodeLeftClick$.next(datum)
         })
     
