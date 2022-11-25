@@ -121,7 +121,8 @@ class DirectionCalculator:
         elif current_state == STATE_IM_LOST:
             next_state = self._get_next_state_from_lost(count_paths)
         else:
-            print(current_state)
+            pass
+            #print(current_state)
         
         self._stable_state = self._get_stable_state(next_state)
 
