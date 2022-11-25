@@ -98,6 +98,7 @@ class WebServer:
             async for msg in self._ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:
                     message = json.loads(msg.data)
+                    print('message data', data)
                     data = message['data']
                     if 'id' in message:
                         self._processed_ids.append(message['id'])
