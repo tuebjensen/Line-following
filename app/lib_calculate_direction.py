@@ -1,7 +1,7 @@
 from math import asin, cos, pi, sin, sqrt
+from lib_web_server import WebServer
 from lib_process_lines import Line, LineSegment, _get_intersection_point
 from lib_vector2d import Vector2D
-from test_line_following import video
 
 STATE_FOLLOWING_LINE = 0
 STATE_I_SEE_INTERSECTION = 1
@@ -12,7 +12,7 @@ STATE_IM_LOST = 5
 
 
 class DirectionCalculator:
-    def __init__(self, path_plan=[], state_change_threshold=10, react_to_intersection_threshold=0.3):
+    def __init__(self, video: WebServer, path_plan=[], state_change_threshold=10, react_to_intersection_threshold=0.3):
         self._path_plan = path_plan
         self._STATE_CHANGE_THRESHOLD = state_change_threshold
         self._REACT_TO_INTERSECTION_THRESHOLD = react_to_intersection_threshold

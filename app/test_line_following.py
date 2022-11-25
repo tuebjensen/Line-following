@@ -9,9 +9,9 @@ import numpy as np
 import signal
 import sys
 import RPi.GPIO as GPIO
-from app.lib_calculate_direction import DirectionCalculator
-from app.lib_image_processing import ImageProcessor
-from app.lib_process_lines import LineProcessor
+from lib_calculate_direction import DirectionCalculator
+from lib_image_processing import ImageProcessor
+from lib_process_lines import LineProcessor
 from test_line_processing import direction_calculator
 from test_line_processing import get_processed_frame
 from lib_car import Car
@@ -23,7 +23,7 @@ car = None
 video = WebServer()
 image_processor = ImageProcessor()
 line_processor = LineProcessor()
-direction_calculator = DirectionCalculator()
+direction_calculator = DirectionCalculator(video)
 
 def signal_handler(sig, frame):
     GPIO.cleanup()
