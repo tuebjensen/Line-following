@@ -258,7 +258,9 @@ class DirectionCalculator:
             if self._turning_just_initiated:
                 if len(self._path_plan) != 0:
                     instruction = self._path_plan.pop(0)
-                    self._video.set_current_node(instruction['nodeId'])
+                    setting_current_node = asyncio.create_task(
+                        self._video.set_current_node(instruction['nodeId'])
+                    )
                     target_path = self._get_most_like(instruction['choose'], tape_paths_and_lines)
                     target_line = tape_paths_and_lines.get(target_path)
             else:
