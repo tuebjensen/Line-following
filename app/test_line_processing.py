@@ -23,7 +23,10 @@ STATE_IM_LOST = 5
 
 frames = 0
 start = time.time()
-def get_processed_frame(original_frame):
+def get_processed_frame(original_frame,
+        image_processor: DirectionCalculator,
+        line_processor: LineProcessor,
+        direction_calculator: DirectionCalculator):
     global frames
     global start
     frames += 1
@@ -60,6 +63,8 @@ def get_processed_frame(original_frame):
         cv.putText(original_frame, f'Stable: {_get_state_string(direction_calculator._stable_state)}', (0,80), cv.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2, cv.LINE_AA)
         cv.putText(original_frame, f'Incoming: {_get_state_string(direction_calculator._last_incoming_state)} x{direction_calculator._same_incoming_states_count}', (0,110), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv.LINE_AA)
     return original_frame, (-velocity_vector.x, -velocity_vector.y)
+
+
 
 def nothing(x):
     pass

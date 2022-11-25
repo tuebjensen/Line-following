@@ -1,7 +1,7 @@
 from math import asin, cos, pi, sin, sqrt
 from lib_process_lines import Line, LineSegment, _get_intersection_point
 from lib_vector2d import Vector2D
-
+from test_line_following import video
 
 STATE_FOLLOWING_LINE = 0
 STATE_I_SEE_INTERSECTION = 1
@@ -12,8 +12,7 @@ STATE_IM_LOST = 5
 
 
 class DirectionCalculator:
-    def __init__(self, initial_orientation, path_plan=['R', 'R', 'R', 'R'], state_change_threshold=10, react_to_intersection_threshold=0.3):
-        self._orientation = initial_orientation
+    def __init__(self, path_plan=[], state_change_threshold=10, react_to_intersection_threshold=0.3):
         self._path_plan = path_plan
         self._STATE_CHANGE_THRESHOLD = state_change_threshold
         self._REACT_TO_INTERSECTION_THRESHOLD = react_to_intersection_threshold
@@ -25,6 +24,10 @@ class DirectionCalculator:
         self._last_line = None
         self._turning_just_initiated = False
         self._close_my_eyes = False
+
+
+    def set_new_path(self, path_plan):
+        self._path_plan = path_plan
 
 
     def get_direction_vector(self, tape_paths: 'dict[LineSegment, Line]', frame) -> Vector2D:
@@ -219,7 +222,7 @@ class DirectionCalculator:
             target_path = paths[0]
             target_line = tape_paths_and_lines.get(target_path)
         if(len(paths) > 1): # transient state
-            target_path = self._get_most_like('B', tape_paths_and_lines).flip()
+            target_path = self._get_most_like('back', tape_paths_and_lines).flip()
             target_line = tape_paths_and_lines.get(target_path)
         if(len(paths) == 0): # transient state
             target_path = self._last_target
@@ -232,7 +235,7 @@ class DirectionCalculator:
         target_line = None
         paths = list(tape_paths_and_lines.keys())
         if(len(paths) > 1): # stable state
-            target_path = self._get_most_like('B', tape_paths_and_lines).flip()
+            target_path = self._get_most_like('back ', tape_paths_and_lines).flip()
             target_line = tape_paths_and_lines.get(target_path)
         if(len(paths) <= 1): # transient state
             target_path = self._last_target
@@ -247,8 +250,9 @@ class DirectionCalculator:
         if(len(paths) > 1): # stable state
             if self._turning_just_initiated:
                 if len(self._path_plan) != 0:
-                    turning_dir = self._path_plan.pop(0)
-                    target_path = self._get_most_like(turning_dir, tape_paths_and_lines)
+                    instruction = self._path_plan.pop(0)
+                    video.set_current_node(instruction['nodeId'])
+                    target_path = self._get_most_like(instruction['choose'], tape_paths_and_lines)
                     target_line = tape_paths_and_lines.get(target_path)
             else:
                 target_path = self._update_target(self._last_target, tape_paths_and_lines) if self._last_target is not None else None
@@ -280,10 +284,10 @@ class DirectionCalculator:
     def _get_most_like(self, turning_direction: str, tape_paths_and_lines: 'dict[LineSegment, Line]') -> LineSegment:
         for path in list(tape_paths_and_lines.keys()):
             angle = path.get_direction_vector_please().get_angle()
-            if ((turning_direction == 'R' and angle >= -pi/4 and angle <= pi/4)
-                    or (turning_direction == 'L' and ((angle >= 3*pi/4) or (angle <= -3*pi/4)))
-                    or (turning_direction == 'S' and angle >= -3*pi/4 and angle <= -pi/4)
-                    or (turning_direction == 'B' and angle >= pi/4 and angle <= 3*pi/4)):
+            if ((turning_direction == 'right' and angle >= -pi/4 and angle <= pi/4)
+                    or (turning_direction == 'left' and ((angle >= 3*pi/4) or (angle <= -3*pi/4)))
+                    or (turning_direction == 'straight' and angle >= -3*pi/4 and angle <= -pi/4)
+                    or (turning_direction == 'back' and angle >= pi/4 and angle <= 3*pi/4)):
                 return path
         
         print('your map sucks')
