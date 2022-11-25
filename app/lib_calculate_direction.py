@@ -1,5 +1,4 @@
 from math import asin, cos, pi, sin, sqrt
-import numpy as np
 from lib_process_lines import Line, LineSegment, _get_intersection_point
 from lib_vector2d import Vector2D
 
@@ -27,9 +26,11 @@ class DirectionCalculator:
         self._turning_just_initiated = False
         self._close_my_eyes = False
 
+
     def get_direction_vector(self, tape_paths: 'dict[LineSegment, Line]', frame) -> Vector2D:
-        target_path = self._decide_target(tape_paths)
-        target_line = tape_paths.get(target_path)
+        target_path, target_line = self._decide_target(frame, tape_paths)
+        if(target_path is None):
+            return Vector2D(0, 0)
         displacement_vector = self._get_displacement_vector_from_center(target_line, frame)
         line_direction_vector = target_path.get_direction_vector_please()
         direction_vector = self._get_direction_to_go(displacement_vector, line_direction_vector, frame)
@@ -50,13 +51,6 @@ class DirectionCalculator:
 
         return direction_vector_weight * direction_vector + displacement_vector_weight * displacement_vector
 
-    def _get_direction_vector_of_line(self, line: Line) -> Vector2D:
-        theta = line.theta
-        adjusted_theta = -1 * theta
-        perpendicular_angle = adjusted_theta + pi / 2
-        x = cos(perpendicular_angle)
-        y = sin(perpendicular_angle)
-        return Vector2D(x, y)
 
     def _get_displacement_vector_from_center(self, line: Line, frame) -> Vector2D:
         rho, theta = line.rho, line.theta
@@ -75,117 +69,130 @@ class DirectionCalculator:
 
         return Vector2D(x_coord, y_coord)
 
-    def _decide_target(self, original_frame, tape_paths) -> LineSegment:
-        parallel_line_centers = list(tape_paths.values())
-        state = self._get_next_state(self._stable_state, original_frame, parallel_line_centers, tape_paths)
-        self._stable_state = state
-        target = None
-        line = None
-        paths = list(tape_paths.keys())
+
+    def _decide_target(self, original_frame, tape_paths) -> 'tuple[LineSegment, Line]':
+        self._update_state(original_frame, tape_paths)
+        state = self._stable_state
+        target_path = None
+        target_line = None
+        
         if state == STATE_FOLLOWING_LINE:
-            if(len(paths) == 1): # stable state
-                target = paths[0]
-                line = tape_paths.get(target)
-            if(len(paths) > 1): # transient state
-                target = self._get_most_like('B', tape_paths).flip()
-                line = tape_paths.get(target)
-            if(len(paths) == 0): # transient state
-                target = self._last_target
-                line = self._last_line
+            target_path, target_line = self._decide_target_from_following(tape_paths)
         elif state == STATE_I_SEE_INTERSECTION:
-            if(len(paths) > 1): # stable state
-                target = self._get_most_like('B', tape_paths).flip()
-                line = tape_paths.get(target)
-            if(len(paths) <= 1): # transient state
-                target = self._last_target
-                line = self._last_line
+            target_path, target_line = self._decide_target_from_seeing_intersection(tape_paths)
         elif state == STATE_TURNING:
-            if(len(paths) > 1): # stable state
-                if self._turning_just_initiated: 
-                    if len(self._path_plan) != 0:
-                        turning_dir = self._path_plan.pop(0)
-                        target = self._get_most_like(turning_dir, tape_paths)
-                        line = tape_paths.get(target)
-                else:
-                    target = self._update_target(self._last_target, tape_paths) if self._last_target is not None else None
-                    line = tape_paths.get(target)
-            if(len(paths) <= 1): # transient state
-                target = self._last_target
-                line = self._last_line
+            target_path, target_line = self._decide_target_from_turning(tape_paths)
         elif state == STATE_STOP:
             #some input has to go here if we wanna be able to get out of this state
-            pass
+            target_path, target_line = self._decide_target_from_stopped()
         elif state == STATE_TURN180:
-            pass 
+            target_path, target_line = self._decide_target_from_turning_180(original_frame)
         elif state == STATE_IM_LOST:
-            target = None
-            line = None
-        self._last_target = target
-        self._last_line = line
-        return target, line
+            target_path, target_line = self._decide_target_from_lost()
+
+        self._last_target = target_path
+        self._last_line = target_line
+
+        return target_path, target_line
 
 
-    def _get_next_state(self, current_state, frame, parallel_line_centers, tape_paths_and_lines):
+    def _update_state(self, frame, tape_paths_and_lines):
+        parallel_line_centers = list(set(tape_paths_and_lines.values()))
         count_paths = len(list(tape_paths_and_lines.keys()))
+        current_state = self._stable_state
         next_state = None
+
         if current_state == STATE_FOLLOWING_LINE:
-            if count_paths > 1:
-                intersection_red = _get_intersection_point(parallel_line_centers[0], parallel_line_centers[1])
-                if intersection_red[1] > frame.shape[0]*self._REACT_TO_INTERSECTION_THRESHOLD:
-                    next_state = STATE_TURNING
-                    self._turning_just_initiated = True
-                else:
-                    next_state = STATE_I_SEE_INTERSECTION
-            elif count_paths == 1:
-                next_state = STATE_FOLLOWING_LINE
-            elif count_paths == 0:
-                next_state = STATE_IM_LOST
+            next_state = self._get_next_state_from_following(count_paths, parallel_line_centers, frame)
         elif current_state == STATE_I_SEE_INTERSECTION:
-            if count_paths > 1:
-                intersection_red = _get_intersection_point(parallel_line_centers[0], parallel_line_centers[1])
-                if intersection_red[1] > frame.shape[0]*self._REACT_TO_INTERSECTION_THRESHOLD:
-                    next_state = STATE_TURNING
-                    self._turning_just_initiated = True
-                else:
-                    next_state = STATE_I_SEE_INTERSECTION
-            elif count_paths == 1:
-                next_state = STATE_FOLLOWING_LINE
-            elif count_paths == 0:
-                next_state = STATE_IM_LOST
+            next_state = self._get_next_state_from_seeing_intersection(count_paths, parallel_line_centers, frame)
         elif current_state == STATE_TURNING:
-            if count_paths > 1:
-                next_state = STATE_TURNING
-                self._turning_just_initiated = False
-            elif count_paths == 1:
-                next_state = STATE_FOLLOWING_LINE
-            elif count_paths == 0:
-                next_state = STATE_IM_LOST
+            next_state = self._get_next_state_from_turning(count_paths)
         elif current_state == STATE_STOP:
-            #some input has to go here if we wanna be able to get out of this state
-            next_state = STATE_STOP
+            next_state = self._get_next_state_from_stopped()
         elif current_state == STATE_TURN180:
-            if count_paths > 1:
-                next_state = STATE_TURN180
-                print('Turned around and saw an intersection')
-            elif count_paths == 1:
-                if self._close_my_eyes is True:
-                    next_state = STATE_TURN180
-                else:
-                    next_state = STATE_FOLLOWING_LINE
-            elif count_paths == 0:
-                self._close_my_eyes = False
-                next_state = STATE_TURN180
+            next_state = self._get_next_state_from_turning_around(count_paths)
         elif current_state == STATE_IM_LOST:
-            if count_paths > 1:
-                next_state = STATE_I_SEE_INTERSECTION
-            elif count_paths == 1:
-                next_state = STATE_FOLLOWING_LINE
-            elif count_paths == 0:
-                next_state = STATE_IM_LOST
+            next_state = self._get_next_state_from_lost(count_paths)
         else:
             print(current_state)
+        
+        self._stable_state = self._get_stable_state(next_state)
 
-        next_state = self._get_stable_state(next_state)
+    
+    def _get_next_state_from_following(self, path_count, parallel_line_centers, frame):
+        next_state = None
+        if path_count > 1:
+            intersection_red = _get_intersection_point(parallel_line_centers[0], parallel_line_centers[1])
+            if intersection_red[1] > frame.shape[0]*self._REACT_TO_INTERSECTION_THRESHOLD:
+                next_state = STATE_TURNING
+                self._turning_just_initiated = True
+            else:
+                next_state = STATE_I_SEE_INTERSECTION
+        elif path_count == 1:
+            next_state = STATE_FOLLOWING_LINE
+        elif path_count == 0:
+            next_state = STATE_IM_LOST
+        return next_state
+
+    def _get_next_state_from_seeing_intersection(self, path_count, parallel_line_centers, frame):
+        next_state = None
+        if path_count > 1:
+            intersection_red = _get_intersection_point(parallel_line_centers[0], parallel_line_centers[1])
+            if intersection_red[1] > frame.shape[0]*self._REACT_TO_INTERSECTION_THRESHOLD:
+                next_state = STATE_TURNING
+                self._turning_just_initiated = True
+            else:
+                next_state = STATE_I_SEE_INTERSECTION
+        elif path_count == 1:
+            next_state = STATE_FOLLOWING_LINE
+        elif path_count == 0:
+            next_state = STATE_IM_LOST
+        return next_state
+
+
+    def _get_next_state_from_turning(self, path_count):
+        next_state = None
+        if path_count > 1:
+            next_state = STATE_TURNING
+            self._turning_just_initiated = False
+        elif path_count == 1:
+            next_state = STATE_FOLLOWING_LINE
+        elif path_count == 0:
+            next_state = STATE_IM_LOST
+        return next_state
+
+
+    def _get_next_state_from_stopped(self):
+        #some input has to go here if we wanna be able to get out of this state
+        next_state = STATE_STOP
+        return next_state
+
+
+    def _get_next_state_from_turning_around(self, path_count):
+        next_state = None
+        if path_count > 1:
+            next_state = STATE_TURN180
+            print('Turned around and saw an intersection')
+        elif path_count == 1:
+            if self._close_my_eyes is True:
+                next_state = STATE_TURN180
+            else:
+                next_state = STATE_FOLLOWING_LINE
+        elif path_count == 0:
+            self._close_my_eyes = False
+            next_state = STATE_TURN180
+        return next_state
+
+
+    def _get_next_state_from_lost(self, path_count):
+        next_state = None
+        if path_count > 1:
+            next_state = STATE_I_SEE_INTERSECTION
+        elif path_count == 1:
+            next_state = STATE_FOLLOWING_LINE
+        elif path_count == 0:
+            next_state = STATE_IM_LOST
         return next_state
 
 
@@ -204,6 +211,72 @@ class DirectionCalculator:
         return self._stable_state
 
 
+    def _decide_target_from_following(self, tape_paths_and_lines):
+        target_path = None
+        target_line = None
+        paths = list(tape_paths_and_lines.keys())
+        if(len(paths) == 1): # stable state
+            target_path = paths[0]
+            target_line = tape_paths_and_lines.get(target_path)
+        if(len(paths) > 1): # transient state
+            target_path = self._get_most_like('B', tape_paths_and_lines).flip()
+            target_line = tape_paths_and_lines.get(target_path)
+        if(len(paths) == 0): # transient state
+            target_path = self._last_target
+            target_line = self._last_line
+        return target_path, target_line
+
+    
+    def _decide_target_from_seeing_intersection(self, tape_paths_and_lines):
+        target_path = None
+        target_line = None
+        paths = list(tape_paths_and_lines.keys())
+        if(len(paths) > 1): # stable state
+            target_path = self._get_most_like('B', tape_paths_and_lines).flip()
+            target_line = tape_paths_and_lines.get(target_path)
+        if(len(paths) <= 1): # transient state
+            target_path = self._last_target
+            target_line = self._last_line
+        return target_path, target_line
+
+
+    def _decide_target_from_turning(self, tape_paths_and_lines):
+        target_path = None
+        target_line = None
+        paths = list(tape_paths_and_lines.keys())
+        if(len(paths) > 1): # stable state
+            if self._turning_just_initiated:
+                if len(self._path_plan) != 0:
+                    turning_dir = self._path_plan.pop(0)
+                    target_path = self._get_most_like(turning_dir, tape_paths_and_lines)
+                    target_line = tape_paths_and_lines.get(target_path)
+            else:
+                target_path = self._update_target(self._last_target, tape_paths_and_lines) if self._last_target is not None else None
+                target_line = tape_paths_and_lines.get(target_path)
+        if(len(paths) <= 1): # transient state
+            target_path = self._last_target
+            target_line = self._last_line
+        return target_path, target_line
+
+
+    def _decide_target_from_stopped(self):
+        return None, None
+
+
+    def _decide_target_from_turning_180(self, original_frame):
+        frame_width = original_frame.shape[1]
+        frame_height = original_frame.shape[0]
+        center = (int(frame_width / 2), int(frame_height / 2))
+        center_left = (0, int(frame_height / 2))
+        center_to_left = LineSegment(center, center_left)
+        horizontal_line = Line(frame_height / 2, pi / 2)
+        return center_to_left, horizontal_line
+
+
+    def _decide_target_from_lost(self):
+        return None, None
+
+
     def _get_most_like(self, turning_direction: str, tape_paths_and_lines: 'dict[LineSegment, Line]') -> LineSegment:
         for path in list(tape_paths_and_lines.keys()):
             angle = path.get_direction_vector_please().get_angle()
@@ -214,6 +287,7 @@ class DirectionCalculator:
                 return path
         
         print('your map sucks')
+
 
     def _update_target(self, old_target: LineSegment, tape_paths_and_lines: 'dict[LineSegment, Line]') -> LineSegment:
         min_angle_dif = 2*pi

@@ -1,4 +1,3 @@
-from math import pi
 import time
 import cv2 as cv
 import numpy as np
@@ -64,6 +63,8 @@ def process_video():
     guard = True
     cap = cv.VideoCapture(0)
     target_segment, target_line = None, None
+    frames = 0
+    start = time.time()
     while cap.isOpened() and guard:
         last_time = time.time()
         
@@ -74,19 +75,18 @@ def process_video():
             print("Can't receive next frame")
             cap.set(cv.CAP_PROP_POS_FRAMES, 0)
             continue
+        frames += 1
         
         processed_frame = image_processor._process_frame(original_frame)
         edges, houghlines = image_processor._find_edges_and_houghlines(processed_frame)
         opencv_processing_time = time.time() - last_time
 
         if isinstance(houghlines, np.ndarray):
-            cv.putText(original_frame, f'lines: {len(houghlines)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2, cv.LINE_AA)
-
             lines = line_processor._get_from_houghlines(houghlines)
             merged_lines = line_processor._merge_lines(lines, original_frame)
             merged_lines_segments = line_processor._get_tape_boundaries(merged_lines, edges)
             parallel_line_centers = line_processor._get_centers_of_parallel_line_pairs(merged_lines)
-            tape_paths_and_lines = line_processor._get_tape_paths_and_lines(parallel_line_centers, merged_lines_segments, original_frame) #purple
+            tape_paths_and_lines = line_processor._get_tape_paths_and_lines(parallel_line_centers, merged_lines_segments, original_frame)
             display_all_lines(lines, original_frame)
             display_merged_parallel_lines(merged_lines, original_frame)
             display_boxes_around_merged_lines(merged_lines, original_frame, edges)
@@ -101,7 +101,9 @@ def process_video():
                 velocity_vector = direction_calculator._get_direction_to_go(displacement_vector, direction_vector, original_frame)
                 display_displacement_and_direction_vectors(displacement_vector, direction_vector, original_frame)
                 display_direction_to_go(velocity_vector, original_frame)
-            
+        cv.putText(original_frame, f'Frame: #{frames}, fps: {frames / (time.time() - start)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,69,255), 2, cv.LINE_AA)
+        cv.putText(original_frame, f'Stable: {_get_state_string(direction_calculator._stable_state)}', (0,80), cv.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2, cv.LINE_AA)
+        cv.putText(original_frame, f'Incoming: {_get_state_string(direction_calculator._last_incoming_state)} x{direction_calculator._same_incoming_states_count}', (0,110), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv.LINE_AA)
 
         cv.imshow('original video', original_frame)
         cv.imshow('processed video', processed_frame)
