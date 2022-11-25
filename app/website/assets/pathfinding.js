@@ -1,3 +1,4 @@
+import { possibleLineSegmentsFromNode } from "./possible-line-segments-from-node.js"
 
 function lengthOfLineSegment(lineSegment) {
     return Math.sqrt((lineSegment.start.x - lineSegment.end.x)**2 + (lineSegment.start.y - lineSegment.end.y)**2)
@@ -84,16 +85,6 @@ function printGraph(graph) {
 
 function isLineSegmentOnPath(lineSegment, startNodeId, endNodeId){
     return lineSegment.start.id === startNodeId && lineSegment.end.id === endNodeId
-}
-
-function possibleLineSegmentsFromNode(lineSegments, nodeId) {
-    const possibleLineSegments = []
-    for (let i = 0; i < lineSegments.length; i++){
-        if (lineSegments[i].start.id === nodeId) {
-            possibleLineSegments.push(lineSegments[i])
-        }
-    }
-    return possibleLineSegments
 }
 
 function directionFromLineSegment(lineSegment) {
