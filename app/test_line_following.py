@@ -12,7 +12,6 @@ import RPi.GPIO as GPIO
 from lib_calculate_direction import DirectionCalculator
 from lib_image_processing import ImageProcessor
 from lib_process_lines import LineProcessor
-from test_line_processing import direction_calculator
 from test_line_processing import get_processed_frame
 from lib_car import Car
 from lib_motor import Motor
