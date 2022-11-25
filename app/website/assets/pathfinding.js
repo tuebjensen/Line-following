@@ -128,9 +128,11 @@ function directionFromLineSegment(startNode, endNode) {
             } else {
                 return "left"
             }
-        } else{
+        } else if (dotProduct < 0){
             return "straight"
-        } 
+        } else {
+            return "back"
+        }
     }
 
 
