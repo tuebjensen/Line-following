@@ -35,6 +35,7 @@ def get_processed_frame(original_frame,
     edges, houghlines = image_processor.get_edges_and_houghlines(original_frame)
     tape_paths = line_processor.get_tape_paths(original_frame, edges, houghlines)
     velocity_vector = Vector2D(0, 0)
+    current_node = None
 
     if isinstance(houghlines, np.ndarray):
         cv.putText(original_frame, f'lines: {len(houghlines)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2, cv.LINE_AA)
@@ -50,7 +51,7 @@ def get_processed_frame(original_frame,
         display_center_of_parallel_lines(parallel_line_centers, original_frame)
         display_tape_paths(tape_paths_and_lines, original_frame)
 
-        target_segment, target_line = direction_calculator._decide_target(
+        target_segment, target_line, current_node = direction_calculator._decide_target(
                                                                 original_frame,
                                                                 tape_paths_and_lines)
         if target_segment is not None:
@@ -62,7 +63,7 @@ def get_processed_frame(original_frame,
         cv.putText(original_frame, f'Frame: #{frames}, fps: {frames / (time.time() - start)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,69,255), 2, cv.LINE_AA)
         cv.putText(original_frame, f'Stable: {_get_state_string(direction_calculator._stable_state)}', (0,80), cv.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2, cv.LINE_AA)
         cv.putText(original_frame, f'Incoming: {_get_state_string(direction_calculator._last_incoming_state)} x{direction_calculator._same_incoming_states_count}', (0,110), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv.LINE_AA)
-    return original_frame, (-velocity_vector.x, -velocity_vector.y)
+    return original_frame, (-velocity_vector.x, -velocity_vector.y), current_node
 
 
 
@@ -72,7 +73,7 @@ def nothing(x):
 def process_video():
     guard = True
     cap = cv.VideoCapture(0)
-    target_segment, target_line = None, None
+    target_segment, target_line, current_node = None, None, None
     frames = 0
     start = time.time()
     while cap.isOpened() and guard:
@@ -104,7 +105,7 @@ def process_video():
             display_center_of_parallel_lines(parallel_line_centers, original_frame)
             display_tape_paths(tape_paths_and_lines, original_frame)
 
-            target_segment, target_line = direction_calculator._decide_target(original_frame, tape_paths_and_lines)
+            target_segment, target_line, current_node = direction_calculator._decide_target(original_frame, tape_paths_and_lines)
             if target_segment is not None:
                 displacement_vector = direction_calculator._get_displacement_vector_from_center(target_line, original_frame)
                 direction_vector = target_segment.get_direction_vector_please()
