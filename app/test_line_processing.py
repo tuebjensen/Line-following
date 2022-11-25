@@ -46,7 +46,6 @@ def get_processed_frame(original_frame):
 
         target_segment, target_line = direction_calculator._decide_target(
                                                                 original_frame,
-                                                                parallel_line_centers,
                                                                 tape_paths_and_lines)
         if target_segment is not None:
             displacement_vector = direction_calculator._get_displacement_vector_from_center(target_line, original_frame)
