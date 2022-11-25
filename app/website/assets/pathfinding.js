@@ -157,7 +157,7 @@ function generatePathObject(pathIds, lineSegments, nodes) {
 
         for (let j = 0; j < possibleLineSegments.length; j++){
             let possibleLineSegment = possibleLineSegments[j]
-            let possibleNodeId = nextNodeId === possibleLineSegment.start.id ? nextNodeId : possibleLineSegment.end.id
+            let possibleNodeId = nodeId === possibleLineSegment.start.id ? possibleLineSegment.end.id : possibleLineSegment.start.id
             let direction = directionFromLineSegment(nodes[nodeId], nodes[possibleNodeId])
             let instruction = directionToGo(orientation, direction)
             possibilities.push(instruction)
