@@ -32,7 +32,7 @@ class WebServer:
 
         await self._ws.send_str(json.dumps(message))
         
-        self._processed_ids.clear()
+        self._processed_ids = []
 
     async def set_current_node(self, current_node):
         print('set current node', current_node)
@@ -117,7 +117,7 @@ class WebServer:
                         await set_client_state(data)
                         
             self._ws = None 
-            self._processed_ids.clear()
+            self._processed_ids = []
             await update_client_state({'targetNode': None, 'path': []})
             return self._ws
             
