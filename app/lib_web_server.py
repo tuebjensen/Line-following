@@ -101,7 +101,9 @@ class WebServer:
             print('4')
 
             async for msg in self._ws:
+                print('5')
                 if msg.type == aiohttp.WSMsgType.TEXT:
+                    print('6')
                     message = json.loads(msg.data)
                     print('message data', data)
                     data = message['data']
