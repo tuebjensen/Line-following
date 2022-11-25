@@ -57,7 +57,7 @@ class Motor:
                     output = await encoder_process.stdout.readline()
                     outputStr = output.decode('ascii').rstrip()
                     if (outputStr.isdigit() and len(outputStr) > 0):
-                        print(outputStr)
+                        #print(outputStr)
                         self._encoder_interrupt_count = int(outputStr)
                     await asyncio.sleep(0)
                 except ProcessLookupError:
