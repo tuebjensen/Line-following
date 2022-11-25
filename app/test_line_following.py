@@ -40,7 +40,7 @@ async def process_video():
         while cap.isOpened():
             ret_read, original_frame = cap.read() # <3ms
             if ret_read:
-                frame, direction = await loop.run_in_executor(executor,
+                frame, direction, current_node = await loop.run_in_executor(executor,
                     partial(get_processed_frame,
                         original_frame,
                         image_processor,
