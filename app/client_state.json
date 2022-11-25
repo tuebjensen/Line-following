@@ -1,5 +1,5 @@
 { 
     "map": {"lineSegments": [], "nodes": []},
-    "path": [{"possibilities": ["left", "right", "straight"], "choose": "left", "nodeId": 1}]
+    "path": []
 }
 
