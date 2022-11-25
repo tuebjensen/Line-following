@@ -179,7 +179,7 @@ export function initalizeSharedState () {
     ).pipe(
         startWith(null),
         distinctUntilChanged(),
-        tap(x => console.log('SERVER STATE CHANGED')),
+        tap(x => console.log('SERVER STATE CHANGED', x)),
         shareReplay(1)
     )
 
@@ -189,7 +189,7 @@ export function initalizeSharedState () {
     ).pipe(
         startWith(null),
         distinctUntilChanged(),
-        tap(x => console.log('CLIENT STATE CHANGED')),
+        tap(x => console.log('CLIENT STATE CHANGED', x)),
         shareReplay(1)
     )
 
