@@ -24,7 +24,7 @@ STATE_IM_LOST = 5
 frames = 0
 start = time.time()
 def get_processed_frame(original_frame,
-        image_processor: DirectionCalculator,
+        image_processor: ImageProcessor,
         line_processor: LineProcessor,
         direction_calculator: DirectionCalculator):
     global frames

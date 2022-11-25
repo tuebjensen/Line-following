@@ -35,6 +35,7 @@ class WebServer:
         self._processed_ids.clear()
 
     async def set_current_node(self, current_node):
+        print('set current node', current_node)
         async with aiofiles.open('server_state.json', 'r') as file:
             await file.write(json.dumps({'currentNode': current_node}))
         await self.send_message('server-state-update', {'currentNode': current_node})
@@ -100,7 +101,9 @@ class WebServer:
             print('4')
 
             async for msg in self._ws:
+                print('5')
                 if msg.type == aiohttp.WSMsgType.TEXT:
+                    print('6')
                     message = json.loads(msg.data)
                     print('message data', data)
                     data = message['data']
