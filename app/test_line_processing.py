@@ -26,6 +26,7 @@ start = time.time()
 def get_processed_frame(original_frame):
     global frames
     global start
+    frames += 1
     original_frame = original_frame[:,30:]
     original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
     edges, houghlines = image_processor.get_edges_and_houghlines(original_frame)
