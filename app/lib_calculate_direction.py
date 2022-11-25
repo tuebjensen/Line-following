@@ -2,6 +2,7 @@ from math import asin, cos, pi, sin, sqrt
 from lib_web_server import WebServer
 from lib_process_lines import Line, LineSegment, _get_intersection_point
 from lib_vector2d import Vector2D
+import asyncio
 
 STATE_FOLLOWING_LINE = 0
 STATE_I_SEE_INTERSECTION = 1
