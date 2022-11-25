@@ -14,7 +14,7 @@ direction_calculator = DirectionCalculator(video)
 async def main():
     while camera.isOpened():
         ret_read, original_frame = camera.read()
-        original_frame, velocity_vector = get_processed_frame(original_frame)   
+        original_frame, velocity_vector = get_processed_frame(original_frame, image_processor, line_processor, direction_calculator)   
         ret, buffer = cv.imencode('.jpg', original_frame)
         frame = buffer.tobytes()
         video.set_frame_encoded(frame)
