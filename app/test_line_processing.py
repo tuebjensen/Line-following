@@ -6,7 +6,7 @@ from lib_calculate_direction import DirectionCalculator
 from lib_process_lines import LineProcessor
 from lib_image_processing import ImageProcessor
 
-camera = cv.VideoCapture(0)
+# camera = cv.VideoCapture(0)
 # image_processor = ImageProcessor()
 image_processor = ImageProcessor(10, 5, 7, 85)
 line_processor = LineProcessor()
@@ -20,8 +20,11 @@ STATE_STOP = 3
 STATE_TURN180 = 4
 STATE_IM_LOST = 5
 
-
-def get_processed_frame(original_frame):
+frames = 0
+start = time.time()
+def get_processed_frame(original_frame, camera):
+    global frames
+    global start
     ret, original_frame = camera.read()
     original_frame = original_frame[:,30:]
     original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
@@ -53,7 +56,9 @@ def get_processed_frame(original_frame):
             velocity_vector = direction_calculator._get_direction_to_go(displacement_vector, direction_vector, original_frame)
             display_displacement_and_direction_vectors(displacement_vector, direction_vector, original_frame)
             display_direction_to_go(velocity_vector, original_frame)
-    
+        cv.putText(original_frame, f'Frame: #{frames}, fps: {frames / (time.time() - start)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,69,255), 2, cv.LINE_AA)
+        cv.putText(original_frame, f'Stable: {_get_state_string(direction_calculator._stable_state)}', (0,80), cv.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2, cv.LINE_AA)
+        cv.putText(original_frame, f'Incoming: {_get_state_string(direction_calculator._last_incoming_state)} x{direction_calculator._same_incoming_states_count}', (0,110), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv.LINE_AA)
     return original_frame, (-velocity_vector.x, -velocity_vector.y)
 
 def nothing(x):
