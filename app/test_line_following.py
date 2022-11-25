@@ -33,18 +33,23 @@ def nothing():
 
 
 async def process_video():
+    print(1)
     with ProcessPoolExecutor() as executor:
+        print(2)
         loop = asyncio.get_running_loop()
         #executor = ProcessPoolExecutor()
         while cap.isOpened():
+            print(3)
             ret_read, original_frame = cap.read() # <3ms
             if ret_read:
+                print(4)
                 frame, direction, current_node = await loop.run_in_executor(executor,
                     partial(get_processed_frame,
                         original_frame,
                         image_processor,
                         line_processor,
                         direction_calculator))
+                print(5)
                 await video.set_current_node(current_node)
                 ret, buffer = cv.imencode('.jpg', frame)
                 frame_encoded = buffer.tobytes()
