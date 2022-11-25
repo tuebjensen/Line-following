@@ -1,4 +1,5 @@
 import { createCounter } from './create-counter.js'
+import { possibleLineSegmentsFromNode } from './possible-line-segments-from-node.js'
 
 function asc (a, b) {
     return a - b
@@ -127,14 +128,6 @@ export function parseMap (str) {
                 str = str.slice(1)
                 currentX = startX
                 currentY = startY
-            } else if (str[0] === '_') {
-                str = str.slice(1)
-                const existingNode = findNode(currentX, currentY)
-                if (existingNode){
-                    existingNode.isPossibleDestination = true
-                } else {
-                    throw new Error('Eror (no node)')    
-                }
             } else if (/\s/.test(str[0])) {
                 str = str.slice(1)
             } else if (/#/.test(str[0])) {
@@ -150,6 +143,12 @@ export function parseMap (str) {
         }
     }
     _parseMap(0, 0)
+
+    // automatically mark dead-end nodes as destinations
+    for (const node of nodes) {
+        console.log(possibleLineSegmentsFromNode(lineSegments, node))
+        node.isPossibleDestination = possibleLineSegmentsFromNode(lineSegments, node.id).length <= 1
+    }
 
     return { lineSegments, nodes }
 }

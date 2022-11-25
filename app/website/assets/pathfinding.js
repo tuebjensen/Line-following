@@ -1,3 +1,4 @@
+import { possibleLineSegmentsFromNode } from "./possible-line-segments-from-node.js"
 
 function lengthOfLineSegment(lineSegment) {
     return Math.sqrt((lineSegment.start.x - lineSegment.end.x)**2 + (lineSegment.start.y - lineSegment.end.y)**2)
@@ -83,32 +84,22 @@ function printGraph(graph) {
 }
 
 function isLineSegmentOnPath(lineSegment, startNodeId, endNodeId){
-    return lineSegment.start.id === startNodeId && lineSegment.end.id === endNodeId
+    return (lineSegment.start.id === startNodeId && lineSegment.end.id === endNodeId || lineSegment.start.id === endNodeId && lineSegment.end.id === startNodeId)
 }
 
-function possibleLineSegmentsFromNode(lineSegments, nodeId) {
-    const possibleLineSegments = []
-    for (let i = 0; i < lineSegments.length; i++){
-        if (lineSegments[i].start.id === nodeId) {
-            possibleLineSegments.push(lineSegments[i])
-        }
-    }
-    return possibleLineSegments
-}
-
-function directionFromLineSegment(lineSegment) {
+function directionFromLineSegment(startNode, endNode) {
 
     const direction = {x: 0, y: 0}
-    if ((lineSegment.end.x - lineSegment.start.x) < 0) {
+    if ((endNode.x - startNode.x) < 0) {
         direction.x = -1
         direction.y = 0
-    } else if ((lineSegment.end.x - lineSegment.start.x) > 0) {
+    } else if ((endNode.x - startNode.x) > 0) {
         direction.x = 1
         direction.y = 0
-    } else if ((lineSegment.end.y - lineSegment.start.y) < 0) {
+    } else if ((endNode.y - startNode.y) < 0) {
         direction.x = 0
         direction.y = -1
-    } else if ((lineSegment.end.y - lineSegment.start.y) > 0){
+    } else if ((endNode.y - startNode.y) > 0){
         direction.x = 0
         direction.y = 1
     }
@@ -137,37 +128,37 @@ function directionFromLineSegment(lineSegment) {
             } else {
                 return "left"
             }
-        } else {
+        } else{
             return "straight"
-        }
+        } 
     }
 
 
-function generatePathObject(pathIds, lineSegments) {
-    const normalisedLineSegments = lineSegments
+function generatePathObject(pathIds, lineSegments, nodes) {
     const pathFromSourceToTarget = []
     let previousLineSegmentOnPath = null
     let orientation = null
-    for (let i = 1; i < pathIds.length; i++) {
+    let lastNodeId = null
+    for (let i = 0; i < pathIds.length - 1; i++) {
         let possibilities = []
         let choose = ""
-        let nodeId = pathIds[i - 1]
-        let nextNodeId = pathIds[i]
-        let possibleLineSegments = possibleLineSegmentsFromNode(normalisedLineSegments, nodeId)        
+        let nodeId = pathIds[i]
+        let nextNodeId = pathIds[i + 1]
+        let possibleLineSegments = possibleLineSegmentsFromNode(lineSegments, nodeId)        
         if (orientation == null) {
             for (let j = 0; j < possibleLineSegments.length; j++){
 
                 if (isLineSegmentOnPath(possibleLineSegments[j], nodeId, nextNodeId)) {
-                    orientation = directionFromLineSegment(possibleLineSegments[j])
+                    orientation = directionFromLineSegment(nodes[nodeId], nodes[nextNodeId])
                 }
             }
         } else {
-            orientation = directionFromLineSegment(previousLineSegmentOnPath)
+            orientation = directionFromLineSegment(nodes[lastNodeId], nodes[nodeId])
         }
 
         for (let j = 0; j < possibleLineSegments.length; j++){
             let possibleLineSegment = possibleLineSegments[j]
-            let direction = directionFromLineSegment(possibleLineSegment)
+            let direction = directionFromLineSegment(nodes[nodeId], nodes[nextNodeId])
             let instruction = directionToGo(orientation, direction)
             possibilities.push(instruction)
             if (isLineSegmentOnPath(possibleLineSegment, nodeId, nextNodeId)) {
@@ -176,6 +167,7 @@ function generatePathObject(pathIds, lineSegments) {
             }
             
         }
+        lastNodeId = nodeId
         pathFromSourceToTarget.push({possibilities: possibilities, choose: choose, nodeId: nodeId})
     }
     pathFromSourceToTarget.push({possibilities: [], choose: "", nodeId: pathIds[pathIds.length - 1]})
@@ -212,6 +204,6 @@ export function findPath(map, source, target) {
 
     pathIds.reverse()
     console.log(pathIds)
-    return generatePathObject(pathIds, lineSegments)
+    return generatePathObject(pathIds, lineSegments, nodes)
 
 }
