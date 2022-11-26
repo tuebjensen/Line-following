@@ -39,7 +39,10 @@ clientStateUpdate$.pipe(
 ).subscribe(([previousClientState, clientState]) => {
     if (!previousClientState && clientState) {
         console.log('reset video stream')
-        videoEl.src = videoEl.src
+        videoEl.src = ''
+        setTimeout(() => {
+            videoEl.src = videoEl.src
+        })
     }
 })
 
