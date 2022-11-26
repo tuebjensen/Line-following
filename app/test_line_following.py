@@ -22,7 +22,7 @@ car = None
 video = WebServer()
 image_processor = ImageProcessor()
 line_processor = LineProcessor()
-direction_calculator = DirectionCalculator(video)
+direction_calculator = DirectionCalculator()
 
 def signal_handler(sig, frame):
     GPIO.cleanup()
