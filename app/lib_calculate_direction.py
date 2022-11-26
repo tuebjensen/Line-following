@@ -13,8 +13,7 @@ STATE_IM_LOST = 5
 
 
 class DirectionCalculator:
-    def __init__(self, video: WebServer, path_plan=[], state_change_threshold=10, react_to_intersection_threshold=0.3):
-        self._video = video
+    def __init__(self, path_plan=[], state_change_threshold=10, react_to_intersection_threshold=0.3):
         self._path_plan = path_plan
         self._STATE_CHANGE_THRESHOLD = state_change_threshold
         self._REACT_TO_INTERSECTION_THRESHOLD = react_to_intersection_threshold
