@@ -68,8 +68,8 @@ class WebServer:
             return full_state
 
         async def set_server_state(server_state):
-            async with aiofiles.open('server_state.json', 'r') as file:
-                await file.write(json.dumps({server_state}))
+            async with aiofiles.open('server_state.json', 'w') as file:
+                await file.write(json.dumps(server_state))
 
         async def set_client_state(client_state):
             async with aiofiles.open('client_state.json', 'w') as file:
@@ -107,8 +107,8 @@ class WebServer:
                 if msg.type == aiohttp.WSMsgType.TEXT:
                     print('6')
                     message = json.loads(msg.data)
-                    print('message data', data)
                     data = message['data']
+                    #print('message data', data)
                     if 'id' in message:
                         self._processed_ids.append(message['id'])
                     if message['type'] == 'server-state-update':

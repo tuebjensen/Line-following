@@ -28,6 +28,7 @@ class DirectionCalculator:
 
 
     def set_new_path(self, path_plan):
+        print(path_plan)
         self._path_plan = path_plan
         if len(path_plan) > 0:
             self._stable_state = STATE_TURN180
@@ -45,6 +46,8 @@ class DirectionCalculator:
 
     def _get_direction_to_go(self, displacement_vector: Vector2D, direction_vector: Vector2D, image_frame) -> Vector2D:
         distance_from_center = displacement_vector.get_length()
+        #Avoid dividing by zero when displacement vector has length zero
+
         displacement_vector = displacement_vector.normalize()
         direction_vector = direction_vector.normalize()
 
