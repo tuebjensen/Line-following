@@ -194,6 +194,7 @@ class DirectionCalculator:
         elif path_count == 0:
             self._close_my_eyes = False
             next_state = STATE_TURN180
+        print(f'close my eyes is {self._close_my_eyes}')
         print(f'was turning around, saw {path_count} paths, next state is {next_state}')
         return next_state
 
