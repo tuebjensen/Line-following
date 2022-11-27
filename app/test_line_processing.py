@@ -66,9 +66,6 @@ def get_processed_frame(original_frame,
         'frame': original_frame,
         'velocity_vector': (-velocity_vector.x, -velocity_vector.y),
         'current_node': 0,
-        'stable_state': direction_calculator._stable_state,
-        'last_incoming_state': direction_calculator._last_incoming_state,
-        'same_incoming_states_count': direction_calculator._same_incoming_states_count,
         'direction_calculator': direction_calculator
     }
 

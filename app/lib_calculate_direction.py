@@ -25,25 +25,6 @@ class DirectionCalculator:
         self._path_plan = path_plan
         self._test_var = 0
 
-    def get_state(self):
-        return {
-            'stable_state': self._stable_state,
-            'last_incoming_state': self._last_incoming_state,
-            'same_incoming_states_count': self._same_incoming_states_count,
-            'last_target': self._last_target,
-            'last_line': self._last_line,
-            'turning_just_initiated': self._turning_just_initiated,
-            # 'path_plan': self._path_plan
-        }
-
-    def set_state(self, new_state):
-        self._stable_state = new_state['stable_state']
-        self._last_incoming_state = new_state['last_incoming_state']
-        self._same_incoming_states_count = new_state['same_incoming_states_count']
-        self._last_target = new_state['last_target']
-        self._last_line = new_state['last_line']
-        self._turning_just_initiated = new_state['turning_just_initiated']
-        # self._path_plan = new_state['path_plan']
 
     def set_new_path(self, path_plan):
         print('new path plan')
