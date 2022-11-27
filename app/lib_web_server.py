@@ -36,9 +36,9 @@ class WebServer:
         self._processed_ids = []
 
     async def set_current_node(self, current_node):
-        print('set current node', current_node)
         if current_node is None:
             return
+        print('set current node', current_node)
         async with aiofiles.open('server_state.json', 'w') as file:
             await file.write(json.dumps({'currentNode': current_node}))
         await self.send_message('server-state-update', {'currentNode': current_node})
