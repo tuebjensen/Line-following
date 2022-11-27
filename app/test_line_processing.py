@@ -26,8 +26,8 @@ def get_processed_frame(original_frame,
     global frames
     global start
     frames += 1
-    original_frame = original_frame[:,30:]
-    original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
+    # original_frame = original_frame[:,30:]
+    # original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
     edges, houghlines = image_processor.get_edges_and_houghlines(original_frame)
     tape_paths = line_processor.get_tape_paths(original_frame, edges, houghlines)
     velocity_vector = Vector2D(0, 0)
@@ -88,7 +88,7 @@ def process_video():
         
 
         ret, original_frame = cap.read()
-        original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
+        # original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
         if not ret:
             print("Can't receive next frame")
             cap.set(cv.CAP_PROP_POS_FRAMES, 0)
