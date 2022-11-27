@@ -35,6 +35,9 @@ class Line:
         x2, y2 = line_segment.end_point
         return abs((x2-x1)*(y1-y0) - (x1-x0)*(y2-y1)) / sqrt((x2-x1)**2 + (y2-y1)**2)
 
+    def __str__(self) -> str:
+        return f'rho: {self.rho}, theta: {self.theta}'
+
 
 class LineSegment:
     def __init__(self, start_point: 'tuple[int, int]', end_point: 'tuple[int, int]') -> 'LineSegment':
@@ -52,6 +55,9 @@ class LineSegment:
         self.start_point = self.end_point
         self.end_point = temp
         return self
+
+    def __str__(self) -> str:
+        return f'start_point: {self.start_point}, end_point: {self.end_point}'
 
 
 class LineProcessor:
