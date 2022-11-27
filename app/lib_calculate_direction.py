@@ -34,7 +34,7 @@ class DirectionCalculator:
             'last_target': self._last_target,
             'last_line': self._last_line,
             'turning_just_initiated': self._turning_just_initiated,
-            'path_plan': self._path_plan
+            # 'path_plan': self._path_plan
         }
 
     def set_state(self, new_state):
@@ -44,7 +44,7 @@ class DirectionCalculator:
         self._last_target = new_state['last_target']
         self._last_line = new_state['last_line']
         self._turning_just_initiated = new_state['turning_just_initiated']
-        self._path_plan = new_state['path_plan']
+        # self._path_plan = new_state['path_plan']
 
     def set_new_path(self, path_plan):
         print(path_plan)
