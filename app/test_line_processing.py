@@ -7,12 +7,6 @@ from lib_calculate_direction import DirectionCalculator
 from lib_process_lines import LineProcessor
 from lib_image_processing import ImageProcessor
 
-# camera = cv.VideoCapture(0)
-image_processor = ImageProcessor()
-# image_processor = ImageProcessor(10, 5, 7, 85)
-line_processor = LineProcessor()
-direction_calculator = DirectionCalculator('W')
-
 
 STATE_FOLLOWING_LINE = 0
 STATE_I_SEE_INTERSECTION = 1
@@ -73,12 +67,16 @@ def get_processed_frame(original_frame,
 def nothing(x):
     pass
 
+
 def process_video():
     guard = True
     cap = cv.VideoCapture(0)
     target_segment, target_line, current_node = None, None, None
     frames = 0
     start = time.time()
+    image_processor = ImageProcessor(10, 5, 7, 85)
+    line_processor = LineProcessor()
+    direction_calculator = DirectionCalculator('W')
     while cap.isOpened() and guard:
         last_time = time.time()
         
