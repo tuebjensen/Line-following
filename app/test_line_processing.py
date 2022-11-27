@@ -22,6 +22,8 @@ def get_processed_frame(original_frame,
         image_processor: ImageProcessor,
         line_processor: LineProcessor,
         direction_calculator: DirectionCalculator):
+    print('get_processed_frame called')
+    print(direction_calculator)
     global frames
     global start
     frames += 1
