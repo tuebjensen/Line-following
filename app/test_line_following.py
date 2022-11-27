@@ -16,6 +16,7 @@ from test_line_processing import get_processed_frame
 from lib_car import Car
 from lib_motor import Motor
 from lib_web_server import WebServer
+from os import getpid
 
 cap = None
 car = None
@@ -76,6 +77,7 @@ if __name__ == "__main__":
     image_processor = ImageProcessor(10, 5, 7, 85)
     line_processor = LineProcessor()
     direction_calculator = DirectionCalculator()
+    print(f'PID: {getpid()}')
     print(f'id of image_processor: {id(image_processor)}')
     print(f'id of line_processor: {id(line_processor)}')
     print(f'id of direction_calculator: {id(direction_calculator)}')
