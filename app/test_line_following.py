@@ -57,6 +57,9 @@ async def process_video():
             ret_read, original_frame = cap.read() # <3ms
             if ret_read:
                 print(f'Before: {direction_calculator}')
+                if(unread_new_path):
+                    path = read_path()
+                    direction_calculator.set_new_path(path)
                 processed_frame_info = await loop.run_in_executor(executor,
                     partial(get_processed_frame,
                         original_frame,
@@ -66,13 +69,13 @@ async def process_video():
                 frame = processed_frame_info['frame']
                 velocity_vector = processed_frame_info['velocity_vector']
                 current_node = processed_frame_info['current_node']
+                direction_calculator.copy(processed_frame_info['direction_calculator'])
+                print(f'After:  {direction_calculator}')
+                print('\n\n')
                 ret, buffer = cv.imencode('.jpg', frame)
                 frame_encoded = buffer.tobytes()
                 video.set_frame_encoded(frame_encoded)
                 car.set_velocity(velocity_vector)
-                direction_calculator.copy(processed_frame_info['direction_calculator'])
-                print(f'After:  {direction_calculator}')
-                print('\n\n')
             else:
                 cap.set(cv.CAP_PROP_POS_FRAMES, 0)
         cap.release()
