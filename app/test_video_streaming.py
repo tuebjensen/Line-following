@@ -7,7 +7,7 @@ from lib_web_server import WebServer
 import asyncio
 camera = cv.VideoCapture(0)
 video = WebServer()
-image_processor = ImageProcessor()
+image_processor = ImageProcessor(10, 5, 7, 85)
 line_processor = LineProcessor()
 direction_calculator = DirectionCalculator(video)
 
