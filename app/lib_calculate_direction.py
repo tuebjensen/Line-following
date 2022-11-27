@@ -23,7 +23,6 @@ class DirectionCalculator:
         self._last_line = None
         self._turning_just_initiated = False
         self._path_plan = path_plan
-        self._test_var = 0
 
 
     def set_new_path(self, path_plan):
@@ -324,7 +323,6 @@ class DirectionCalculator:
             f'last incoming state: {self._last_incoming_state}, ' + \
             f'same incoming states count: {self._same_incoming_states_count}, ' + \
             # f'turning just initiated: {self._turning_just_initiated}, ' + \
-            f'test_var: {self._test_var}, ' + \
             f'path plan: {self._get_path_simplified_string()}')
 
     def _get_path_simplified_string(self):
@@ -338,4 +336,3 @@ class DirectionCalculator:
         self._same_incoming_states_count = other._same_incoming_states_count
         self._turning_just_initiated = other._turning_just_initiated
         self._path_plan = other._path_plan
-        self._test_var = other._test_var
