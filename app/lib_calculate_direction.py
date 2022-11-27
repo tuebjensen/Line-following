@@ -210,23 +210,16 @@ class DirectionCalculator:
 
     def _get_stable_state(self, incoming_state):
         print(f'Before: {self}')
-        print(f'figuring out next stable state: stable state is {self._stable_state}, incoming state is {incoming_state}, last incoming state was {self._last_incoming_state} for {self._same_incoming_states_count} frames')
         if incoming_state != self._stable_state:
-            print('incoming state is different then current stable state')
             if incoming_state == self._last_incoming_state:
-                print('incoming state is the same as last incoming state')
                 self._same_incoming_states_count += 1
                 if self._same_incoming_states_count >= self._STATE_CHANGE_THRESHOLD:
-                    print('incoming state is the same as last incoming state for as many times as equals the state change threshold, changing stable state')
                     self._same_incoming_states_count = 1
                     return incoming_state
             else :
-                print('incoming state is different from last incoming state, resetting counter')
                 self._same_incoming_states_count = 1
-            print('updating last incoming state')
         self._last_incoming_state = incoming_state
-        print(f'returning previously stable state: {self._stable_state}, last incoming state is now {self._last_incoming_state} for {self._same_incoming_states_count} frames')
-        print(f'After: {self}')
+        print(f'After:  {self}')
         print('\n\n')
         return self._stable_state
 
