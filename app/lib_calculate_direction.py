@@ -209,7 +209,6 @@ class DirectionCalculator:
 
 
     def _get_stable_state(self, incoming_state):
-        print(f'Before: {self}')
         if incoming_state != self._stable_state:
             if incoming_state == self._last_incoming_state:
                 self._same_incoming_states_count += 1
@@ -219,7 +218,6 @@ class DirectionCalculator:
             else :
                 self._same_incoming_states_count = 1
         self._last_incoming_state = incoming_state
-        print(f'After:  {self}')
         print('\n\n')
         return self._stable_state
 
