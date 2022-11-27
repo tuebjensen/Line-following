@@ -324,4 +324,4 @@ class DirectionCalculator:
         return min_angle_path
 
     def __str__(self):
-        return f'process id: {getpid()}, object id: {id(self)}, last target: {self._last_target}, last line: {self._last_line}, last state: {self._last_state}, stable state: {self._stable_state}, last incoming state: {self._last_incoming_state}, same incoming states count: {self._same_incoming_states_count}'
+        return f'process id: {getpid()}, object id: {id(self)}, last target: {self._last_target}, last line: {self._last_line}, stable state: {self._stable_state}, last incoming state: {self._last_incoming_state}, same incoming states count: {self._same_incoming_states_count}'
