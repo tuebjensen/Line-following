@@ -85,5 +85,5 @@ class Motor:
         self._speed_pwm = GPIO.PWM(self._speed_pin, 50) # 50 Hz
 
         # start with a small duty cycle
-        self._speed_pwm.start(0)
+        self._speed_pwm.start(5 if not self._forwards else 95)
         await asyncio.gather(do_pid(), do_encoder_process())
