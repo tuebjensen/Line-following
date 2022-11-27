@@ -70,8 +70,8 @@ async def process_video():
                 velocity_vector = processed_frame_info['velocity_vector']
                 current_node = processed_frame_info['current_node']
                 direction_calculator.copy(processed_frame_info['direction_calculator'])
-                print(f'After:  {direction_calculator}')
-                print('\n\n')
+                #print(f'After:  {direction_calculator}')
+                #print('\n\n')
                 ret, buffer = cv.imencode('.jpg', frame)
                 frame_encoded = buffer.tobytes()
                 video.set_frame_encoded(frame_encoded)

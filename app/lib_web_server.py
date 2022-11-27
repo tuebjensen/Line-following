@@ -21,6 +21,7 @@ class WebServer:
         self._is_frame_encoded_changed = True
 
     async def send_message(self, type, data):
+        print(type, data)
         if self._ws is None or self._ws.closed:
             return
 
