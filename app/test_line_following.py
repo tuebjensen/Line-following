@@ -20,12 +20,10 @@ from lib_web_server import WebServer
 cap = None
 car = None
 video = WebServer()
-image_processor = ImageProcessor(10, 5, 7, 85)
-line_processor = LineProcessor()
-direction_calculator = DirectionCalculator()
-print(f'id of image_processor: {id(image_processor)}')
-print(f'id of line_processor: {id(line_processor)}')
-print(f'id of direction_calculator: {id(direction_calculator)}')
+image_processor = None
+line_processor = None
+direction_calculator = None
+
 
 def signal_handler(sig, frame):
     GPIO.cleanup()
@@ -75,6 +73,12 @@ if __name__ == "__main__":
         motor_right=Motor(speed_pin=32, direction_pin=36, encoder_interrupt_wiring_pi_pin=0),
         speed=20
     )
+    image_processor = ImageProcessor(10, 5, 7, 85)
+    line_processor = LineProcessor()
+    direction_calculator = DirectionCalculator()
+    print(f'id of image_processor: {id(image_processor)}')
+    print(f'id of line_processor: {id(line_processor)}')
+    print(f'id of direction_calculator: {id(direction_calculator)}')
     asyncio.run(start())
 
 
