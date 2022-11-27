@@ -59,7 +59,7 @@ class DirectionCalculator:
         displacement_vector_weight = distance_from_center / maximum_distance_from_center
         direction_vector_weight = 1 - displacement_vector_weight
 
-        velocity_vector = direction_vector_weight * direction_vector + 2 * displacement_vector_weight * displacement_vector
+        velocity_vector = direction_vector_weight * direction_vector + 1.5 * displacement_vector_weight * displacement_vector
         velocity_vector.normalize()
 
         return velocity_vector
