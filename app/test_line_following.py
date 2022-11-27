@@ -79,7 +79,7 @@ async def process_video():
                 frame_encoded = buffer.tobytes()
                 video.set_frame_encoded(frame_encoded)
                 car.set_velocity(velocity_vector)
-                direction_calculator.set_state(direction_calculator_state)
+                # direction_calculator.set_state(direction_calculator_state)
                 print(f'After:  {direction_calculator_state}')
                 print(f'After:  {direction_calculator}')
                 print('\n\n')
