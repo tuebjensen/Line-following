@@ -6,6 +6,7 @@ from lib_lines_display import display_all_lines, display_boxes_around_merged_lin
 from lib_calculate_direction import DirectionCalculator
 from lib_process_lines import LineProcessor
 from lib_image_processing import ImageProcessor
+from os import getpid
 
 
 STATE_FOLLOWING_LINE = 0
