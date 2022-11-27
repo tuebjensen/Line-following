@@ -343,6 +343,7 @@ class DirectionCalculator:
             f'last incoming state: {self._last_incoming_state}, ' + \
             f'same incoming states count: {self._same_incoming_states_count}, ' + \
             # f'turning just initiated: {self._turning_just_initiated}, ' + \
+            f'test_var: {self._test_var}, ' + \
             f'path plan: {self._get_path_simplified_string()}')
 
     def _get_path_simplified_string(self):
