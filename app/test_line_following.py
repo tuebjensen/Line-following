@@ -99,7 +99,7 @@ if __name__ == "__main__":
     )
     image_processor = ImageProcessor(10, 5, 7, 85)
     line_processor = LineProcessor()
-    direction_calculator = DirectionCalculator()
+    direction_calculator = DirectionCalculator(state_change_threshold=5)
     asyncio.run(start())
 
 
