@@ -43,6 +43,10 @@ def signal_handler(sig, frame):
 def nothing():
     pass
 
+def path_callback(path):
+    direction_calculator_state['path_plan'] = path
+    direction_calculator.set_new_path(path)
+
 
 async def process_video():
     global direction_calculator_state
@@ -86,7 +90,7 @@ async def process_video():
 async def start():
     await asyncio.gather(
         car.start_running(),
-        video.start_running('0.0.0.0', 5000, direction_calculator.set_new_path),
+        video.start_running('0.0.0.0', 5000, path_callback),
         process_video()
     )
 
