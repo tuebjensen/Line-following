@@ -54,19 +54,27 @@ async def process_video():
             if ret_read:
                 print(f'Before: {direction_calculator}')
                 print(f'Before: {direction_calculator_state}')
-                frame, direction, current_node, next_direction_calculator_state = await loop.run_in_executor(executor,
+                processed_frame_info = await loop.run_in_executor(executor,
                     partial(get_processed_frame,
                         original_frame,
                         image_processor,
                         line_processor,
                         direction_calculator,
                         direction_calculator_state))
-                direction_calculator_state = next_direction_calculator_state
+                frame = processed_frame_info['frame']
+                velocity_vector = processed_frame_info['velocity_vector']
+                current_node = processed_frame_info['current_node']
+                stable_state = processed_frame_info['stable_state']
+                last_incoming_state = processed_frame_info['last_incoming_state']
+                same_incoming_states_count = processed_frame_info['same_incoming_states_count']
+                direction_calculator_state['stable_state'] = stable_state
+                direction_calculator_state['last_incoming_state'] = last_incoming_state
+                direction_calculator_state['same_incoming_states_count'] = same_incoming_states_count
                 # await video.set_current_node(current_node)
                 ret, buffer = cv.imencode('.jpg', frame)
                 frame_encoded = buffer.tobytes()
                 video.set_frame_encoded(frame_encoded)
-                car.set_velocity(direction)
+                car.set_velocity(velocity_vector)
                 print(f'After:  {direction_calculator_state}')
                 print(f'After:  {direction_calculator}')
                 print('\n\n')
