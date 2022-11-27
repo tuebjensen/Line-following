@@ -294,6 +294,7 @@ class DirectionCalculator:
     def _get_most_like(self, turning_direction: str, tape_paths_and_lines: 'dict[LineSegment, Line]') -> LineSegment:
         for path in list(tape_paths_and_lines.keys()):
             angle = path.get_direction_vector_please().get_angle()
+            print(f'path angle is {angle}')
             if ((turning_direction == 'right' and angle >= -pi/4 and angle <= pi/4)
                     or (turning_direction == 'left' and ((angle >= 3*pi/4) or (angle <= -3*pi/4)))
                     or (turning_direction == 'straight' and angle >= -3*pi/4 and angle <= -pi/4)
