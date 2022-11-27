@@ -9,7 +9,7 @@ camera = cv.VideoCapture(0)
 video = WebServer()
 image_processor = ImageProcessor(10, 5, 7, 85)
 line_processor = LineProcessor()
-direction_calculator = DirectionCalculator(video)
+direction_calculator = DirectionCalculator()
 
 
 path_plan = []
