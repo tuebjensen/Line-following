@@ -23,6 +23,7 @@ class DirectionCalculator:
         self._last_line = None
         self._turning_just_initiated = False
         self._path_plan = path_plan
+        self._test_var = 0
 
     def get_state(self):
         return {
@@ -355,3 +356,4 @@ class DirectionCalculator:
         self._same_incoming_states_count = other._same_incoming_states_count
         self._turning_just_initiated = other._turning_just_initiated
         self._path_plan = other._path_plan
+        self._test_var = other._test_var

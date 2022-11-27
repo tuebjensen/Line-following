@@ -24,27 +24,27 @@ image_processor = None
 line_processor = None
 direction_calculator = None
 
-direction_calculator_state = {
-    'stable_state': 3,
-    'last_incoming_state': 3,
-    'same_incoming_states_count': 10,
-    'last_target': None,
-    'last_line': None,
-    'turning_just_initiated': False,
-    'path_plan': []
-}
+# direction_calculator_state = {
+#     'stable_state': 3,
+#     'last_incoming_state': 3,
+#     'same_incoming_states_count': 10,
+#     'last_target': None,
+#     'last_line': None,
+#     'turning_just_initiated': False,
+#     'path_plan': []
+# }
 
-def get_direction_calculator_state_string(direction_calculator_state):
-    return (f'stable_state: {direction_calculator_state["stable_state"]}, ' + \
-            f'last_incoming_state: {direction_calculator_state["last_incoming_state"]}, ' + \
-            f'same_incoming_states_count: {direction_calculator_state["same_incoming_states_count"]}, ' + \
-            # f'last_target: {direction_calculator_state["last_target"]}, ' + \
-            # f'last_line: {direction_calculator_state["last_line"]}, ' + \
-            # f'turning_just_initiated: {direction_calculator_state["turning_just_initiated"]}, ' + \
-            f'path_plan: {get_path_plan_string(direction_calculator_state["path_plan"])} ')
+# def get_direction_calculator_state_string(direction_calculator_state):
+#     return (f'stable_state: {direction_calculator_state["stable_state"]}, ' + \
+#             f'last_incoming_state: {direction_calculator_state["last_incoming_state"]}, ' + \
+#             f'same_incoming_states_count: {direction_calculator_state["same_incoming_states_count"]}, ' + \
+#             # f'last_target: {direction_calculator_state["last_target"]}, ' + \
+#             # f'last_line: {direction_calculator_state["last_line"]}, ' + \
+#             # f'turning_just_initiated: {direction_calculator_state["turning_just_initiated"]}, ' + \
+#             f'path_plan: {get_path_plan_string(direction_calculator_state["path_plan"])} ')
 
-def get_path_plan_string(path_plan):
-    return [element['choose'] for element in path_plan]
+# def get_path_plan_string(path_plan):
+#     return [element['choose'] for element in path_plan]
 
 def signal_handler(sig, frame):
     GPIO.cleanup()
@@ -53,10 +53,23 @@ def signal_handler(sig, frame):
 def nothing():
     pass
 
-def path_callback(path):
-    direction_calculator_state['path_plan'] = path
-    direction_calculator_state['stable_state'] = 4
-    direction_calculator.set_new_path(path)
+path_plan = []
+unread_new_path = False
+
+def write_path(path):
+    global path_plan
+    path_plan = path
+    global unread_new_path
+    unread_new_path = True
+    # direction_calculator_state['path_plan'] = path
+    # direction_calculator_state['stable_state'] = 4
+    # direction_calculator.set_new_path(path)
+
+def read_path():
+    global unread_new_path
+    unread_new_path = False
+    global path_plan
+    return path_plan
 
 
 async def process_video():
@@ -79,12 +92,12 @@ async def process_video():
                 frame = processed_frame_info['frame']
                 velocity_vector = processed_frame_info['velocity_vector']
                 current_node = processed_frame_info['current_node']
-                stable_state = processed_frame_info['stable_state']
-                last_incoming_state = processed_frame_info['last_incoming_state']
-                same_incoming_states_count = processed_frame_info['same_incoming_states_count']
-                direction_calculator_state['stable_state'] = stable_state
-                direction_calculator_state['last_incoming_state'] = last_incoming_state
-                direction_calculator_state['same_incoming_states_count'] = same_incoming_states_count
+                # stable_state = processed_frame_info['stable_state']
+                # last_incoming_state = processed_frame_info['last_incoming_state']
+                # same_incoming_states_count = processed_frame_info['same_incoming_states_count']
+                # direction_calculator_state['stable_state'] = stable_state
+                # direction_calculator_state['last_incoming_state'] = last_incoming_state
+                # direction_calculator_state['same_incoming_states_count'] = same_incoming_states_count
                 # await video.set_current_node(current_node)
                 ret, buffer = cv.imencode('.jpg', frame)
                 frame_encoded = buffer.tobytes()
@@ -92,7 +105,7 @@ async def process_video():
                 car.set_velocity(velocity_vector)
                 # direction_calculator.set_state(direction_calculator_state)
                 direction_calculator.copy(processed_frame_info['direction_calculator'])
-                print(f'After:  {get_direction_calculator_state_string(direction_calculator_state)}')
+                # print(f'After:  {get_direction_calculator_state_string(direction_calculator_state)}')
                 print(f'After:  {direction_calculator}')
                 print('\n\n')
             else:
@@ -102,7 +115,7 @@ async def process_video():
 async def start():
     await asyncio.gather(
         car.start_running(),
-        video.start_running('0.0.0.0', 5000, path_callback),
+        video.start_running('0.0.0.0', 5000, write_path),
         process_video()
     )
 
