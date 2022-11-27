@@ -32,9 +32,9 @@ def get_processed_frame(original_frame,
     tape_paths = line_processor.get_tape_paths(original_frame, edges, houghlines)
     velocity_vector = Vector2D(0, 0)
     current_node = None
-    direction_calculator._stable_state = direction_calculator_state['stable_state']
-    direction_calculator._last_incoming_state = direction_calculator_state['last_incoming_state']
-    direction_calculator._same_incoming_states_count = direction_calculator_state['same_incoming_states_count']
+    # direction_calculator._stable_state = direction_calculator_state['stable_state']
+    # direction_calculator._last_incoming_state = direction_calculator_state['last_incoming_state']
+    # direction_calculator._same_incoming_states_count = direction_calculator_state['same_incoming_states_count']
 
     if isinstance(houghlines, np.ndarray):
         cv.putText(original_frame, f'lines: {len(houghlines)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2, cv.LINE_AA)
