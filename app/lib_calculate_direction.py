@@ -243,6 +243,7 @@ class DirectionCalculator:
         target_line = None
         paths = list(tape_paths_and_lines.keys())
         if(len(paths) > 1): # stable state
+            print(tape_paths_and_lines)
             target_path = self._get_most_like('back ', tape_paths_and_lines).flip()
             target_line = tape_paths_and_lines.get(target_path)
         if(len(paths) <= 1): # transient state
