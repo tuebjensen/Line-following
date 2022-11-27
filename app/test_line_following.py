@@ -49,6 +49,7 @@ async def process_video():
             ret_read, original_frame = cap.read() # <3ms
             if ret_read:
                 print(f'Before: {direction_calculator}')
+                print(f'Before: {direction_calculator_state}')
                 frame, direction, current_node, next_direction_calculator_state = await loop.run_in_executor(executor,
                     partial(get_processed_frame,
                         original_frame,
@@ -62,6 +63,7 @@ async def process_video():
                 frame_encoded = buffer.tobytes()
                 video.set_frame_encoded(frame_encoded)
                 car.set_velocity(direction)
+                print(f'After:  {direction_calculator_state}')
                 print(f'After:  {direction_calculator}')
                 print('\n\n')
             else:
