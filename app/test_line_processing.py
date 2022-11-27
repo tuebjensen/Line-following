@@ -28,7 +28,7 @@ def get_processed_frame(original_frame,
     frames += 1
     # original_frame = original_frame[:,30:]
     # original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
-    original_frame = cv.flip(original_frame, 0)
+    # original_frame = cv.flip(original_frame, 0)
     edges, houghlines = image_processor.get_edges_and_houghlines(original_frame)
     tape_paths = line_processor.get_tape_paths(original_frame, edges, houghlines)
     velocity_vector = Vector2D(0, 0)
