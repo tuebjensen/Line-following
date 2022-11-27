@@ -24,7 +24,6 @@ class DirectionCalculator:
         self._last_target = None
         self._last_line = None
         self._turning_just_initiated = False
-        self._close_my_eyes = False
 
 
     def set_new_path(self, path_plan):
@@ -187,14 +186,9 @@ class DirectionCalculator:
             next_state = STATE_TURN180
             print('Turned around and saw an intersection')
         elif path_count == 1:
-            if self._close_my_eyes is True:
-                next_state = STATE_TURN180
-            else:
-                next_state = STATE_FOLLOWING_LINE
+            next_state = STATE_FOLLOWING_LINE
         elif path_count == 0:
-            self._close_my_eyes = False
             next_state = STATE_TURN180
-        print(f'close my eyes is {self._close_my_eyes}')
         print(f'was turning around, saw {path_count} paths, next state is {next_state}')
         return next_state
 
@@ -214,17 +208,22 @@ class DirectionCalculator:
 
 
     def _get_stable_state(self, incoming_state):
+        print('figuring out next stable state')
         if incoming_state != self._stable_state:
+            print('incoming state is different then current stable state')
             if incoming_state == self._last_incoming_state:
+                print('incoming state is the same as last incoming state')
                 self._same_incoming_states_count += 1
                 if self._same_incoming_states_count >= self._STATE_CHANGE_THRESHOLD:
+                    print('incoming state is the same as last incoming state for as many times as equals the state change threshold, changing stable state')
                     self._same_incoming_states_count = 1
                     return incoming_state
             else :
+                print('incoming state is different from last incoming state, resetting counter')
                 self._same_incoming_states_count = 1
-            
+            print('updating last incoming state')
             self._last_incoming_state = incoming_state
-
+        print('returning previously stable state')
         return self._stable_state
 
 
