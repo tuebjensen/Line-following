@@ -22,9 +22,9 @@ class WebServer:
 
     async def send_message(self, type, data):
         if self._ws is None or self._ws.closed:
-            print(type, data)
             return
 
+        print(type, data)
         message = {
             'type': type,
             'data': data,
