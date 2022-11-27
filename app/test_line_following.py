@@ -58,6 +58,7 @@ async def process_video():
             if ret_read:
                 print(f'Before: {direction_calculator}')
                 print(f'Before: {direction_calculator_state}')
+                direction_calculator.set_state(direction_calculator_state)
                 processed_frame_info = await loop.run_in_executor(executor,
                     partial(get_processed_frame,
                         original_frame,
