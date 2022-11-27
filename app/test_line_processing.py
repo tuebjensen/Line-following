@@ -64,7 +64,7 @@ def get_processed_frame(original_frame,
     return {
         'frame': original_frame,
         'velocity_vector': (-velocity_vector.x, -velocity_vector.y),
-        'current_node': 0,
+        'current_node': current_node,
         'direction_calculator': direction_calculator
     }
 

@@ -75,6 +75,7 @@ async def process_video():
                 ret, buffer = cv.imencode('.jpg', frame)
                 frame_encoded = buffer.tobytes()
                 video.set_frame_encoded(frame_encoded)
+                video.set_current_node(current_node)
                 car.set_velocity(velocity_vector)
             else:
                 cap.set(cv.CAP_PROP_POS_FRAMES, 0)
