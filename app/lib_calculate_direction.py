@@ -218,7 +218,6 @@ class DirectionCalculator:
             else :
                 self._same_incoming_states_count = 1
         self._last_incoming_state = incoming_state
-        print('\n\n')
         return self._stable_state
 
 
