@@ -47,10 +47,13 @@ class DirectionCalculator:
         # self._path_plan = new_state['path_plan']
 
     def set_new_path(self, path_plan):
+        print('new path plan')
+        print(f'Before: {self}')
         print(path_plan)
         self._path_plan = path_plan
         if len(path_plan) > 0:
             self._stable_state = STATE_TURN180
+        print(f'After: {self}')
 
 
     def get_direction_vector(self, tape_paths: 'dict[LineSegment, Line]', frame) -> Vector2D:
