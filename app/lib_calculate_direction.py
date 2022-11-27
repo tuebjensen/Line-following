@@ -223,7 +223,8 @@ class DirectionCalculator:
                 self._same_incoming_states_count = 1
             print('updating last incoming state')
             self._last_incoming_state = incoming_state
-        print('returning previously stable state')
+        print(f'returning previously stable state: {self._stable_state}, last incoming state is now {self._last_incoming_state} for {self._same_incoming_states_count} frames')
+        print('\n\n')
         return self._stable_state
 
 
