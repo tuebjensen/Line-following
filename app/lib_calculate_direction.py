@@ -1,8 +1,6 @@
 from math import asin, cos, pi, sin, sqrt
-from lib_web_server import WebServer
 from lib_process_lines import Line, LineSegment, _get_intersection_point
 from lib_vector2d import Vector2D
-import asyncio
 from os import getpid
 
 STATE_FOLLOWING_LINE = 0
@@ -348,3 +346,12 @@ class DirectionCalculator:
 
     def _get_path_simplified_string(self):
         return [element.get('choose') for element in self._path_plan]
+
+    def copy(self, other):
+        self._last_target = other._last_target
+        self._last_line = other._last_line
+        self._stable_state = other._stable_state
+        self._last_incoming_state = other._last_incoming_state
+        self._same_incoming_states_count = other._same_incoming_states_count
+        self._turning_just_initiated = other._turning_just_initiated
+        self._path_plan = other._path_plan

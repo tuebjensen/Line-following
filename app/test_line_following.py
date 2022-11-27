@@ -16,7 +16,6 @@ from test_line_processing import get_processed_frame
 from lib_car import Car
 from lib_motor import Motor
 from lib_web_server import WebServer
-from os import getpid
 
 cap = None
 car = None
@@ -69,8 +68,8 @@ async def process_video():
             ret_read, original_frame = cap.read() # <3ms
             if ret_read:
                 print(f'Before: {direction_calculator}')
-                print(f'Before: {get_direction_calculator_state_string(direction_calculator_state)}')
-                direction_calculator.set_state(direction_calculator_state)
+                # print(f'Before: {get_direction_calculator_state_string(direction_calculator_state)}')
+                # direction_calculator.set_state(direction_calculator_state)
                 processed_frame_info = await loop.run_in_executor(executor,
                     partial(get_processed_frame,
                         original_frame,
@@ -92,6 +91,7 @@ async def process_video():
                 video.set_frame_encoded(frame_encoded)
                 car.set_velocity(velocity_vector)
                 # direction_calculator.set_state(direction_calculator_state)
+                direction_calculator.copy(processed_frame_info['direction_calculator'])
                 print(f'After:  {get_direction_calculator_state_string(direction_calculator_state)}')
                 print(f'After:  {direction_calculator}')
                 print('\n\n')

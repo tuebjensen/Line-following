@@ -22,8 +22,6 @@ def get_processed_frame(original_frame,
         image_processor: ImageProcessor,
         line_processor: LineProcessor,
         direction_calculator: DirectionCalculator):
-    print('get_processed_frame called')
-    print(direction_calculator)
     global frames
     global start
     frames += 1
@@ -69,6 +67,7 @@ def get_processed_frame(original_frame,
         'stable_state': direction_calculator._stable_state,
         'last_incoming_state': direction_calculator._last_incoming_state,
         'same_incoming_states_count': direction_calculator._same_incoming_states_count,
+        'direction_calculator': direction_calculator
     }
 
 
