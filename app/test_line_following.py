@@ -37,7 +37,7 @@ unread_new_path = False
 
 def write_path(path):
     global path_plan
-    path_plan = path
+    path_plan = path[1:]
     global unread_new_path
     unread_new_path = True
 
