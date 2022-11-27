@@ -26,13 +26,13 @@ class DirectionCalculator:
 
 
     def set_new_path(self, path_plan):
-        print('new path plan')
-        print(f'Before: {self}')
-        print(path_plan)
+        #print('new path plan')
+        #print(f'Before: {self}')
+        #print(path_plan)
         self._path_plan = path_plan
         if len(path_plan) > 0:
             self._stable_state = STATE_TURN180
-        print(f'After: {self}')
+        #print(f'After: {self}')
 
 
     def get_direction_vector(self, tape_paths: 'dict[LineSegment, Line]', frame) -> Vector2D:
@@ -189,12 +189,12 @@ class DirectionCalculator:
         next_state = None
         if path_count > 1:
             next_state = STATE_TURN180
-            print('Turned around and saw an intersection')
+            #print('Turned around and saw an intersection')
         elif path_count == 1:
             next_state = STATE_FOLLOWING_LINE
         elif path_count == 0:
             next_state = STATE_TURN180
-        print(f'was turning around, saw {path_count} paths, next state is {next_state}')
+        #print(f'was turning around, saw {path_count} paths, next state is {next_state}')
         return next_state
 
 
@@ -302,7 +302,7 @@ class DirectionCalculator:
                     or (turning_direction == 'back' and angle >= pi/4 and angle <= 3*pi/4)):
                 return path
         
-        print('your map sucks')
+        #print('your map sucks')
 
 
     def _update_target(self, old_target: LineSegment, tape_paths_and_lines: 'dict[LineSegment, Line]') -> LineSegment:
