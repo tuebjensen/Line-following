@@ -96,11 +96,11 @@ if __name__ == "__main__":
     car = Car(
         motor_left=Motor(speed_pin=33, direction_pin=31, encoder_interrupt_wiring_pi_pin=25),
         motor_right=Motor(speed_pin=32, direction_pin=36, encoder_interrupt_wiring_pi_pin=0),
-        speed=30
+        speed=25
     )
     image_processor = ImageProcessor(10, 5, 7, 72)
     line_processor = LineProcessor()
-    direction_calculator = DirectionCalculator(state_change_threshold=5)
+    direction_calculator = DirectionCalculator(state_change_threshold=7)
     asyncio.run(start())
 
 
