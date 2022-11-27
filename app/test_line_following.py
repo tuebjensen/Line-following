@@ -24,6 +24,12 @@ video = WebServer()
 image_processor = None
 line_processor = None
 direction_calculator = None
+direction_calculator_state = {
+    'stable_state': 0,
+    'last_incoming_state': 1,
+    'last_incoming_state_count': 10,
+    'path_plan': ['straight', 'straight', 'straight', 'straight']
+}
 
 
 def signal_handler(sig, frame):
@@ -35,25 +41,28 @@ def nothing():
 
 
 async def process_video():
-    global direction_calculator
+    global direction_calculator_state
     with ProcessPoolExecutor() as executor:
         loop = asyncio.get_running_loop()
         #executor = ProcessPoolExecutor()
         while cap.isOpened():
             ret_read, original_frame = cap.read() # <3ms
             if ret_read:
-                frame, direction, current_node = await loop.run_in_executor(executor,
+                print(f'Before: {direction_calculator_state}')
+                frame, direction, current_node, next_direction_calculator_state = await loop.run_in_executor(executor,
                     partial(get_processed_frame,
                         original_frame,
                         image_processor,
                         line_processor,
-                        direction_calculator))
-                
+                        direction_calculator,
+                        direction_calculator_state))
+                direction_calculator_state = next_direction_calculator_state
                 # await video.set_current_node(current_node)
                 ret, buffer = cv.imencode('.jpg', frame)
                 frame_encoded = buffer.tobytes()
                 video.set_frame_encoded(frame_encoded)
                 car.set_velocity(direction)
+                print(f'After:  {direction_calculator_state}')
             else:
                 cap.set(cv.CAP_PROP_POS_FRAMES, 0)
         cap.release()

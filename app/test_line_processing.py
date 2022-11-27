@@ -1,3 +1,4 @@
+import random
 import time
 import cv2 as cv
 import numpy as np
@@ -20,7 +21,8 @@ start = time.time()
 def get_processed_frame(original_frame,
         image_processor: ImageProcessor,
         line_processor: LineProcessor,
-        direction_calculator: DirectionCalculator):
+        direction_calculator: DirectionCalculator,
+        direction_calculator_state: dict):
     global frames
     global start
     frames += 1
@@ -59,8 +61,13 @@ def get_processed_frame(original_frame,
     cv.putText(original_frame, f'Stable: {_get_state_string(direction_calculator._stable_state)}', (0,80), cv.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2, cv.LINE_AA)
     cv.putText(original_frame, f'Incoming: {_get_state_string(direction_calculator._last_incoming_state)} x{direction_calculator._same_incoming_states_count}', (0,110), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv.LINE_AA)
 
+    direction_calculator_state['stable_state'] = direction_calculator._stable_state
+    direction_calculator_state['last_incoming_state'] = direction_calculator._last_incoming_state
+    direction_calculator_state['same_incoming_states_count'] = direction_calculator._same_incoming_states_count
+    direction_calculator_state['path_plan'] = ['straight', 'straight', 'straight', 'straight'][:random.randint(0, 4)]
 
-    return original_frame, (-velocity_vector.x, -velocity_vector.y), 0
+
+    return original_frame, (-velocity_vector.x, -velocity_vector.y), 0, direction_calculator_state
 
 
 
