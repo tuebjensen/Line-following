@@ -336,15 +336,15 @@ class DirectionCalculator:
         return min_angle_path
 
     def __str__(self):
-        return f'process id: {getpid()}, ' + \
+        return (f'process id: {getpid()}, ' + \
             f'object id: {id(self)}, ' + \
-            f'last target: {self._last_target}, ' + \
-            f'last line: {self._last_line}, ' + \
+            # f'last target: {self._last_target}, ' + \
+            # f'last line: {self._last_line}, ' + \
             f'stable state: {self._stable_state}, ' + \
             f'last incoming state: {self._last_incoming_state}, ' + \
             f'same incoming states count: {self._same_incoming_states_count}, ' + \
-            f'turning just initiated: {self._turning_just_initiated}, ' + \
-            f'path plan: {self._get_path_simplified_string()}'
+            # f'turning just initiated: {self._turning_just_initiated}, ' + \
+            f'path plan: {self._get_path_simplified_string()}')
 
     def _get_path_simplified_string(self):
         return [element.get('choose') for element in self._path_plan]

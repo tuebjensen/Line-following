@@ -36,13 +36,13 @@ direction_calculator_state = {
 }
 
 def get_direction_calculator_state_string(direction_calculator_state):
-    return f'stable_state: {direction_calculator_state["stable_state"]}, ' + \
+    return (f'stable_state: {direction_calculator_state["stable_state"]}, ' + \
             f'last_incoming_state: {direction_calculator_state["last_incoming_state"]}, ' + \
             f'same_incoming_states_count: {direction_calculator_state["same_incoming_states_count"]}, ' + \
-            f'last_target: {direction_calculator_state["last_target"]}, ' + \
-            f'last_line: {direction_calculator_state["last_line"]}, ' + \
-            f'turning_just_initiated: {direction_calculator_state["turning_just_initiated"]}, ' + \
-            f'path_plan: {get_path_plan_string(direction_calculator_state["path_plan"])} '
+            # f'last_target: {direction_calculator_state["last_target"]}, ' + \
+            # f'last_line: {direction_calculator_state["last_line"]}, ' + \
+            # f'turning_just_initiated: {direction_calculator_state["turning_just_initiated"]}, ' + \
+            f'path_plan: {get_path_plan_string(direction_calculator_state["path_plan"])} ')
 
 def get_path_plan_string(path_plan):
     return [element['choose'] for element in path_plan]
