@@ -22,7 +22,7 @@ def get_processed_frame(original_frame,
         image_processor: ImageProcessor,
         line_processor: LineProcessor,
         direction_calculator: DirectionCalculator):
-    print(direction_calculator)
+    #print(direction_calculator)
     global frames
     global start
     frames += 1
