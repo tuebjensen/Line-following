@@ -24,11 +24,15 @@ video = WebServer()
 image_processor = None
 line_processor = None
 direction_calculator = None
+
 direction_calculator_state = {
-    'stable_state': 0,
-    'last_incoming_state': 1,
-    'last_incoming_state_count': 10,
-    'path_plan': ['straight', 'straight', 'straight', 'straight']
+    'stable_state': 3,
+    'last_incoming_state': 3,
+    'same_incoming_states_count': 10,
+    'last_target': None,
+    'last_line': None,
+    'turning_just_initiated': False,
+    'path_plan': []
 }
 
 
