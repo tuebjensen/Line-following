@@ -3,6 +3,7 @@ from lib_web_server import WebServer
 from lib_process_lines import Line, LineSegment, _get_intersection_point
 from lib_vector2d import Vector2D
 import asyncio
+from os import getpid
 
 STATE_FOLLOWING_LINE = 0
 STATE_I_SEE_INTERSECTION = 1
@@ -208,7 +209,7 @@ class DirectionCalculator:
 
 
     def _get_stable_state(self, incoming_state):
-        print(id(self))
+        print(f'Before: {self}')
         print(f'figuring out next stable state: stable state is {self._stable_state}, incoming state is {incoming_state}, last incoming state was {self._last_incoming_state} for {self._same_incoming_states_count} frames')
         if incoming_state != self._stable_state:
             print('incoming state is different then current stable state')
@@ -225,6 +226,7 @@ class DirectionCalculator:
             print('updating last incoming state')
         self._last_incoming_state = incoming_state
         print(f'returning previously stable state: {self._stable_state}, last incoming state is now {self._last_incoming_state} for {self._same_incoming_states_count} frames')
+        print(f'After: {self}')
         print('\n\n')
         return self._stable_state
 
@@ -320,3 +322,6 @@ class DirectionCalculator:
                 min_angle_dif = angle_dif
                 min_angle_path = path
         return min_angle_path
+
+    def __str__(self):
+        return f'process id: {getpid()}, object id: {id(self)}, last target: {self._last_target}, last line: {self._last_line}, last state: {self._last_state}, stable state: {self._stable_state}, last incoming state: {self._last_incoming_state}, same incoming states count: {self._same_incoming_states_count}'
