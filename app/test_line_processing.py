@@ -65,7 +65,7 @@ def get_processed_frame(original_frame,
     cv.putText(original_frame, f'Incoming: {_get_state_string(direction_calculator._last_incoming_state)} x{direction_calculator._same_incoming_states_count}', (0,110), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv.LINE_AA)
 
 
-    return original_frame, (-velocity_vector.x, -velocity_vector.y), 0
+    return original_frame, (-velocity_vector.x, -velocity_vector.y), 0, direction_calculator
 
 
 

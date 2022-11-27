@@ -35,18 +35,20 @@ def nothing():
 
 
 async def process_video():
+    global direction_calculator
     with ProcessPoolExecutor() as executor:
         loop = asyncio.get_running_loop()
         #executor = ProcessPoolExecutor()
         while cap.isOpened():
             ret_read, original_frame = cap.read() # <3ms
             if ret_read:
-                frame, direction, current_node = await loop.run_in_executor(executor,
+                frame, direction, current_node, direction_calculator = await loop.run_in_executor(executor,
                     partial(get_processed_frame,
                         original_frame,
                         image_processor,
                         line_processor,
                         direction_calculator))
+                direction_calculator = direction_calculator
                 
                 # await video.set_current_node(current_node)
                 ret, buffer = cv.imencode('.jpg', frame)
