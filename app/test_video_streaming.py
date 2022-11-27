@@ -11,24 +11,44 @@ image_processor = ImageProcessor(10, 5, 7, 85)
 line_processor = LineProcessor()
 direction_calculator = DirectionCalculator(video)
 
+
+path_plan = []
+unread_new_path = False
+
+def write_path(path):
+    global path_plan
+    path_plan = path
+    global unread_new_path
+    unread_new_path = True
+
+def read_path():
+    global unread_new_path
+    unread_new_path = False
+    global path_plan
+    return path_plan
+
+
 async def main():
     global direction_calculator
     while camera.isOpened():
         ret_read, original_frame = camera.read()
-        original_frame, velocity_vector, current_node, direction_calculator = get_processed_frame(original_frame, image_processor, line_processor, direction_calculator)   
-        direction_calculator = direction_calculator
-        ret, buffer = cv.imencode('.jpg', original_frame)
+        if(unread_new_path):
+            path = read_path()
+            direction_calculator.set_new_path(path)
+        processed_frame_info = get_processed_frame(original_frame, image_processor, line_processor, direction_calculator)   
+        direction_calculator.copy(processed_frame_info['direction_calculator'])
+        processed_frame = processed_frame_info['frame']
+        ret, buffer = cv.imencode('.jpg', processed_frame)
         frame = buffer.tobytes()
         video.set_frame_encoded(frame)
         await asyncio.sleep(0.1)
     camera.release()
 
-def path_callback(path):
-    pass
-    # print(path)
 
 def parse_path(path):
     pass
+
+
 async def start():
-    await asyncio.gather(video.start_running('0.0.0.0', 5000, path_callback), main())
+    await asyncio.gather(video.start_running('0.0.0.0', 5000, write_path), main())
 asyncio.run(start())
