@@ -35,6 +35,11 @@ direction_calculator_state = {
     'path_plan': []
 }
 
+def get_direction_calculator_state_string(direction_calculator_state):
+    return f'stable_state: {direction_calculator_state["stable_state"]}, last_incoming_state: {direction_calculator_state["last_incoming_state"]}, same_incoming_states_count: {direction_calculator_state["same_incoming_states_count"]}, last_target: {direction_calculator_state["last_target"]}, last_line: {direction_calculator_state["last_line"]}, turning_just_initiated: {direction_calculator_state["turning_just_initiated"]}, path_plan: {get_path_plan_string(direction_calculator_state["path_plan"])}'
+
+def get_path_plan_string(path_plan):
+    return [element['choose'] for element in path_plan]
 
 def signal_handler(sig, frame):
     GPIO.cleanup()
@@ -58,7 +63,7 @@ async def process_video():
             ret_read, original_frame = cap.read() # <3ms
             if ret_read:
                 print(f'Before: {direction_calculator}')
-                print(f'Before: {direction_calculator_state}')
+                print(f'Before: {get_direction_calculator_state_string(direction_calculator_state)}')
                 # direction_calculator.set_state(direction_calculator_state)
                 processed_frame_info = await loop.run_in_executor(executor,
                     partial(get_processed_frame,
@@ -81,7 +86,7 @@ async def process_video():
                 video.set_frame_encoded(frame_encoded)
                 car.set_velocity(velocity_vector)
                 direction_calculator.set_state(direction_calculator_state)
-                print(f'After:  {direction_calculator_state}')
+                print(f'After:  {get_direction_calculator_state_string(direction_calculator_state)}')
                 print(f'After:  {direction_calculator}')
                 print('\n\n')
             else:
