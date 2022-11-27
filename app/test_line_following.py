@@ -63,8 +63,7 @@ async def process_video():
                         original_frame,
                         image_processor,
                         line_processor,
-                        direction_calculator,
-                        direction_calculator_state))
+                        direction_calculator))
                 frame = processed_frame_info['frame']
                 velocity_vector = processed_frame_info['velocity_vector']
                 current_node = processed_frame_info['current_node']
