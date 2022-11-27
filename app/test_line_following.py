@@ -56,7 +56,7 @@ async def process_video():
         while cap.isOpened():
             ret_read, original_frame = cap.read() # <3ms
             if ret_read:
-                print(f'Before: {direction_calculator}')
+                #print(f'Before: {direction_calculator}')
                 if(unread_new_path):
                     path = read_path()
                     direction_calculator.set_new_path(path)
