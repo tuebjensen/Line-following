@@ -20,7 +20,7 @@ from lib_web_server import WebServer
 cap = None
 car = None
 video = WebServer()
-image_processor = ImageProcessor()
+image_processor = ImageProcessor(10, 5, 7, 85)
 line_processor = LineProcessor()
 direction_calculator = DirectionCalculator()
 
