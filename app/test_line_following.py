@@ -45,6 +45,7 @@ def nothing():
 
 def path_callback(path):
     direction_calculator_state['path_plan'] = path
+    direction_calculator_state['stable_state'] = 4
     direction_calculator.set_new_path(path)
 
 
