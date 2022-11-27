@@ -208,7 +208,7 @@ class DirectionCalculator:
 
 
     def _get_stable_state(self, incoming_state):
-        print('figuring out next stable state')
+        print(f'figuring out next stable state: stable state is {self._stable_state}, incoming state is {incoming_state}, last incoming state was {self._last_incoming_state} for {self._last_incoming_state_counter} frames')
         if incoming_state != self._stable_state:
             print('incoming state is different then current stable state')
             if incoming_state == self._last_incoming_state:
