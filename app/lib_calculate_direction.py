@@ -46,7 +46,7 @@ class DirectionCalculator:
 
 
     def _get_direction_to_go(self, displacement_vector: Vector2D, direction_vector: Vector2D, image_frame) -> Vector2D:
-        distance_from_center = displacement_vector.get_length() * 2
+        distance_from_center = displacement_vector.get_length()
         #Avoid dividing by zero when displacement vector has length zero
 
         displacement_vector = displacement_vector.normalize()
@@ -59,7 +59,10 @@ class DirectionCalculator:
         displacement_vector_weight = distance_from_center / maximum_distance_from_center
         direction_vector_weight = 1 - displacement_vector_weight
 
-        return direction_vector_weight * direction_vector + displacement_vector_weight * displacement_vector
+        velocity_vector = direction_vector_weight * direction_vector + 2 * displacement_vector_weight * displacement_vector
+        velocity_vector.normalize()
+
+        return velocity_vector
 
 
     def _get_displacement_vector_from_center(self, line: Line, frame) -> Vector2D:
