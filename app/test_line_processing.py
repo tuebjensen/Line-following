@@ -21,6 +21,7 @@ def get_processed_frame(original_frame,
         image_processor: ImageProcessor,
         line_processor: LineProcessor,
         direction_calculator: DirectionCalculator):
+    print(f'PID: {getpid()}')
     print(f'id of image_processor: {id(image_processor)}')
     print(f'id of line_processor: {id(line_processor)}')
     print(f'id of direction_calculator: {id(direction_calculator)}')
