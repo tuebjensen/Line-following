@@ -38,6 +38,9 @@ class Line:
     def __str__(self) -> str:
         return f'rho: {self.rho}, theta: {self.theta}'
 
+    def __repr__(self) -> str:
+        return self.__str__()
+
 
 class LineSegment:
     def __init__(self, start_point: 'tuple[int, int]', end_point: 'tuple[int, int]') -> 'LineSegment':
@@ -58,6 +61,9 @@ class LineSegment:
 
     def __str__(self) -> str:
         return f'start_point: {self.start_point}, end_point: {self.end_point}'
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
 
 class LineProcessor:
