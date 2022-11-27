@@ -23,6 +23,9 @@ video = WebServer()
 image_processor = ImageProcessor(10, 5, 7, 85)
 line_processor = LineProcessor()
 direction_calculator = DirectionCalculator()
+print(f'id of image_processor: {id(image_processor)}')
+print(f'id of line_processor: {id(line_processor)}')
+print(f'id of direction_calculator: {id(direction_calculator)}')
 
 def signal_handler(sig, frame):
     GPIO.cleanup()
