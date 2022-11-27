@@ -6,7 +6,6 @@ from lib_lines_display import display_all_lines, display_boxes_around_merged_lin
 from lib_calculate_direction import DirectionCalculator
 from lib_process_lines import LineProcessor
 from lib_image_processing import ImageProcessor
-from os import getpid
 
 
 STATE_FOLLOWING_LINE = 0
@@ -22,10 +21,6 @@ def get_processed_frame(original_frame,
         image_processor: ImageProcessor,
         line_processor: LineProcessor,
         direction_calculator: DirectionCalculator):
-    print(f'PID: {getpid()}')
-    print(f'id of image_processor: {id(image_processor)}')
-    print(f'id of line_processor: {id(line_processor)}')
-    print(f'id of direction_calculator: {id(direction_calculator)}')
     global frames
     global start
     frames += 1
@@ -65,7 +60,7 @@ def get_processed_frame(original_frame,
     cv.putText(original_frame, f'Incoming: {_get_state_string(direction_calculator._last_incoming_state)} x{direction_calculator._same_incoming_states_count}', (0,110), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv.LINE_AA)
 
 
-    return original_frame, (-velocity_vector.x, -velocity_vector.y), 0, direction_calculator
+    return original_frame, (-velocity_vector.x, -velocity_vector.y), 0
 
 
 

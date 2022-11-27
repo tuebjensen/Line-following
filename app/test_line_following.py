@@ -42,13 +42,12 @@ async def process_video():
         while cap.isOpened():
             ret_read, original_frame = cap.read() # <3ms
             if ret_read:
-                frame, direction, current_node, direction_calculator = await loop.run_in_executor(executor,
+                frame, direction, current_node = await loop.run_in_executor(executor,
                     partial(get_processed_frame,
                         original_frame,
                         image_processor,
                         line_processor,
                         direction_calculator))
-                direction_calculator = direction_calculator
                 
                 # await video.set_current_node(current_node)
                 ret, buffer = cv.imencode('.jpg', frame)
@@ -79,10 +78,6 @@ if __name__ == "__main__":
     image_processor = ImageProcessor(10, 5, 7, 85)
     line_processor = LineProcessor()
     direction_calculator = DirectionCalculator()
-    print(f'PID: {getpid()}')
-    print(f'id of image_processor: {id(image_processor)}')
-    print(f'id of line_processor: {id(line_processor)}')
-    print(f'id of direction_calculator: {id(direction_calculator)}')
     asyncio.run(start())
 
 

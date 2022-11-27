@@ -3,7 +3,6 @@ from lib_web_server import WebServer
 from lib_process_lines import Line, LineSegment, _get_intersection_point
 from lib_vector2d import Vector2D
 import asyncio
-from os import getpid
 
 STATE_FOLLOWING_LINE = 0
 STATE_I_SEE_INTERSECTION = 1
@@ -29,8 +28,6 @@ class DirectionCalculator:
 
     def set_new_path(self, path_plan):
         print(path_plan)
-        print(f'id: {id(self)}')
-        print(f'pid: {getpid()}')
         self._path_plan = path_plan
         if len(path_plan) > 0:
             self._stable_state = STATE_TURN180
