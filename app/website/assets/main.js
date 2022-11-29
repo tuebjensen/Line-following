@@ -123,6 +123,8 @@ combineLatest([
     const maxY = Math.max(...map.nodes.map(node => node.y)) + nodeRadius
     const width = maxX - minX
     const height = maxY - minY
+    const currentIndex = path.findIndex(element => element === currentNode)
+    const restOfPath = path.slice(currentIndex)
 
     // update the display of the line segments
     const line = lineGroup
@@ -140,8 +142,8 @@ combineLatest([
         .attr('stroke-linecap', 'round')
         .classed('line', true)
         .classed('path-line', line => {
-            let start = path.findIndex(element => line.start.id === element.nodeId)
-            let end = path.findIndex(element => line.end.id === element.nodeId)
+            const start = restOfPath.findIndex(element => line.start.id === element.nodeId)
+            const end = restOfPath.findIndex(element => line.end.id === element.nodeId)
             if (start === -1 || end === -1) {
                 return false
             }
