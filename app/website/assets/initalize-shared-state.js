@@ -118,11 +118,13 @@ export function initalizeSharedState () {
         withLatestFrom(socket$)
     ).subscribe(([serverState, socket]) => {
         const id = generateUnprocessedMessageId()
-        socket?.send(JSON.stringify({
+        const message = {
             type: 'server-state-update',
             id,
             data: serverState
-        }))
+        }
+        console.log('send server state', message)
+        socket?.send(JSON.stringify(message))
     })
 
     /**
