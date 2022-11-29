@@ -278,11 +278,7 @@ class DirectionCalculator:
 
 
     def _decide_target_from_stopped(self):
-        currentNode = None
-        if len(self._path_plan) == 1:
-            instruction = self._path_plan.pop(0)
-            currentNode = instruction['nodeId']
-        return None, None, currentNode
+        return None, None
 
 
     def _decide_target_from_turning_180(self, original_frame):
