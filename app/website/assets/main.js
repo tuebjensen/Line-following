@@ -4,7 +4,7 @@ import { initalizeSharedState } from './initalize-shared-state.js'
 import { parseMap } from './parse-map.js'
 import { findPath } from './pathfinding.js'
 
-const { clientState$, clientStateUpdate$, serverState$, updateClientState, updateServerState } = initalizeSharedState()
+const { clientState$, clientStateUpdate$, serverState$, updateClientState, updateServerState, socket$ } = initalizeSharedState()
  
 const nodeLeftClick$ = new Subject()
 const nodeRightClick$ = new Subject()
@@ -34,18 +34,18 @@ clientStateUpdate$.subscribe(clientState => {
 })
 
 const videoEl = document.getElementById('video')
-clientStateUpdate$.pipe(
-    pairwise()
-).subscribe(([previousClientState, clientState]) => {
-    if (!previousClientState && clientState) {
+
+socket$.subscribe(
+    (socket) => {
+        if (!socket) return
         console.log('reset video stream')
         const src = videoEl.src
         videoEl.src = ''
         setTimeout(() => {
             videoEl.src = src
-        })
+        }) 
     }
-})
+)
 
 // Update client state from client
 merge(

@@ -71,6 +71,7 @@ export function initalizeSharedState () {
     const message$ = socket$.pipe(
         filter(socket => socket),
         switchMap(socket => fromEvent(socket, 'message')),
+        
         concatMap((msg) => {
             try {
                 return of(JSON.parse(msg.data))
@@ -124,6 +125,9 @@ export function initalizeSharedState () {
     serverStateSubject$.pipe(
         withLatestFrom(socket$)
     ).subscribe(([serverState, socket]) => {
+        if (!socket) {
+            return
+        }
         const id = generateUnprocessedMessageId()
         const message = {
             type: 'server-state-update',
@@ -131,7 +135,7 @@ export function initalizeSharedState () {
             data: serverState
         }
         console.log('send server state', message)
-        socket?.send(JSON.stringify(message))
+        socket.send(JSON.stringify(message))
     })
 
     /**
@@ -220,6 +224,7 @@ export function initalizeSharedState () {
         serverStateUpdate$,
         serverState$,
         clientStateUpdate$,
-        clientState$
+        clientState$,
+        socket$
     }
 }
