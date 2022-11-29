@@ -87,6 +87,14 @@ class WebServer:
             if 'path' in client_state:
                 path_callback(client_state['path'])
         
+        async def test_sending_server_state():
+            i = 0
+            while True:
+                if self._ws is None:
+                    return
+                i = (i + 1) % 5
+                await asyncio.sleep(1)
+                await self.set_current_node(i)
             
         async def websocket_handler(request):   
             if self._ws is not None:
@@ -98,7 +106,9 @@ class WebServer:
             #async with aiofiles.open('state.json', 'r') as file:
             #    contents = await file.read()
             contents = await make_full_state()
-            await self.send_message('full-state-update', contents) 
+            await self.send_message('full-state-update', contents)
+
+            testing_task = asyncio.create_task(test_sending_server_state())
             
             async for msg in self._ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:
@@ -114,6 +124,7 @@ class WebServer:
                         
             self._ws = None 
             self._processed_ids = []
+            testing_task.cancel()
             await update_client_state({'targetNode': None, 'path': []})
             return self._ws
             

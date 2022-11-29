@@ -134,6 +134,9 @@ export function initalizeSharedState () {
             map(data => data.serverState)
         ),
         message$.pipe(
+            tap((message) => {
+                console.log('new serverState message!', message, 'unprocessed message IDs', unprocessedMessageIds)
+            }),
             filter(message =>
                 message.type === 'server-state-update'
                 && unprocessedMessageIds.size === 0
