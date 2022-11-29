@@ -3,7 +3,9 @@ from lib_motor import Motor
 from math import atan2, pi, sqrt
 
 class Car:
+    """Class for controlling two motors"""
     def __init__(self, motor_left: Motor, motor_right: Motor, speed = None):
+        """ Creates an instance of car """
         self._motor_left = motor_left
         self._motor_right = motor_right
         self._speed = speed
@@ -13,6 +15,7 @@ class Car:
         self._motor_right.set_speed(speed)
 
     def set_velocity(self, direction_vector: tuple[float, float]):
+        """ Sets speed of the two motors using the direction vector """
         if direction_vector is None:
             return
         x, y = direction_vector
@@ -25,6 +28,7 @@ class Car:
 
     
     async def start_running(self):
+        """ Starts both motor asynchronously """
         await asyncio.gather(
             self._motor_left.start_running(), 
             self._motor_right.start_running()

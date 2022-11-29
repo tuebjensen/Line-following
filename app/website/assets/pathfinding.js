@@ -62,7 +62,6 @@ function minDistance(distances, visitedNodeIds) {
     return nodeIdWithMinDistance
 }
 
-
 /**
  * 
  * @param {*} graph 

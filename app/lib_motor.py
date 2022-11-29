@@ -7,6 +7,7 @@ import signal
 import os
 
 class Motor:
+    """ Class for controlling a motor """
     def __init__(
         self,
         speed_pin: int,
@@ -25,20 +26,29 @@ class Motor:
         self._pid = None
 
     def set_speed(self, speed):
+        """ Sets speed """
         if self._pid is not None:
             self._pid.setpoint = speed
         self._speed = speed
 
     def set_forwards(self, forwards):
+        """ Sets direction """
         self._forwards = forwards
 
     async def start_running(self):
+        """ 
+            Sets the pins up
+            Starts the encoder subprocess
+            Configures the PID
+            Runs the pid and encoder asynchronously
+        """
         # make sure we don't run it twice
         if self._running:
             return
         self._running = True
 
         async def do_pid():
+            """ Outputs to the motor and resets the encoder interrupt count """
             try:
                 # control the speed of the motor
                 while True:
@@ -52,6 +62,7 @@ class Motor:
                 pass
         
         async def do_encoder_process():
+            """ Reads from the encoder subprocess and saves the output """
             while True:
                 try:
                     output = await encoder_process.stdout.readline()
@@ -66,7 +77,7 @@ class Motor:
         # setup pins
         GPIO.setup(self._speed_pin, GPIO.OUT)
         GPIO.setup(self._direction_pin, GPIO.OUT)
-
+        #Starts the encoder subprocess
         encoder_process = await asyncio.create_subprocess_exec(
             os.path.join(os.path.dirname(__file__), 'run_encoder'), str(self._encoder_interrupt_wiring_pi_pin),
             stdout = asyncio.subprocess.PIPE,
