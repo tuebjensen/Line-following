@@ -50,7 +50,7 @@ class WebServer:
 
 
         async def websocket_test(request):
-            return web.FileResponse('website/websocket.html')
+            return web.FileResponse('website/test_websocket.html')
 
         async def index(request):
             return web.FileResponse('website/index.html')
