@@ -153,6 +153,11 @@ combineLatest([
             }
             return Math.abs(start - end) === 1
         })
+        .call((lines) => lines.select(function () {
+            if (this.classList.contains('path-line')) {
+                this.parentNode.appendChild(this)
+            }
+        }))
 
     // update the display of the nodes
     const node = nodeGroup
