@@ -1,8 +1,9 @@
-import { possibleLineSegmentsFromNode } from "./possible-line-segments-from-node.js"
+import { possibleLineSegmentsFromNode } from './possible-line-segments-from-node.js'
 
 /**
  * @typedef {import('./parse-map').LineSegment} LineSegment
  * @typedef {import('./parse-map').Point} Point
+ * @typedef {import('./parse-map').Node} Node
  */
 
 /**
@@ -63,10 +64,10 @@ function minDistance(distances, visitedNodeIds) {
 }
 
 /**
- * 
- * @param {*} graph 
- * @param {*} src 
- * @returns 
+ * Returns the shortest path tree represented as an array where the value at some index is the id of the parent node.
+ * @param {number[][]} graph 
+ * @param {number} src 
+ * @returns {number[]}
  */
 function dijkstra(graph, src) {
     //Array to store the array representation of the SPT (shortest path tree) 
@@ -97,13 +98,23 @@ function dijkstra(graph, src) {
     }
     return parentArray
 }
-
+/**
+ * Returns whether a line segment is on the path.
+ * @param {LineSegment} lineSegment 
+ * @param {number} startNodeId 
+ * @param {number} endNodeId 
+ * @returns {boolean}
+ */
 function isLineSegmentOnPath(lineSegment, startNodeId, endNodeId){
     return (lineSegment.start.id === startNodeId && lineSegment.end.id === endNodeId || lineSegment.start.id === endNodeId && lineSegment.end.id === startNodeId)
 }
-
+/**
+ * Returns a base vector in the same direction as the line segment.
+ * @param {Node} startNode 
+ * @param {Node} endNode 
+ * @returns {{x: number, y: number}} 
+ */
 function directionFromLineSegment(startNode, endNode) {
-
     const direction = {x: 0, y: 0}
     if ((endNode.x - startNode.x) < 0) {
         direction.x = -1
@@ -122,34 +133,57 @@ function directionFromLineSegment(startNode, endNode) {
     return direction
 
 }
+/**
+ * Returns the z component of the cross product of the two vectors.
+ * @param {{x: number, y: number}} v 
+ * @param {{x: number, y: number}} w 
+ * @returns {number}
+ */
+function cross(v, w) {
+    return (v.x * w.y) - (v.y * w.x)
+}
+/**
+ * Returns the dot product of the two vectors.
+ * @param {{x: number, y: number}} v 
+ * @param {{x: number, y: number}} w 
+ * @returns {number}
+ */
+function dot(v, w) {
+    return (v.x * w.x) + (v.y * w.y)
+}
 
-    function cross(v, w) {
-        //returns the z component of the cross product
-        return (v.x * w.y) - (v.y * w.x)
+/**
+ * Returns left, right, straight or back depending on which direction the car has to go in order to go from v to w.
+ * @param {{x: number, y: number}} v 
+ * @param {{x: number, y: number}} w 
+ * @returns 
+ */
+function directionToGo(v, w){
+    if ((v.x === 0 && v.y === 0) || (w.x === 0 && w.y === 0)){
+        throw new Error('One of the vectors is the zero vector')
     }
-    function dot(v, w) {
-        return (v.x * w.x) + (v.y * w.y)
-    }
-
-    function directionToGo(v, w){
-        if ((v.x === 0 && v.y === 0) || (w.x === 0 && w.y === 0)){
-            throw new Error('vector bad')
-        }
-        const crossProduct = cross(v, w)
-        const dotProduct = dot(v, w) 
-        if (dotProduct === 0) {
-            if (crossProduct === 1) {
-                return "right"
-            } else {
-                return "left"
-            }
-        } else if (dotProduct > 0){
-            return "straight"
+    const crossProduct = cross(v, w)
+    const dotProduct = dot(v, w) 
+    if (dotProduct === 0) {
+        if (crossProduct === 1) {
+            return 'right'
         } else {
-            return "back"
+            return 'left'
         }
+    } else if (dotProduct > 0){
+        return 'straight'
+    } else {
+        return 'back'
     }
+}
 
+/**
+ * Returns an object containing the possible directions, the direction of the path and the node id
+ * @param {number[]} pathIds 
+ * @param {LineSegment[]} lineSegments 
+ * @param {Node[]} nodes 
+ * @returns 
+ */
 
 function generatePathObject(pathIds, lineSegments, nodes) {
     const pathFromSourceToTarget = []
@@ -157,15 +191,16 @@ function generatePathObject(pathIds, lineSegments, nodes) {
     let lastNodeId = null
     for (let i = 0; i < pathIds.length - 1; i++) {
         let possibilities = []
-        let choose = ""
+        let choose = ''
         let nodeId = pathIds[i]
         let nextNodeId = pathIds[i + 1]
-        let possibleLineSegments = possibleLineSegmentsFromNode(lineSegments, nodeId)        
+        let possibleLineSegments = possibleLineSegmentsFromNode(lineSegments, nodeId)   
+
         if (orientation == null) {
             for (let j = 0; j < possibleLineSegments.length; j++){
+                orientation = directionFromLineSegment(nodes[nodeId], nodes[nextNodeId])
 
                 if (isLineSegmentOnPath(possibleLineSegments[j], nodeId, nextNodeId)) {
-                    orientation = directionFromLineSegment(nodes[nodeId], nodes[nextNodeId])
                 }
             }
         } else {
@@ -186,18 +221,21 @@ function generatePathObject(pathIds, lineSegments, nodes) {
         lastNodeId = nodeId
         pathFromSourceToTarget.push({possibilities: possibilities, choose: choose, nodeId: nodeId})
     }
-    pathFromSourceToTarget.push({possibilities: [], choose: "", nodeId: pathIds[pathIds.length - 1]})
+    pathFromSourceToTarget.push({possibilities: [], choose: '', nodeId: pathIds[pathIds.length - 1]})
     console.log(pathFromSourceToTarget)
     return pathFromSourceToTarget
 }
 
+/**
+ * Returns a path from source to target
+ * @param {{lineSegments: LineSegment[], nodes: Node[]}} map 
+ * @param {number} source 
+ * @param {number} target 
+ * @returns {{possibilities: string[], choose: string, nodeId: number}}
+ */
+
 export function findPath(map, source, target) {
-    // strings used for test:
-    //r1t2r3(t4|b5)r6(t5|b5(l2|r4))
-    //r1t2r3(t4|b5)r6(t5|b5(l2|r4))r3b2l*
-    //_r1_t2_r3_(t4_|b5_r2_t2_r8_)r6_(t5_|b*_b2_(l2_|r4_))
     const lineSegments = map.lineSegments
-    //const lineSegments = map.lineSegments.filter(lineSegment => !(lineSegment.start.id === 3 && lineSegment.end.id === 6)) //NOT CORRECT JUST FOR TEST
     const nodes = map.nodes
     const adjacencyMatrix = makeAdjacencyMatrix(lineSegments, nodes.length)
     const sptParentArray = dijkstra(adjacencyMatrix, source)
