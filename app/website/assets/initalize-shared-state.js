@@ -54,6 +54,7 @@ export function initalizeSharedState () {
         return () => {
             const newId = idIterator.next().value
             unprocessedMessageIds.add(newId)
+            return newId
         }
     })()
 
