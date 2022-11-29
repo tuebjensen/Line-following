@@ -1,10 +1,40 @@
 import { createCounter } from './create-counter.js'
 import { possibleLineSegmentsFromNode } from './possible-line-segments-from-node.js'
 
+/**
+ * A function used as the argument of the Array.protoype.sort function
+ * if one wants to put numbers in ascending order.
+ * @param {number} a The first number.
+ * @param {number} b The second number.
+ * @returns A negative number if a < b, 0 if a == b and a positive number when a > b.
+ */
 function asc (a, b) {
     return a - b
 }
 
+/**
+ * A point.
+ * @typedef {{ x: number, y: number, id: number }} Node
+ */
+
+/**
+ * A line segment.
+ * @typedef {{ start: Node, end: Node }} LineSegment
+ */
+
+/**
+ * Note that the end point is only used to signify
+ * the direction of the ray.
+ * @typedef {LineSegment} Ray
+ */
+
+/**
+ * Get the distance between the starting point of the ray and
+ * the intersection between the ray and the line segment.
+ * @param {Ray} ray
+ * @param {LineSegment} segment 
+ * @returns {number}
+ */
 function getIntersectionDistance (ray, segment) {
     const isVert1 = ray.start.x === ray.end.x
     const isVert2 = segment.start.x === segment.end.x
@@ -58,6 +88,16 @@ function getIntersectionDistance (ray, segment) {
         }
     }
 }
+
+/**
+ * @typedef {{ lineSegments: LineSegment[], nodes: Node[] }} Graph
+ */
+
+/**
+ * Parses the given string.
+ * @param {string} str The raw string of the map which should be parsed.
+ * @returns {Graph} The parsed map.
+ */
 export function parseMap (str) {
     const lineSegments = []
     const nodeIdIterator = createCounter()

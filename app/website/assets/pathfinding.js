@@ -1,11 +1,35 @@
 import { possibleLineSegmentsFromNode } from "./possible-line-segments-from-node.js"
 
+/**
+ * @typedef {import('./parse-map').LineSegment} LineSegment
+ * @typedef {import('./parse-map').Point} Point
+ */
+
+/**
+ * Calculates and returns the length of the given line segment.
+ * @param {LineSegment} lineSegment 
+ * @returns {number}
+ */
 function lengthOfLineSegment(lineSegment) {
     return Math.sqrt((lineSegment.start.x - lineSegment.end.x)**2 + (lineSegment.start.y - lineSegment.end.y)**2)
 }
 
+/**
+ * Makes an adjacency matrix based on the given
+ * line segments (which will determine the content of the matrix) 
+ * and the number of nodes (which will determine the number of rows and number of columns).
+ * @param {LineSegment[]} lineSegments
+ * @param {number} numberOfNodes 
+ * @returns {number[][]}
+ */
 function makeAdjacencyMatrix(lineSegments, numberOfNodes) {
-    const adjacencyMatrix = Array(numberOfNodes).fill(0).map(() => Array(numberOfNodes).fill(0))
+    const adjacencyMatrix = Array.from(
+        { length: numberOfNodes},
+        () => Array.from(
+            { length: numberOfNodes },
+            () => 0
+        )
+    )
 
     for (let i = 0; i < lineSegments.length; i++){
         let lineSegment = lineSegments[i]
@@ -16,31 +40,35 @@ function makeAdjacencyMatrix(lineSegments, numberOfNodes) {
         adjacencyMatrix[endNodeId][startNodeId] = length
     }
     return adjacencyMatrix
-
 }
 
-function minDistance(dist, sptSet) {
+/**
+ * Returns the ID with the closest node which hasn't been visited.
+ * @param {Record<number, number>} distances The index in the array is the corresponding node ID
+ * @param {number[]} visitedNodeIds Array of visited node IDs
+ * @returns {number}
+ */
+function minDistance(distances, visitedNodeIds) {
     let min = Infinity
-    let minIndex = -1
+    let nodeIdWithMinDistance = -1
 
-    for (let v = 0; v < sptSet.length; v++){
-        if (sptSet[v] === false && dist[v] <= min){
-            min = dist[v]
-            minIndex = v
+    for (let v = 0; v < visitedNodeIds.length; v++){
+        if (visitedNodeIds[v] === false && distances[v] <= min){
+            min = distances[v]
+            nodeIdWithMinDistance = v
         }
     }
 
-    return minIndex
+    return nodeIdWithMinDistance
 }
-function printSolution(dist)
-{
-    console.log("Vertex \t\t Distance from Source<br>");
-    for(let i = 0; i < dist.length; i++)
-    {
-        console.log(i + " \t\t " +
-                 dist[i] + "<br>");
-    }
-}
+
+
+/**
+ * 
+ * @param {*} graph 
+ * @param {*} src 
+ * @returns 
+ */
 function dijkstra(graph, src) {
     //Array to store the array representation of the SPT (shortest path tree) 
     //Where the index is the id of the node and the element at that index is the preceding node in the SPT 
@@ -69,18 +97,6 @@ function dijkstra(graph, src) {
         }
     }
     return parentArray
-}
-function printGraph(graph) {
-    let graphline = ""
-    for (let i = 0; i < graph.length; i++) {
-       for (let j = 0; j < graph[i].length; j++) {
-           graphline += graph[i][j]
-           graphline += " "
-        }
-        graphline += '\n'
-    }
-    console.log(graphline)
-
 }
 
 function isLineSegmentOnPath(lineSegment, startNodeId, endNodeId){

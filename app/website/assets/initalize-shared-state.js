@@ -5,8 +5,11 @@ import { createCounter } from './create-counter.js';
  * Initalize the state which will be shared between server and client.
  */
 export function initalizeSharedState () {
-    // keep track of which messages have been processed
-    // (this is crucial for the locking mechanism)
+
+    /**
+     * Keeps track of which messages have been processed
+     * (this is crucial for the locking mechanism)
+     */
     const unprocessedMessageIds = new Set()
 
     /**
@@ -181,6 +184,11 @@ export function initalizeSharedState () {
         }))
     })
 
+    /**
+     * Includes server state updates both:
+     * - coming from the server
+     * - sent from the client
+     */
     const serverState$ = merge(
         serverStateSubject$,
         serverStateUpdate$
@@ -191,6 +199,11 @@ export function initalizeSharedState () {
         shareReplay(1)
     )
 
+    /**
+     * Includes client state updates both:
+     * - coming from the server
+     * - sent from the client
+     */
     const clientState$ = merge(
         clientStateSubject$,
         clientStateUpdate$
