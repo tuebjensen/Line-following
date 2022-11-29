@@ -1,4 +1,4 @@
-import { possibleLineSegmentsFromNode } from "./possible-line-segments-from-node.js"
+import { getPossibleLineSegmentsFromNode } from "./possible-line-segments-from-node.js"
 
 /**
  * @typedef {import('./parse-map').LineSegment} LineSegment
@@ -48,7 +48,7 @@ function makeAdjacencyMatrix(lineSegments, numberOfNodes) {
  * @param {number[]} visitedNodeIds Array of visited node IDs
  * @returns {number}
  */
-function minDistance(distances, visitedNodeIds) {
+function getMinDistance(distances, visitedNodeIds) {
     let min = Infinity
     let nodeIdWithMinDistance = -1
 
@@ -73,24 +73,19 @@ function dijkstra(graph, src) {
     //Where the index is the id of the node and the element at that index is the preceding node in the SPT 
     const parentArray = []
     //Array to store distances
-    const dist = new Array(graph.length) 
+    const distances = Array.from({ length: graph.length }, () => Infinity)
     //Array to store vertices in the SPT
-    const sptSet = new Array(graph.length)
+    const visitedNodeIds = Array.from({ length: graph.length }, () => false)
 
-    for (let i = 0; i < graph.length; i++){
-        dist[i] = Infinity
-        sptSet[i] = false
-    }
-
-    dist[src] = 0
+    distances[src] = 0
     parentArray[src] = -1
     for (let i = 0; i < graph.length - 1; i++){
-        let u = minDistance(dist, sptSet)
-        sptSet[u] = true
+        let u = getMinDistance(distances, visitedNodeIds)
+        visitedNodeIds[u] = true
 
         for (let v = 0; v < graph.length; v++) {
-            if (!sptSet[v] && graph[u][v] != 0 && dist[u] != Infinity && dist[u] + graph[u][v] < dist[v]){
-                dist[v] = dist[u] + graph[u][v]
+            if (!visitedNodeIds[v] && graph[u][v] != 0 && distances[u] != Infinity && distances[u] + graph[u][v] < distances[v]){
+                distances[v] = distances[u] + graph[u][v]
                 parentArray[v] = u 
             }
         }
@@ -102,7 +97,7 @@ function isLineSegmentOnPath(lineSegment, startNodeId, endNodeId){
     return (lineSegment.start.id === startNodeId && lineSegment.end.id === endNodeId || lineSegment.start.id === endNodeId && lineSegment.end.id === startNodeId)
 }
 
-function directionFromLineSegment(startNode, endNode) {
+function getOrientationFromNodes(startNode, endNode) {
 
     const direction = {x: 0, y: 0}
     if ((endNode.x - startNode.x) < 0) {
@@ -123,71 +118,61 @@ function directionFromLineSegment(startNode, endNode) {
 
 }
 
-    function cross(v, w) {
-        //returns the z component of the cross product
-        return (v.x * w.y) - (v.y * w.x)
-    }
-    function dot(v, w) {
-        return (v.x * w.x) + (v.y * w.y)
-    }
+function cross(v, w) {
+    //returns the z component of the cross product
+    return (v.x * w.y) - (v.y * w.x)
+}
+function dot(v, w) {
+    return (v.x * w.x) + (v.y * w.y)
+}
 
-    function directionToGo(v, w){
-        if ((v.x === 0 && v.y === 0) || (w.x === 0 && w.y === 0)){
-            throw new Error('vector bad')
-        }
-        const crossProduct = cross(v, w)
-        const dotProduct = dot(v, w) 
-        if (dotProduct === 0) {
-            if (crossProduct === 1) {
-                return "right"
-            } else {
-                return "left"
-            }
-        } else if (dotProduct > 0){
-            return "straight"
-        } else {
-            return "back"
-        }
+function getDirectionToGo(v, w){
+    if ((v.x === 0 && v.y === 0) || (w.x === 0 && w.y === 0)){
+        throw new Error('vector bad')
     }
+    const crossProduct = cross(v, w)
+    const dotProduct = dot(v, w) 
+    if (dotProduct === 0) {
+        if (crossProduct === 1) {
+            return "right"
+        } else {
+            return "left"
+        }
+    } else if (dotProduct > 0){
+        return "straight"
+    } else {
+        return "back"
+    }
+}
 
 
 function generatePathObject(pathIds, lineSegments, nodes) {
-    const pathFromSourceToTarget = []
-    let orientation = null
-    let lastNodeId = null
-    for (let i = 0; i < pathIds.length - 1; i++) {
-        let possibilities = []
-        let choose = ""
-        let nodeId = pathIds[i]
-        let nextNodeId = pathIds[i + 1]
-        let possibleLineSegments = possibleLineSegmentsFromNode(lineSegments, nodeId)        
-        if (orientation == null) {
-            for (let j = 0; j < possibleLineSegments.length; j++){
+    const pathFromSourceToTarget = [{ possibilities: ['straight'], choose: 'straight', nodeId: pathIds[0] }]
+    for (let i = 0; i < pathIds.length - 2; i++) {
+        const prevNodeId = pathIds[i]
+        const nodeId = pathIds[i + 1]
+        const nextNodeId = pathIds[i + 2]
+        const prevNode = nodes[prevNodeId]
+        const node = nodes[nodeId]
+        const nextNode = nodes[nodeId]
 
-                if (isLineSegmentOnPath(possibleLineSegments[j], nodeId, nextNodeId)) {
-                    orientation = directionFromLineSegment(nodes[nodeId], nodes[nextNodeId])
-                }
-            }
-        } else {
-            orientation = directionFromLineSegment(nodes[lastNodeId], nodes[nodeId])
-        }
+        const currentOrientation = getOrientationFromNodes(prevNode, node)
+        const possibilities = []
+        let choose = ''
 
-        for (let j = 0; j < possibleLineSegments.length; j++){
-            let possibleLineSegment = possibleLineSegments[j]
-            let possibleNodeId = nodeId === possibleLineSegment.start.id ? possibleLineSegment.end.id : possibleLineSegment.start.id
-            let direction = directionFromLineSegment(nodes[nodeId], nodes[possibleNodeId])
-            let instruction = directionToGo(orientation, direction)
-            possibilities.push(instruction)
+        for (const possibleLineSegment of getPossibleLineSegmentsFromNode(lineSegments, nodeId)) {
+            const possibleNodeId = nodeId === possibleLineSegment.start.id ? possibleLineSegment.end.id : possibleLineSegment.start.id
+            const lineSegmentOrientation = getOrientationFromNodes(node, nodes[possibleNodeId])
+            const direction = getDirectionToGo(currentOrientation, lineSegmentOrientation)
+            possibilities.push(direction)
             if (isLineSegmentOnPath(possibleLineSegment, nodeId, nextNodeId)) {
-                choose = instruction
-            }
-            
+                choose = direction
+            }            
         }
-        lastNodeId = nodeId
-        pathFromSourceToTarget.push({possibilities: possibilities, choose: choose, nodeId: nodeId})
+        pathFromSourceToTarget.push({ possibilities: possibilities, choose: choose, nodeId: nodeId })
     }
-    pathFromSourceToTarget.push({possibilities: [], choose: "", nodeId: pathIds[pathIds.length - 1]})
-    console.log(pathFromSourceToTarget)
+    pathFromSourceToTarget.push({possibilities: [], choose: '', nodeId: pathIds[pathIds.length - 1]})
+    console.log('generated path', pathFromSourceToTarget)
     return pathFromSourceToTarget
 }
 

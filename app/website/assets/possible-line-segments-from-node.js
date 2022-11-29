@@ -8,7 +8,7 @@
  * @param {number} nodeId 
  * @returns {LineSegment[]}
  */
-export function possibleLineSegmentsFromNode(lineSegments, nodeId) {
+export function getPossibleLineSegmentsFromNode(lineSegments, nodeId) {
     return lineSegments.filter(lineSegment =>
         lineSegment.start.id === nodeId ||
         lineSegment.end.id === nodeId
