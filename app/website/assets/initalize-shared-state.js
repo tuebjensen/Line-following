@@ -5,6 +5,10 @@ import { createCounter } from './create-counter.js';
  * Initalize the state which will be shared between server and client.
  */
 export function initalizeSharedState () {
+    // keep track of which messages have been processed
+    // (this is crucial for the locking mechanism)
+    const unprocessedMessageIds = new Set()
+
     /**
      * The stream of websockets.
      * A new socket is created every time a socket closes or errors.
@@ -41,14 +45,14 @@ export function initalizeSharedState () {
         repeat({ delay: 1000 }),
         startWith(null),
         distinctUntilChanged(),
+        tap(() => {
+            unprocessedMessageIds.clear()
+        }),
         shareReplay(1)
     )
     
     socket$.subscribe(s => console.log('socket', s))
 
-    // keep track of which messages have been processed
-    // (this is crucial for the locking mechanism)
-    const unprocessedMessageIds = new Set()
     const generateUnprocessedMessageId = (function(){
         const idIterator = createCounter()
         return () => {
