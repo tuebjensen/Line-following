@@ -125,7 +125,11 @@ combineLatest([
     const height = maxY - minY
     const currentIndex = Math.min(path.findIndex(element => element.nodeId === currentNode), 0)
     const restOfPath = path.slice(currentIndex)
-
+    console.log('Current index:', currentIndex)
+    console.log('Current node:', currentNode)
+    console.log('Rest of path:', restOfPath)
+    console.log('Path:', path)
+    
     // update the display of the line segments
     const line = lineGroup
         .selectAll('.line')
