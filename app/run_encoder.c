@@ -17,10 +17,11 @@ Compile as follows:
 // the event counter 
 volatile int eventCounter = 0;
 
+// increments the eventcounter whenever an interrupt occurs
 void ISR() {
    eventCounter++;
 }
-
+// prints a usage guide
 void writeHelp() {
     fprintf (stdout, "Usage: run_encoder [wiring-pi-pin]\n");
 }

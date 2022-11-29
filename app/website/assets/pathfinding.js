@@ -32,15 +32,7 @@ function minDistance(dist, sptSet) {
 
     return minIndex
 }
-function printSolution(dist)
-{
-    console.log("Vertex \t\t Distance from Source<br>");
-    for(let i = 0; i < dist.length; i++)
-    {
-        console.log(i + " \t\t " +
-                 dist[i] + "<br>");
-    }
-}
+
 function dijkstra(graph, src) {
     //Array to store the array representation of the SPT (shortest path tree) 
     //Where the index is the id of the node and the element at that index is the preceding node in the SPT 
@@ -69,18 +61,6 @@ function dijkstra(graph, src) {
         }
     }
     return parentArray
-}
-function printGraph(graph) {
-    let graphline = ""
-    for (let i = 0; i < graph.length; i++) {
-       for (let j = 0; j < graph[i].length; j++) {
-           graphline += graph[i][j]
-           graphline += " "
-        }
-        graphline += '\n'
-    }
-    console.log(graphline)
-
 }
 
 function isLineSegmentOnPath(lineSegment, startNodeId, endNodeId){

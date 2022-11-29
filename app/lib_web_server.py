@@ -1,4 +1,4 @@
-import aiohttp #Is there a better way?
+import aiohttp 
 from aiohttp import web
 import asyncio
 import aiofiles
@@ -7,7 +7,7 @@ import json
 
 
 class WebServer:
-
+    """ Class for handling HTTP requests and the websocket """
     def __init__(self):
         self._is_running = False
         self._frame_encoded = None
@@ -17,10 +17,12 @@ class WebServer:
         self._processed_ids = []
 
     def set_frame_encoded(self, frame_encoded):
+        """ Sets the frame to display on the website """
         self._frame_encoded = frame_encoded
         self._is_frame_encoded_changed = True
 
     async def send_message(self, type, data):
+        """ Sends a message along with ids of processed messages """
         if self._ws is None or self._ws.closed:
             return
 
@@ -36,6 +38,7 @@ class WebServer:
         self._processed_ids = []
 
     async def set_current_node(self, current_node):
+        """ Sets the current node """
         if current_node is None:
             return
         print('set current node', current_node)
@@ -44,18 +47,22 @@ class WebServer:
         await self.send_message('server-state-update', {'currentNode': current_node})
 
     async def start_running(self, address, port, path_callback):
+        """
+            Sets the routes up
+            Starts the webserver
+        """
+
         if self._is_running:
             return
         self._is_running = True
 
 
-        async def websocket_test(request):
-            return web.FileResponse('website/test_websocket.html')
-
         async def index(request):
+            """ Returns a file response for the website """
             return web.FileResponse('website/index.html')
 
         async def make_full_state():
+            """ Combines the server state and client state from their respective files """
             async with aiofiles.open('server_state.json', 'r') as file:
                 server_state = json.loads(await file.read())
             async with aiofiles.open('client_state.json', 'r') as file:
@@ -69,15 +76,18 @@ class WebServer:
             return full_state
 
         async def set_server_state(server_state):
+            """ Updates the file server_state.json """
             async with aiofiles.open('server_state.json', 'w') as file:
                 await file.write(json.dumps(server_state))
 
         async def set_client_state(client_state):
+            """ Updates the file client_state.json """
             async with aiofiles.open('client_state.json', 'w') as file:
                 await file.write(json.dumps(client_state))
             path_callback(client_state['path'])
 
         async def update_client_state(client_state):
+            """ Merges the current client state with the new one """
             new_client_state = {}
             async with aiofiles.open('client_state.json', 'r') as file:
                 old_client_state = json.loads(await file.read())
@@ -86,17 +96,9 @@ class WebServer:
                 await file.write(json.dumps(new_client_state))
             if 'path' in client_state:
                 path_callback(client_state['path'])
-        
-        async def test_sending_server_state():
-            i = 0
-            while True:
-                if self._ws is None:
-                    return
-                i = (i + 1) % 5
-                await asyncio.sleep(1)
-                await self.set_current_node(i)
             
-        async def websocket_handler(request):   
+        async def websocket_handler(request): 
+            """ Handles messages on the websocket """  
             if self._ws is not None:
                 raise web.HTTPConflict()
             self._ws = web.WebSocketResponse()
@@ -130,6 +132,7 @@ class WebServer:
             return self._ws
             
         async def show_image(request):
+            """ Sends frame_encoded to the client """
             resp = web.StreamResponse(status=200, 
                               reason='OK', 
                               headers={'Content-Type': 'multipart/x-mixed-replace; boundary=frame'})
@@ -151,7 +154,6 @@ class WebServer:
                 await asyncio.sleep(0.05)   
         loop = asyncio.get_event_loop()
         app = web.Application(loop=loop)
-        app.router.add_route('GET', '/websocket', websocket_test)
         app.router.add_route('GET', '/', index)
         app.router.add_route('GET', '/video', show_image)
         app.router.add_routes([web.get('/ws', websocket_handler)])
