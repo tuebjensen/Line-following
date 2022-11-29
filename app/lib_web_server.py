@@ -113,6 +113,7 @@ class WebServer:
             async for msg in self._ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:
                     message = json.loads(msg.data)
+                    print(message)
                     data = message['data']
                     #print('message data', data)
                     if 'id' in message:
