@@ -123,7 +123,7 @@ combineLatest([
     const maxY = Math.max(...map.nodes.map(node => node.y)) + nodeRadius
     const width = maxX - minX
     const height = maxY - minY
-    const currentIndex = path.findIndex(element => element === currentNode)
+    const currentIndex = Math.min(path.findIndex(element => element.nodeId === currentNode), 0)
     const restOfPath = path.slice(currentIndex)
 
     // update the display of the line segments
