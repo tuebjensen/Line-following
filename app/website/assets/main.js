@@ -123,7 +123,7 @@ combineLatest([
     const maxY = Math.max(...map.nodes.map(node => node.y)) + nodeRadius
     const width = maxX - minX
     const height = maxY - minY
-    const currentIndex = Math.min(path.findIndex(element => element.nodeId === currentNode), 0)
+    const currentIndex = Math.max(path.findIndex(element => element.nodeId === currentNode), 0)
     const restOfPath = path.slice(currentIndex)
     console.log('Current index:', currentIndex)
     console.log('Current node:', currentNode)
