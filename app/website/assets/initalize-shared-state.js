@@ -56,6 +56,11 @@ export function initalizeSharedState () {
     
     socket$.subscribe(s => console.log('socket', s))
 
+    /**
+     * Generate an unprocessed message ID
+     * and put it to the unprocessedMessageIds set.
+     * @returns {number}
+     */
     const generateUnprocessedMessageId = (function(){
         const idIterator = createCounter()
         return () => {
