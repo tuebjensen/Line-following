@@ -4,7 +4,7 @@ import { initalizeSharedState } from './initalize-shared-state.js'
 import { parseMap } from './parse-map.js'
 import { findPath } from './pathfinding.js'
 
-const { clientState$, clientStateUpdate$, serverState$, updateClientState, updateServerState } = initalizeSharedState()
+const { clientState$, clientStateUpdate$, serverState$, updateClientState, updateServerState, socket$ } = initalizeSharedState()
  
 const nodeLeftClick$ = new Subject()
 const nodeRightClick$ = new Subject()
@@ -34,18 +34,18 @@ clientStateUpdate$.subscribe(clientState => {
 })
 
 const videoEl = document.getElementById('video')
-clientStateUpdate$.pipe(
-    pairwise()
-).subscribe(([previousClientState, clientState]) => {
-    if (!previousClientState && clientState) {
+
+socket$.subscribe(
+    (socket) => {
+        if (!socket) return
         console.log('reset video stream')
         const src = videoEl.src
         videoEl.src = ''
         setTimeout(() => {
             videoEl.src = src
-        })
+        }) 
     }
-})
+)
 
 // Update client state from client
 merge(
@@ -123,7 +123,13 @@ combineLatest([
     const maxY = Math.max(...map.nodes.map(node => node.y)) + nodeRadius
     const width = maxX - minX
     const height = maxY - minY
-
+    const currentIndex = Math.max(path.findIndex(element => element.nodeId === currentNode), 0)
+    const restOfPath = path.slice(currentIndex)
+    console.log('Current index:', currentIndex)
+    console.log('Current node:', currentNode)
+    console.log('Rest of path:', restOfPath)
+    console.log('Path:', path)
+    
     // update the display of the line segments
     const line = lineGroup
         .selectAll('.line')
@@ -140,13 +146,18 @@ combineLatest([
         .attr('stroke-linecap', 'round')
         .classed('line', true)
         .classed('path-line', line => {
-            let start = path.findIndex(element => line.start.id === element.nodeId)
-            let end = path.findIndex(element => line.end.id === element.nodeId)
+            const start = restOfPath.findIndex(element => line.start.id === element.nodeId)
+            const end = restOfPath.findIndex(element => line.end.id === element.nodeId)
             if (start === -1 || end === -1) {
                 return false
             }
             return Math.abs(start - end) === 1
         })
+        .call((lines) => lines.select(function () {
+            if (this.classList.contains('path-line')) {
+                this.parentNode.appendChild(this)
+            }
+        }))
 
     // update the display of the nodes
     const node = nodeGroup

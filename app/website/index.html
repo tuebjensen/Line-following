@@ -9,12 +9,6 @@
         background: #eee;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     }
-    .container {
-        max-width: 600px;
-        padding: 0 .5rem;
-        margin-left: auto;
-        margin-right: auto;
-    }
     .hidden {
         display: none !important;
     }
@@ -48,10 +42,21 @@
         resize: vertical;
         box-sizing: border-box;
     }
-    svg {
+    .video-container {
+        display: flex;
+        justify-content: center;
+        max-height: 90vh;
+        background: black;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .svg-container {
         background: white;
         border: 1px solid grey;
         border-radius: 4px;
+        display: flex;
+        justify-content: center;
+        max-height: 90vh;
     }
     text {
         fill: white;
@@ -66,7 +71,7 @@
         fill: black;
     }
     .current circle {
-        fill: purple;
+        fill: green;
     }
     circle {
         fill: rgba(100, 0, 0, 1);
@@ -84,43 +89,39 @@
 </style>
 
 <header>
-    <div class="container">
+    <div class="container" style="padding: 1rem">
         <h1>Line following robot configurator</h1>
     </div>
 </header>
 
-<section class="container">
-    <h2>Instructions</h2>
-    <ul>
-        <li>
-            To make the robot go to an intersection, click on its node.
-            The strong blue lines show the optimal path,
-            the green line shows the path the robot is on,
-            and the green node shows the last visited node.
-        </li>
-    </ul>
-</section>
-
-<section class="container">
-    <h2>The graph of the map</h2>
-    <svg></svg>
-</section>
-
-<section class="container">
-    <h2>Update the map</h2>
-    <form id="map-update-form">
-        <textarea id="map-input"></textarea>
-        <p>
-            <button>Update</button>
-        </p>
-    </form>
-    <div id="map-update-error" class="error"></div>
-</section>
-
-<section class="container">
-    <h2>What the camera sees</h2>
-    <img id="video" src="/video" width="100%">
-</section>
+<div style="display: flex; padding: 1rem; gap: 1rem">
+    <div style="flex-basis: 0; flex-grow: 1">
+        <section class="container">
+            <h2>The graph of the map</h2>
+            <div class="svg-container">
+                <svg></svg>
+            </div>
+        </section>
+        <section class="container">
+            <h2>Update the map</h2>
+            <form id="map-update-form">
+                <textarea id="map-input"></textarea>
+                <p>
+                    <button>Update</button>
+                </p>
+            </form>
+            <div id="map-update-error" class="error"></div>
+        </section>
+    </div>
+    <div style="flex-basis: 0; flex-grow: 1">
+        <section class="container">
+            <h2>What the camera sees</h2>
+            <div class="video-container">
+                <img id="video" src="/video" width="100%">
+            </div>
+        </section>
+    </div>
+</div>
 
 <div class="blocker">
     <div class="blocker__text">

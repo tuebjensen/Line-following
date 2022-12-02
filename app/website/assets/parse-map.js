@@ -1,10 +1,40 @@
 import { createCounter } from './create-counter.js'
-import { possibleLineSegmentsFromNode } from './possible-line-segments-from-node.js'
+import { getPossibleLineSegmentsFromNode } from './possible-line-segments-from-node.js'
 
+/**
+ * A function used as the argument of the Array.protoype.sort function
+ * if one wants to put numbers in ascending order.
+ * @param {number} a The first number.
+ * @param {number} b The second number.
+ * @returns A negative number if a < b, 0 if a == b and a positive number when a > b.
+ */
 function asc (a, b) {
     return a - b
 }
 
+/**
+ * A node.
+ * @typedef {{ x: number, y: number, id: number }} Node
+ */
+
+/**
+ * A line segment.
+ * @typedef {{ start: Node, end: Node }} LineSegment
+ */
+
+/**
+ * Note that the end point is only used to signify
+ * the direction of the ray.
+ * @typedef {LineSegment} Ray
+ */
+
+/**
+ * Get the distance between the starting point of the ray and
+ * the intersection between the ray and the line segment.
+ * @param {Ray} ray
+ * @param {LineSegment} segment 
+ * @returns {number}
+ */
 function getIntersectionDistance (ray, segment) {
     const isVert1 = ray.start.x === ray.end.x
     const isVert2 = segment.start.x === segment.end.x
@@ -58,15 +88,38 @@ function getIntersectionDistance (ray, segment) {
         }
     }
 }
+
+/**
+ * @typedef {{ lineSegments: LineSegment[], nodes: Node[] }} Graph
+ */
+
+/**
+ * Parses the given string.
+ * @param {string} str The raw string of the map which should be parsed.
+ * @returns {Graph} The parsed map.
+ */
 export function parseMap (str) {
     const lineSegments = []
     const nodeIdIterator = createCounter()
     const nodes = [{x: 0, y: 0, id: nodeIdIterator.next().value}]
     
+    /**
+     * Get the node corresponding to the given coordinates.
+     * @param {number} x 
+     * @param {number} y 
+     * @returns {Node}
+     */
     function findNode(x, y){
         return nodes.find(node => node.x === x && node.y === y)
     }
-    
+   
+    /**
+     * Parses the remaining part of the map and populates lineSegments and nodes.
+     * The arguments define the starting position of the internal cursor.
+     * @param {number} startX 
+     * @param {number} startY 
+     * @returns {void}
+     */
     function _parseMap (startX, startY) {
         let currentX = startX, currentY = startY
         while (str.length > 0) {
@@ -146,8 +199,8 @@ export function parseMap (str) {
 
     // automatically mark dead-end nodes as destinations
     for (const node of nodes) {
-        console.log(possibleLineSegmentsFromNode(lineSegments, node))
-        node.isPossibleDestination = possibleLineSegmentsFromNode(lineSegments, node.id).length <= 1
+        console.log(getPossibleLineSegmentsFromNode(lineSegments, node))
+        node.isPossibleDestination = getPossibleLineSegmentsFromNode(lineSegments, node.id).length <= 1
     }
 
     return { lineSegments, nodes }

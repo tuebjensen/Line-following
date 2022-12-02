@@ -5,6 +5,13 @@ import { createCounter } from './create-counter.js';
  * Initalize the state which will be shared between server and client.
  */
 export function initalizeSharedState () {
+
+    /**
+     * Keeps track of which messages have been processed
+     * (this is crucial for the locking mechanism)
+     */
+    const unprocessedMessageIds = new Set()
+
     /**
      * The stream of websockets.
      * A new socket is created every time a socket closes or errors.
@@ -41,19 +48,20 @@ export function initalizeSharedState () {
         repeat({ delay: 1000 }),
         startWith(null),
         distinctUntilChanged(),
+        tap(() => {
+            unprocessedMessageIds.clear()
+        }),
         shareReplay(1)
     )
     
     socket$.subscribe(s => console.log('socket', s))
 
-    // keep track of which messages have been processed
-    // (this is crucial for the locking mechanism)
-    const unprocessedMessageIds = new Set()
     const generateUnprocessedMessageId = (function(){
         const idIterator = createCounter()
         return () => {
             const newId = idIterator.next().value
             unprocessedMessageIds.add(newId)
+            return newId
         }
     })()
 
@@ -63,6 +71,7 @@ export function initalizeSharedState () {
     const message$ = socket$.pipe(
         filter(socket => socket),
         switchMap(socket => fromEvent(socket, 'message')),
+        
         concatMap((msg) => {
             try {
                 return of(JSON.parse(msg.data))
@@ -116,12 +125,17 @@ export function initalizeSharedState () {
     serverStateSubject$.pipe(
         withLatestFrom(socket$)
     ).subscribe(([serverState, socket]) => {
+        if (!socket) {
+            return
+        }
         const id = generateUnprocessedMessageId()
-        socket?.send(JSON.stringify({
+        const message = {
             type: 'server-state-update',
             id,
             data: serverState
-        }))
+        }
+        console.log('send server state', message)
+        socket.send(JSON.stringify(message))
     })
 
     /**
@@ -134,6 +148,9 @@ export function initalizeSharedState () {
             map(data => data.serverState)
         ),
         message$.pipe(
+            tap((message) => {
+                console.log('new serverState message!', message, 'unprocessed message IDs', unprocessedMessageIds)
+            }),
             filter(message =>
                 message.type === 'server-state-update'
                 && unprocessedMessageIds.size === 0
@@ -171,6 +188,11 @@ export function initalizeSharedState () {
         }))
     })
 
+    /**
+     * Includes server state updates both:
+     * - coming from the server
+     * - sent from the client
+     */
     const serverState$ = merge(
         serverStateSubject$,
         serverStateUpdate$
@@ -181,6 +203,11 @@ export function initalizeSharedState () {
         shareReplay(1)
     )
 
+    /**
+     * Includes client state updates both:
+     * - coming from the server
+     * - sent from the client
+     */
     const clientState$ = merge(
         clientStateSubject$,
         clientStateUpdate$
@@ -197,6 +224,7 @@ export function initalizeSharedState () {
         serverStateUpdate$,
         serverState$,
         clientStateUpdate$,
-        clientState$
+        clientState$,
+        socket$
     }
 }
