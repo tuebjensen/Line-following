@@ -3,15 +3,14 @@ from aiohttp import web
 import asyncio
 import aiofiles
 import json
-
-
+from weakref import WeakKeyDictionary
 
 class WebServer:
     """ Class for handling HTTP requests and the websocket """
     def __init__(self):
         self._is_running = False
         self._frame_encoded = None
-        self._is_frame_encoded_changed = False
+        self._is_frame_encoded_changed = WeakKeyDictionary()
         self._websocket_lock = False
         self._ws = None
         self._processed_ids = []
@@ -19,7 +18,8 @@ class WebServer:
     def set_frame_encoded(self, frame_encoded):
         """ Sets the frame to display on the website """
         self._frame_encoded = frame_encoded
-        self._is_frame_encoded_changed = True
+        for key in self._is_frame_encoded_changed.keys():
+            self._is_frame_encoded_changed[key] = True
 
     async def send_message(self, type, data):
         """ Sends a message along with ids of processed messages """
@@ -139,11 +139,12 @@ class WebServer:
     
             # The StreamResponse is a FSM. Enter it with a call to prepare.
             await resp.prepare(request)
+            self._is_frame_encoded_changed[request] = True
 
             await resp.write(b'--frame\r\n')
             while True:
-                if self._is_frame_encoded_changed:
-                    self._is_frame_encoded_changed = False       
+                if self._is_frame_encoded_changed.get(request, False):
+                    self._is_frame_encoded_changed[request] = False
                     await resp.write(
                         b'Content-Type: image/jpeg\r\n\r\n' 
                         + (self._frame_encoded if self._frame_encoded is not None else b'') 
