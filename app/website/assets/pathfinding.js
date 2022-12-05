@@ -210,10 +210,10 @@ function generatePathObject(pathIds, lineSegments, nodes) {
     return pathFromSourceToTarget
 }
 /**
- * 
+ * Returns the path extracted from the spt
  * @param {number[]} sptParentArray 
  * @param {number} target 
- * @returns 
+ * @returns {number[]}
  */
 function getPathFromSpt(sptParentArray, target) {
     const pathIds = [target]
@@ -249,7 +249,6 @@ export function findPath(map, source, target) {
     const adjacencyMatrix = makeAdjacencyMatrix(lineSegments, nodes.length)
     const sptParentArray = dijkstra(adjacencyMatrix, source)
     console.log(sptParentArray)
-
 
     const pathIds = getPathFromSpt(sptParentArray, target)
 
