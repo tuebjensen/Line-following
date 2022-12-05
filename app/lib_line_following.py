@@ -15,6 +15,7 @@ def get_processed_frame_and_direction_vector(original_frame,
         image_processor: ImageProcessor,
         line_processor: LineProcessor,
         direction_calculator: DirectionCalculator):
+    start_time = time.time()
     #print(direction_calculator)
     global frames
     global start
@@ -54,6 +55,7 @@ def get_processed_frame_and_direction_vector(original_frame,
     cv.putText(original_frame, f'Stable: {direction_calculator.get_state_string(direction_calculator._stable_state)}', (0,80), cv.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2, cv.LINE_AA)
     cv.putText(original_frame, f'Incoming: {direction_calculator.get_state_string(direction_calculator._last_incoming_state)} x{direction_calculator._same_incoming_states_count}', (0,110), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv.LINE_AA)
 
+    print(f'Inner time: {(time.time() - start_time)}')
     return {
         'frame': original_frame,
         'velocity_vector': (-velocity_vector.x, -velocity_vector.y),
