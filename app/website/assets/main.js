@@ -104,7 +104,7 @@ combineLatest([
         return
     }
 
-    const { map, targetNode, path } = clientState
+    const { map, targetNode, path } = {path: [], ...clientState}
     const { currentNode } = serverState || { currentNode: null }
 
     console.log('CURRENT NODE', currentNode)
