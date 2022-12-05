@@ -215,7 +215,7 @@ class DirectionCalculator:
 
     def _get_next_state_from_lost(self, path_count):
         next_state = None
-        if(len(self._path_plan) > 0 and self._path_plan[0]['choose'] == ''):
+        if(len(self._path_plan) == 0):
             next_state = STATE_STOPPED
         else:
             if path_count > 1:
