@@ -50,7 +50,7 @@ def get_processed_frame_and_direction_vector(original_frame,
         display_displacement_and_direction_vectors(displacement_vector, direction_vector, original_frame)
         display_direction_to_go(velocity_vector, original_frame)
 
-    cv.putText(original_frame, f'Frame: #{frames}, fps: {frames / (time.time() - start)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,69,255), 2, cv.LINE_AA)
+    cv.putText(original_frame, f'Frame: #{frames}, fps: {(frames / (time.time() - start)):.2f}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,69,255), 2, cv.LINE_AA)
     cv.putText(original_frame, f'Stable: {direction_calculator.get_state_string(direction_calculator._stable_state)}', (0,80), cv.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2, cv.LINE_AA)
     cv.putText(original_frame, f'Incoming: {direction_calculator.get_state_string(direction_calculator._last_incoming_state)} x{direction_calculator._same_incoming_states_count}', (0,110), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv.LINE_AA)
 
