@@ -28,7 +28,6 @@ def get_processed_frame_and_direction_vector(original_frame,
     current_node = None
 
     if isinstance(houghlines, np.ndarray):
-        cv.putText(original_frame, f'lines: {len(houghlines)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2, cv.LINE_AA)
         lines = line_processor._get_from_houghlines(houghlines)
         merged_lines = line_processor._merge_lines(lines, original_frame)
         merged_lines_segments = line_processor._get_tape_boundaries(merged_lines, edges)
