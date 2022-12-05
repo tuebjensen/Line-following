@@ -2,7 +2,7 @@ import cv2 as cv
 from lib_calculate_direction import DirectionCalculator
 from lib_image_processing import ImageProcessor
 from lib_process_lines import LineProcessor
-from test_line_processing import get_processed_frame
+from lib_line_following import get_processed_frame_and_direction_vector
 from lib_web_server import WebServer
 import asyncio
 camera = cv.VideoCapture(0)
@@ -35,7 +35,7 @@ async def main():
         if(unread_new_path):
             path = read_path()
             direction_calculator.set_new_path(path)
-        processed_frame_info = get_processed_frame(original_frame, image_processor, line_processor, direction_calculator)   
+        processed_frame_info = get_processed_frame_and_direction_vector(original_frame, image_processor, line_processor, direction_calculator)   
         direction_calculator.copy(processed_frame_info['direction_calculator'])
         processed_frame = processed_frame_info['frame']
         ret, buffer = cv.imencode('.jpg', processed_frame)
