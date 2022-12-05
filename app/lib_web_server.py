@@ -83,7 +83,7 @@ class WebServer:
         async def set_client_state(client_state):
             """ Updates the file client_state.json """
             async with aiofiles.open('client_state.json', 'w') as file:
-                await file.write(json.dumps(client_state))
+                await file.write(json.dumps({ key: client_state[key] for key in ['mapStr', 'map'] }))
             path_callback(client_state['path'])
 
         async def update_client_state(client_state):
@@ -139,12 +139,12 @@ class WebServer:
     
             # The StreamResponse is a FSM. Enter it with a call to prepare.
             await resp.prepare(request)
-            self._is_frame_encoded_changed[request] = True
+            self._is_frame_encoded_changed[resp] = True
 
             await resp.write(b'--frame\r\n')
             while True:
-                if self._is_frame_encoded_changed.get(request, False):
-                    self._is_frame_encoded_changed[request] = False
+                if self._is_frame_encoded_changed.get(resp, False):
+                    self._is_frame_encoded_changed[resp] = False
                     await resp.write(
                         b'Content-Type: image/jpeg\r\n\r\n' 
                         + (self._frame_encoded if self._frame_encoded is not None else b'') 
