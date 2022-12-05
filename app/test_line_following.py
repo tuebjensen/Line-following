@@ -12,7 +12,7 @@ import RPi.GPIO as GPIO
 from lib_calculate_direction import DirectionCalculator
 from lib_image_processing import ImageProcessor
 from lib_process_lines import LineProcessor
-from test_line_processing import get_processed_frame
+from lib_line_following import get_processed_frame_and_direction_vector
 from lib_car import Car
 from lib_motor import Motor
 from lib_web_server import WebServer
@@ -61,7 +61,7 @@ async def process_video():
                     path = read_path()
                     direction_calculator.set_new_path(path)
                 processed_frame_info = await loop.run_in_executor(executor,
-                    partial(get_processed_frame,
+                    partial(get_processed_frame_and_direction_vector,
                         original_frame,
                         image_processor,
                         line_processor,

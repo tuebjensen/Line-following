@@ -9,68 +9,6 @@ from lib_process_lines import LineProcessor
 from lib_image_processing import ImageProcessor
 
 
-STATE_FOLLOWING_LINE = 0
-STATE_I_SEE_INTERSECTION = 1
-STATE_TURNING = 2
-STATE_STOP = 3
-STATE_TURN180 = 4
-STATE_IM_LOST = 5
-
-frames = 0
-start = time.time()
-def get_processed_frame(original_frame,
-        image_processor: ImageProcessor,
-        line_processor: LineProcessor,
-        direction_calculator: DirectionCalculator):
-    #print(direction_calculator)
-    global frames
-    global start
-    frames += 1
-    # original_frame = original_frame[:,30:]
-    # original_frame = cv.rotate(original_frame, cv.ROTATE_90_CLOCKWISE)
-    original_frame = cv.flip(original_frame, -1)
-    edges, houghlines = image_processor.get_edges_and_houghlines(original_frame)
-    tape_paths = line_processor.get_tape_paths(original_frame, edges, houghlines)
-    velocity_vector = Vector2D(0, 0)
-    current_node = None
-
-    if isinstance(houghlines, np.ndarray):
-        cv.putText(original_frame, f'lines: {len(houghlines)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2, cv.LINE_AA)
-        lines = line_processor._get_from_houghlines(houghlines)
-        merged_lines = line_processor._merge_lines(lines, original_frame)
-        merged_lines_segments = line_processor._get_tape_boundaries(merged_lines, edges)
-        parallel_line_centers = line_processor._get_centers_of_parallel_line_pairs(merged_lines)
-        tape_paths = line_processor._get_tape_paths_and_lines(parallel_line_centers, merged_lines_segments, original_frame)
-        display_all_lines(lines, original_frame)
-        display_merged_parallel_lines(merged_lines, original_frame)
-        display_boxes_around_merged_lines(merged_lines, original_frame, edges)
-        display_merged_lines_segments(merged_lines_segments, original_frame)
-        display_center_of_parallel_lines(parallel_line_centers, original_frame)
-        display_tape_paths(tape_paths, original_frame)
-
-    target_segment, target_line, current_node = direction_calculator._decide_target(
-                                                            original_frame,
-                                                            tape_paths)
-    if target_segment is not None:
-        displacement_vector = direction_calculator._get_displacement_vector_from_center(target_line, original_frame)
-        direction_vector = target_segment.get_direction_vector_please()
-        velocity_vector = direction_calculator._get_direction_to_go(displacement_vector, direction_vector, original_frame)
-        display_displacement_and_direction_vectors(displacement_vector, direction_vector, original_frame)
-        display_direction_to_go(velocity_vector, original_frame)
-
-    cv.putText(original_frame, f'Frame: #{frames}, fps: {frames / (time.time() - start)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,69,255), 2, cv.LINE_AA)
-    cv.putText(original_frame, f'Stable: {_get_state_string(direction_calculator._stable_state)}', (0,80), cv.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2, cv.LINE_AA)
-    cv.putText(original_frame, f'Incoming: {_get_state_string(direction_calculator._last_incoming_state)} x{direction_calculator._same_incoming_states_count}', (0,110), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv.LINE_AA)
-
-    return {
-        'frame': original_frame,
-        'velocity_vector': (-velocity_vector.x, -velocity_vector.y),
-        'current_node': current_node,
-        'direction_calculator': direction_calculator
-    }
-
-
-
 def nothing(x):
     pass
 
@@ -114,7 +52,7 @@ def process_video():
             display_center_of_parallel_lines(parallel_line_centers, original_frame)
             display_tape_paths(tape_paths_and_lines, original_frame)
 
-            target_segment, target_line, current_node = direction_calculator._decide_target(original_frame, tape_paths_and_lines)
+            target_segment, target_line, current_node = direction_calculator.decide_target(original_frame, tape_paths_and_lines)
             if target_segment is not None:
                 displacement_vector = direction_calculator._get_displacement_vector_from_center(target_line, original_frame)
                 direction_vector = target_segment.get_direction_vector_please()
@@ -122,8 +60,8 @@ def process_video():
                 display_displacement_and_direction_vectors(displacement_vector, direction_vector, original_frame)
                 display_direction_to_go(velocity_vector, original_frame)
         cv.putText(original_frame, f'Frame: #{frames}, fps: {frames / (time.time() - start)}', (0,50), cv.FONT_HERSHEY_SIMPLEX, 1, (0,69,255), 2, cv.LINE_AA)
-        cv.putText(original_frame, f'Stable: {_get_state_string(direction_calculator._stable_state)}', (0,80), cv.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2, cv.LINE_AA)
-        cv.putText(original_frame, f'Incoming: {_get_state_string(direction_calculator._last_incoming_state)} x{direction_calculator._same_incoming_states_count}', (0,110), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv.LINE_AA)
+        cv.putText(original_frame, f'Stable: {DirectionCalculator.get_state_string(direction_calculator._stable_state)}', (0,80), cv.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2, cv.LINE_AA)
+        cv.putText(original_frame, f'Incoming: {DirectionCalculator.get_state_string(direction_calculator._last_incoming_state)} x{direction_calculator._same_incoming_states_count}', (0,110), cv.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2, cv.LINE_AA)
 
         cv.imshow('original video', original_frame)
         cv.imshow('processed video', processed_frame)
@@ -138,19 +76,7 @@ def process_video():
     cap.release()
     cv.destroyAllWindows()
 
-def _get_state_string(state) -> str:
-    if state == STATE_FOLLOWING_LINE:
-        return 'Following line'
-    if state == STATE_I_SEE_INTERSECTION:
-        return 'Intersection noticed, following line'
-    if state == STATE_TURNING:
-        return 'Turning'
-    if state == STATE_STOP:
-        return 'Stopped'
-    if state == STATE_TURN180:
-        return 'Turning 180'
-    if state == STATE_IM_LOST:
-        return 'Line lost'
+
 
 
 
