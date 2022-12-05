@@ -148,15 +148,18 @@ class DirectionCalculator:
         self._stable_state = self._get_stable_state(next_state)
 
     
-    def _get_next_state_from_following(self, path_count, parallel_line_centers, frame):
+    def _get_next_state_from_following(self, path_count, parallel_line_centers: list, frame):
         next_state = None
         if path_count > 1:
-            intersection_red = _get_intersection_point(parallel_line_centers[0], parallel_line_centers[1])
-            if intersection_red[1] > frame.shape[0]*self._REACT_TO_INTERSECTION_THRESHOLD:
-                next_state = STATE_TURNING
-                self._turning_just_initiated = True
+            if len(parallel_line_centers) >= 2:
+                intersection_red = _get_intersection_point(parallel_line_centers[0], parallel_line_centers[1])
+                if intersection_red[1] > frame.shape[0]*self._REACT_TO_INTERSECTION_THRESHOLD:
+                    next_state = STATE_TURNING
+                    self._turning_just_initiated = True
+                else:
+                    next_state = STATE_I_SEE_INTERSECTION
             else:
-                next_state = STATE_I_SEE_INTERSECTION
+                next_state = STATE_LINE_LOST
         elif path_count == 1:
             next_state = STATE_FOLLOWING_LINE
         elif path_count == 0:
