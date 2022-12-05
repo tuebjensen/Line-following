@@ -209,6 +209,31 @@ function generatePathObject(pathIds, lineSegments, nodes) {
     console.log('generated path', pathFromSourceToTarget)
     return pathFromSourceToTarget
 }
+/**
+ * 
+ * @param {number[]} sptParentArray 
+ * @param {number} target 
+ * @returns 
+ */
+function getPathFromSpt(sptParentArray, target) {
+    const pathIds = [target]
+    let foundPath = false
+    let newTarget = target
+
+    while (!foundPath) {
+        newTarget = sptParentArray[newTarget]
+        if (newTarget === -1) {
+            foundPath = true
+        } else if (sptParentArray[newTarget] == newTarget){
+            throw new Error('Target is not present in map')
+        } else {
+            pathIds.push(newTarget)
+        }
+    }
+
+    pathIds.reverse()
+    return pathIds
+}
 
 /**
  * Returns a path from source to target
@@ -225,22 +250,9 @@ export function findPath(map, source, target) {
     const sptParentArray = dijkstra(adjacencyMatrix, source)
     console.log(sptParentArray)
 
-    
-    const pathIds = [target]
-    let foundPath = false
-    let newTarget = target
-    while (!foundPath) {
-        newTarget = sptParentArray[newTarget]
-        if (newTarget === -1) {
-            foundPath = true
-        } else if (sptParentArray[newTarget] == newTarget){
-            throw new Error('Target is not present in map')
-        } else {
-            pathIds.push(newTarget)
-        }
-    }
 
-    pathIds.reverse()
+    const pathIds = getPathFromSpt(sptParentArray, target)
+
     console.log(pathIds)
     return generatePathObject(pathIds, lineSegments, nodes)
 
