@@ -329,9 +329,13 @@ class DirectionCalculator:
             angle_path = path.get_direction_vector_please().get_angle()
             angle_old = old_target.get_direction_vector_please().get_angle()
             angle_dif = abs(angle_old-angle_path)
+            print(f'angle_path: {angle_path}, angle_old: {angle_old}, angle_dif: {angle_dif}')
             if angle_dif < min_angle_dif: 
+                print('angle_dif < min_angle_dif: angle_dif: {angle_dif}, min_angle_dif: {min_angle_dif}')
                 min_angle_dif = angle_dif
                 min_angle_path = path
+                print('new min_angle_diff: {min_angle_dif}')
+        print('min_angle_path: {min_angle_path}')
         return min_angle_path
 
     def __str__(self):
