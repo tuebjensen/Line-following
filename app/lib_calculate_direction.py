@@ -240,7 +240,6 @@ class DirectionCalculator:
     def _decide_target_from_following(self, tape_paths_and_lines):
         target_path = None
         target_line = None
-        current_node = None
         paths = list(tape_paths_and_lines.keys())
         if(len(paths) == 1): # stable state
             target_path = paths[0]
@@ -252,7 +251,7 @@ class DirectionCalculator:
             target_path = self._last_target
             target_line = self._last_line
 
-        return target_path, target_line, current_node
+        return target_path, target_line
 
     
     def _decide_target_from_seeing_intersection(self, tape_paths_and_lines):
