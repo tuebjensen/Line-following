@@ -24,7 +24,7 @@ class DirectionCalculator:
         self._turning_just_initiated = False
         self._path_plan = path_plan
 
-    def get_state_string(cls, state) -> str:
+    def get_state_string(self, state) -> str:
         if state == STATE_FOLLOWING_LINE:
             return 'Following line'
         if state == STATE_I_SEE_INTERSECTION:
