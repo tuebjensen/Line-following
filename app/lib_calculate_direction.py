@@ -328,18 +328,15 @@ class DirectionCalculator:
     def _update_target(self, old_target: LineSegment, tape_paths_and_lines: 'dict[LineSegment, Line]') -> LineSegment:
         min_angle_dif = 2*pi
         min_angle_path = None
-        print('\n\n\nupdating target')
         for path in list(tape_paths_and_lines.keys()):
             angle_path = path.get_direction_vector_please().get_angle()
             angle_old = old_target.get_direction_vector_please().get_angle()
             angle_dif = abs(angle_old-angle_path)
-            print(f'angle_path: {angle_path}, angle_old: {angle_old}, angle_dif: {angle_dif}')
+            if angle_dif > pi:
+                angle_dif = 2*pi - angle_dif
             if angle_dif < min_angle_dif: 
-                print(f'angle_dif < min_angle_dif: angle_dif: {angle_dif}, min_angle_dif: {min_angle_dif}')
                 min_angle_dif = angle_dif
                 min_angle_path = path
-                print(f'new min_angle_diff: {min_angle_dif}')
-        print(f'min_angle_path: {min_angle_path}, angle: {min_angle_path.get_direction_vector_please().get_angle()}, previous angle {old_target.get_direction_vector_please().get_angle()}')
         return min_angle_path
 
     def __str__(self):
