@@ -67,9 +67,9 @@ class DirectionCalculator:
 
         frame_width = image_frame.shape[1]
         frame_height = image_frame.shape[0]
-        maximum_distance_from_center = sqrt((frame_width / 2) ** 2 + (frame_height / 2) ** 2)
+        diagonal = sqrt((frame_width / 2) ** 2 + (frame_height / 2) ** 2)
 
-        displacement_vector_weight = distance_from_center / maximum_distance_from_center
+        displacement_vector_weight = distance_from_center / diagonal
         direction_vector_weight = 1 - displacement_vector_weight
 
         velocity_vector = direction_vector_weight * direction_vector + displacement_vector_weight * displacement_vector
