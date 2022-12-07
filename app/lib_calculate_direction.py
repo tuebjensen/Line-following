@@ -84,11 +84,11 @@ class DirectionCalculator:
         frame_width = frame.shape[1]
         frame_height = frame.shape[0]
         center = Vector2D(frame_width / 2, -1 * frame_height / 2)
-        max_distance = center.get_length()
+        diagonal = center.get_length()
 
         displacement_angle = pi - theta
-        gamma = asin((frame_height / 2) / max_distance)
-        displacement_length = (max_distance - (rho / sin(pi / 2 - theta + gamma))) * sin(pi / 2 - theta + gamma)
+        gamma = asin((frame_height / 2) / diagonal)
+        displacement_length = (diagonal - (rho / sin(pi / 2 - theta + gamma))) * sin(pi / 2 - theta + gamma)
 
         x_coord = displacement_length * cos(displacement_angle)
         y_coord = -1 * displacement_length * sin(displacement_angle) # have to multiply by -1 because of difference in reference frame
