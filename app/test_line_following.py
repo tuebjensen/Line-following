@@ -61,14 +61,12 @@ async def process_video():
                 if(unread_new_path):
                     path = read_path()
                     direction_calculator.set_new_path(path)
-                start_time = time.time()
                 processed_frame_info = await loop.run_in_executor(executor,
                     partial(get_processed_frame_and_direction_vector,
                         original_frame,
                         image_processor,
                         line_processor,
                         direction_calculator))
-                print(f'Outer time: {time.time() - start_time}')
                 frame = processed_frame_info['frame']
                 velocity_vector = processed_frame_info['velocity_vector']
                 current_node = processed_frame_info['current_node']
