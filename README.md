@@ -1,6 +1,3 @@
-# Flask server
-flask run --host=0.0.0.0 
+# Line following
 
-# Motor
-`motor_left=Motor(speed_pin=33, direction_pin=31, encoder_interrupt_wiring_pi_pin=25)`  Number 1 on motor driver
-`motor_right=Motor(speed_pin=32, direction_pin=36, encoder_interrupt_wiring_pi_pin=11)` Number 2 on motor driver
+To execute the program, `cd` into the app directory, and run `python test_line_following.py`. The program is designed to run on a Raspberry Pi. When running `test_line_following.py`, the interpreter will output if dependencies are missing. These should be installed using `pip`.
