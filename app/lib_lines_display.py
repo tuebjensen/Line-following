@@ -24,7 +24,7 @@ def display_boxes_around_merged_lines(merged_lines: 'list[Line]', frame, edges):
     for i in range(len(merged_lines)):
         line = merged_lines[i]
         color = (0, 255-255/len(merged_lines)*i ,0) # same shade of green as the merged line
-        boxes = line_processor._get_box_centers_please(line, edges)
+        boxes = line_processor._get_box_centers(line, edges)
         for box in boxes:
             x, y = box
             x = int(x)

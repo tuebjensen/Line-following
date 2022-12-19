@@ -55,7 +55,7 @@ def process_video():
             target_segment, target_line, current_node = direction_calculator.decide_target(original_frame, tape_paths_and_lines)
             if target_segment is not None:
                 displacement_vector = direction_calculator._get_displacement_vector_from_center(target_line, original_frame)
-                direction_vector = target_segment.get_direction_vector_please()
+                direction_vector = target_segment.get_direction_vector()
                 velocity_vector = direction_calculator._get_direction_to_go(displacement_vector, direction_vector, original_frame)
                 display_displacement_and_direction_vectors(displacement_vector, direction_vector, original_frame)
                 display_direction_to_go(velocity_vector, original_frame)

@@ -50,7 +50,7 @@ class LineSegment:
     def get_length(self):
         return sqrt((self.end_point[0] - self.start_point[0]) ** 2 + (self.end_point[1] - self.start_point[1]) ** 2)
 
-    def get_direction_vector_please(self) -> 'Vector2D':
+    def get_direction_vector(self) -> 'Vector2D':
         return Vector2D(self.end_point[0]-self.start_point[0], self.end_point[1]-self.start_point[1])
 
     def flip(self) -> 'LineSegment':
@@ -112,21 +112,21 @@ class LineProcessor:
     def _get_tape_boundaries(self, merged_lines: 'list[Line]', edges) -> 'dict[Line, list[LineSegment]]':
         lines_segments: dict[Line, list[LineSegment]] = {}
         for line in merged_lines:
-            box_centers = self._get_box_centers_please(line, edges)
-            white_pixels_per_box = self._get_white_pixels_per_box_please(
+            box_centers = self._get_box_centers(line, edges)
+            white_pixels_per_box = self._get_white_pixels_per_box(
                 box_centers, edges)
-            tape_markers = self._get_tape_markers_please(white_pixels_per_box)
-            filtered_markers = self._get_filtered_markers_please(tape_markers)
-            lines_segments[line] = self._get_line_segments_please(
+            tape_markers = self._get_tape_markers(white_pixels_per_box)
+            filtered_markers = self._get_filtered_markers(tape_markers)
+            lines_segments[line] = self._get_line_segments(
                 filtered_markers, box_centers)
         return lines_segments
 
-    def _get_box_centers_please(self, line: 'Line', edges) -> 'list[tuple[int,int]]':
+    def _get_box_centers(self, line: 'Line', edges) -> 'list[tuple[int,int]]':
         box_centers = []
         max_x = edges.shape[1]
         max_y = edges.shape[0]
         rho, theta = line.rho, line.theta
-        iterate_along_x_axis = self._is_line_more_horizontal_please(line)
+        iterate_along_x_axis = self._is_line_more_horizontal(line)
         delta_x = self._BOX_SIZE if iterate_along_x_axis else self._BOX_SIZE * \
             1/tan(theta - pi/2)
         delta_y = self._BOX_SIZE if not iterate_along_x_axis else self._BOX_SIZE * \
@@ -148,10 +148,10 @@ class LineProcessor:
                 box_centers.append((x, y))
         return box_centers
 
-    def _is_line_more_horizontal_please(self, line: 'Line') -> bool:
+    def _is_line_more_horizontal(self, line: 'Line') -> bool:
         return line.theta >= pi/4 and line.theta <= 3*pi/4
 
-    def _get_white_pixels_per_box_please(self, box_centers: 'list[tuple[int,int]]', edges) -> 'list[int]':
+    def _get_white_pixels_per_box(self, box_centers: 'list[tuple[int,int]]', edges) -> 'list[int]':
         pixels_per_box = []
         half_box_size = int(self._BOX_SIZE / 2)
         for (x, y) in box_centers:
@@ -160,10 +160,10 @@ class LineProcessor:
             pixels_per_box.append(np.count_nonzero(box == 255))
         return pixels_per_box
 
-    def _get_tape_markers_please(self, white_pixels_per_box: 'list[int]') -> 'list[bool]':
+    def _get_tape_markers(self, white_pixels_per_box: 'list[int]') -> 'list[bool]':
         return [pixel_count > self._PIXELS_THRESHOLD for pixel_count in white_pixels_per_box]
 
-    def _get_filtered_markers_please(self, tape_markers: 'list[bool]') -> 'list[bool]':
+    def _get_filtered_markers(self, tape_markers: 'list[bool]') -> 'list[bool]':
         filtered_markers = self._fill_gaps(tape_markers)
         filtered_markers = self._filter_small_segments(filtered_markers)
         return filtered_markers
@@ -226,7 +226,7 @@ class LineProcessor:
             markers[segment_start: segment_end + 1] = [False] * \
                 (segment_end - segment_start + 1)
 
-    def _get_line_segments_please(self, markers: 'list[bool]', centers: 'list[tuple[int, int]]') -> 'list[LineSegment]':
+    def _get_line_segments(self, markers: 'list[bool]', centers: 'list[tuple[int, int]]') -> 'list[LineSegment]':
         line_segments = []
         search_from = 0
         while search_from is not None:

@@ -53,7 +53,7 @@ class DirectionCalculator:
         if(target_path is None):
             return Vector2D(0, 0)
         displacement_vector = self._get_displacement_vector_from_center(target_line, frame)
-        line_direction_vector = target_path.get_direction_vector_please()
+        line_direction_vector = target_path.get_direction_vector()
         direction_vector = self._get_direction_to_go(displacement_vector, line_direction_vector, frame)
         return direction_vector
 
@@ -315,7 +315,7 @@ class DirectionCalculator:
 
     def _get_most_like(self, turning_direction: str, tape_paths_and_lines: 'dict[LineSegment, Line]') -> LineSegment:
         for path in list(tape_paths_and_lines.keys()):
-            angle = path.get_direction_vector_please().get_angle()
+            angle = path.get_direction_vector().get_angle()
             if ((turning_direction == 'right' and angle >= -pi/4 and angle <= pi/4)
                     or (turning_direction == 'left' and ((angle >= 3*pi/4) or (angle <= -3*pi/4)))
                     or (turning_direction == 'straight' and angle >= -3*pi/4 and angle <= -pi/4)
@@ -329,8 +329,8 @@ class DirectionCalculator:
         min_angle_dif = 2*pi
         min_angle_path = None
         for path in list(tape_paths_and_lines.keys()):
-            angle_path = path.get_direction_vector_please().get_angle()
-            angle_old = old_target.get_direction_vector_please().get_angle()
+            angle_path = path.get_direction_vector().get_angle()
+            angle_old = old_target.get_direction_vector().get_angle()
             angle_dif = abs(angle_old-angle_path)
             if angle_dif > pi:
                 angle_dif = 2*pi - angle_dif
